@@ -4,5 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = { version = "0.5.0", features = ["dynamic", "wayland"] }
+bevy = { version = "0.7", features = ["dynamic", "wayland"] }
+bevy_pancam = "0.3"
 ab_glyph = "0.2.6"
+bevy_prototype_lyon = "0.5"
+lyon_tessellation = "0.17"
