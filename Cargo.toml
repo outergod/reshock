@@ -7,5 +7,10 @@ edition = "2021"
 bevy = { version = "0.7", features = ["dynamic", "wayland"] }
 bevy_pancam = "0.3"
 ab_glyph = "0.2.6"
-bevy_prototype_lyon = "0.5"
-lyon_tessellation = "0.17"
+itertools = "0.10"
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
