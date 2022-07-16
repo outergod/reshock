@@ -7,9 +7,13 @@ pub struct Player;
 pub struct Floor;
 
 #[derive(Component)]
+pub struct Wall;
+
+#[derive(Component)]
 pub enum Renderable {
     Human,
     Floor,
+    Wall,
 }
 
 impl Renderable {
@@ -17,6 +21,7 @@ impl Renderable {
         match self {
             Renderable::Human => '@',
             Renderable::Floor => '·',
+            Renderable::Wall => 'X',
         }
     }
 
@@ -24,6 +29,7 @@ impl Renderable {
         match self {
             Renderable::Human => Color::WHITE,
             Renderable::Floor => Color::GRAY,
+            Renderable::Wall => Color::ALICE_BLUE,
         }
     }
 }

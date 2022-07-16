@@ -2660,9 +2660,11 @@ name = "reshock-bevy"
 version = "0.1.0"
 dependencies = [
  "ab_glyph",
+ "anyhow",
  "bevy",
  "bevy_pancam",
  "itertools",
+ "serde",
 ]
 
 [[package]]

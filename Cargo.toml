@@ -8,6 +8,8 @@ bevy = { version = "0.7", features = ["dynamic", "wayland"] }
 bevy_pancam = "0.3"
 ab_glyph = "0.2.6"
 itertools = "0.10"
+anyhow = "1.0"
+serde = "1.0"
 
 [profile.dev]
 opt-level = 1

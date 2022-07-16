@@ -2,6 +2,10 @@ use crate::component::{Player, Position};
 use bevy::prelude::*;
 
 pub fn system(keys: Res<Input<KeyCode>>, mut query: Query<&mut Position, With<Player>>) {
+    if query.is_empty() {
+        return;
+    }
+
     let mut position = query.single_mut();
 
     if keys.just_pressed(KeyCode::A) {
