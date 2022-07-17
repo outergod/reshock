@@ -4,16 +4,16 @@ use bevy::prelude::*;
 pub struct Player;
 
 #[derive(Component)]
-pub struct Floor;
-
-#[derive(Component)]
-pub struct Wall;
-
-#[derive(Component)]
 pub enum Renderable {
     Human,
     Floor,
     Wall,
+}
+
+#[derive(Component)]
+pub enum Obstacle {
+    Always,
+    // Door,
 }
 
 impl Renderable {

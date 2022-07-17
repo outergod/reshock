@@ -1,12 +1,13 @@
 use bevy::prelude::*;
 
-use crate::component::{self, Ordering, Position, Renderable};
+use crate::component::{self, Obstacle, Ordering, Position, Renderable};
 
 #[derive(Bundle)]
 pub struct Player {
     renderable: Renderable,
     position: Position,
     ordering: Ordering,
+    obstacle: Obstacle,
     player: component::Player,
 }
 
@@ -17,6 +18,7 @@ impl Player {
             position,
             ordering: Ordering(u8::MIN),
             player: component::Player,
+            obstacle: Obstacle::Always,
         }
     }
 }
@@ -26,7 +28,6 @@ pub struct Floor {
     renderable: Renderable,
     position: Position,
     ordering: Ordering,
-    floor: component::Floor,
 }
 
 impl Floor {
@@ -35,7 +36,6 @@ impl Floor {
             renderable: Renderable::Floor,
             position,
             ordering: Ordering(u8::MAX),
-            floor: component::Floor,
         }
     }
 }
@@ -45,7 +45,7 @@ pub struct Wall {
     renderable: Renderable,
     position: Position,
     ordering: Ordering,
-    wall: component::Wall,
+    obstacle: Obstacle,
 }
 
 impl Wall {
@@ -54,7 +54,7 @@ impl Wall {
             renderable: Renderable::Wall,
             position,
             ordering: Ordering(4),
-            wall: component::Wall,
+            obstacle: Obstacle::Always,
         }
     }
 }
