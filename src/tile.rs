@@ -87,8 +87,8 @@ pub fn render(
         .for_each(|(position, (renderable, _))| {
             if let Some(text) = tiles_map.get_mut(position) {
                 if let Some(mut section) = text.sections.get_mut(0) {
-                    section.value = renderable.char().to_string();
-                    section.style.color = renderable.color();
+                    section.value = renderable.char.to_string();
+                    section.style.color = renderable.color;
                 }
             }
         });

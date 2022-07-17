@@ -14,7 +14,10 @@ pub struct Player {
 impl Player {
     pub fn new(position: Position) -> Self {
         Self {
-            renderable: Renderable::Human,
+            renderable: Renderable {
+                char: '@',
+                color: Color::WHITE,
+            },
             position,
             ordering: Ordering(u8::MIN),
             player: component::Player,
@@ -33,7 +36,10 @@ pub struct Floor {
 impl Floor {
     pub fn new(position: Position) -> Self {
         Self {
-            renderable: Renderable::Floor,
+            renderable: Renderable {
+                char: '·',
+                color: Color::ALICE_BLUE,
+            },
             position,
             ordering: Ordering(u8::MAX),
         }
@@ -42,6 +48,7 @@ impl Floor {
 
 #[derive(Bundle)]
 pub struct Wall {
+    wall: component::Wall,
     renderable: Renderable,
     position: Position,
     ordering: Ordering,
@@ -51,7 +58,8 @@ pub struct Wall {
 impl Wall {
     pub fn new(position: Position) -> Self {
         Self {
-            renderable: Renderable::Wall,
+            wall: component::Wall,
+            renderable: Default::default(),
             position,
             ordering: Ordering(4),
             obstacle: Obstacle::Always,
