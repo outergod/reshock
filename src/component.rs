@@ -27,24 +27,6 @@ pub enum Obstacle {
     // Door,
 }
 
-// impl Renderable {
-//     pub fn char(&self) -> char {
-//         match self {
-//             Renderable::Human => '@',
-//             Renderable::Floor => '·',
-//             Renderable::Wall => 'X',
-//         }
-//     }
-
-//     pub fn color(&self) -> Color {
-//         match self {
-//             Renderable::Human => Color::WHITE,
-//             Renderable::Floor => Color::GRAY,
-//             Renderable::Wall => Color::ALICE_BLUE,
-//         }
-//     }
-// }
-
 #[derive(Component)]
 pub struct Ordering(pub u8);
 
@@ -55,4 +37,11 @@ impl Default for Position {
     fn default() -> Self {
         Self((0, 0).into())
     }
+}
+
+#[derive(Component)]
+pub enum Sight {
+    Omniscience,
+    Eyes,
+    Sensors,
 }

@@ -1,5 +1,4 @@
 use bevy::{
-    log,
     math::ivec2,
     prelude::*,
     utils::{HashMap, HashSet},
@@ -163,5 +162,7 @@ pub fn system(mut walls: Query<(&mut Renderable, &Position), With<Wall>>) {
         } else {
             renderable.char = SWALL;
         }
+
+        renderable.color = Color::rgb(0.169, 0.173, 0.29);
     }
 }

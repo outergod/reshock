@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::component::{self, Obstacle, Ordering, Position, Renderable};
+use crate::{
+    component::{self, Obstacle, Ordering, Position, Renderable, Sight},
+    resource::ReshockFont,
+};
 
 #[derive(Bundle)]
 pub struct Player {
@@ -8,6 +11,7 @@ pub struct Player {
     position: Position,
     ordering: Ordering,
     obstacle: Obstacle,
+    sight: Sight,
     player: component::Player,
 }
 
@@ -22,6 +26,7 @@ impl Player {
             ordering: Ordering(u8::MIN),
             player: component::Player,
             obstacle: Obstacle::Always,
+            sight: Sight::Eyes,
         }
     }
 }
@@ -63,6 +68,34 @@ impl Wall {
             position,
             ordering: Ordering(4),
             obstacle: Obstacle::Always,
+        }
+    }
+}
+
+#[derive(Bundle)]
+pub struct Tile {
+    position: Position,
+
+    #[bundle]
+    text: Text2dBundle,
+}
+
+impl Tile {
+    pub fn new(position: Position, font: &Res<ReshockFont>) -> Self {
+        Self {
+            position,
+            text: Text2dBundle {
+                text: Text::with_section(
+                    " ".to_string(),
+                    TextStyle {
+                        font: font.handle.clone_weak(),
+                        font_size: font.size,
+                        color: Color::WHITE,
+                    },
+                    TextAlignment::default(),
+                ),
+                ..Default::default()
+            },
         }
     }
 }
