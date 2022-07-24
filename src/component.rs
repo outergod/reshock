@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashSet};
 
 #[derive(Component)]
 pub struct Player;
@@ -39,22 +39,28 @@ impl Default for Position {
     }
 }
 
-#[derive(Component, Clone)]
-pub enum Sight {
+#[derive(Clone)]
+pub enum SightKind {
     Blind,
     Omniscience,
     Eyes,
     Sensors,
 }
 
-#[derive(Component)]
-pub struct Visible(pub bool);
-
-impl Default for Visible {
-    fn default() -> Self {
-        Self(false)
-    }
+#[derive(Component, Clone)]
+pub struct Sight {
+    pub kind: SightKind,
+    pub seeing: HashSet<Entity>,
 }
+
+// #[derive(Component)]
+// pub struct Visible(pub bool);
+
+// impl Default for Visible {
+//     fn default() -> Self {
+//         Self(false)
+//     }
+// }
 
 #[derive(Component)]
 pub struct Opaque(pub bool);

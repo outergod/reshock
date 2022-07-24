@@ -11,8 +11,8 @@ mod system {
     pub mod input;
     pub mod radial_lines;
     pub mod room;
+    pub mod sight;
     pub mod tile;
-    pub mod visibility;
     pub mod wall;
 }
 mod bundle;
@@ -61,6 +61,6 @@ fn main() {
         .add_system(input::system)
         .add_system(room::loaded)
         .add_system(wall::system)
-        .add_system(visibility::system)
+        .add_system(sight::system)
         .run();
 }

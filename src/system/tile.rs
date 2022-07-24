@@ -32,14 +32,20 @@ pub fn adapt_glyph_dimensions(
 }
 
 pub fn render(
-    renderables: Query<(&Position, &Renderable, &Ordering, &Visible)>,
+    player: Query<&Sight, With<Player>>,
+    renderables: Query<(Entity, &Position, &Renderable, &Ordering)>,
     mut tiles: Query<(&Position, &mut Text)>,
 ) {
+    let seeing = match player.get_single() {
+        Ok(Sight { seeing, .. }) => seeing,
+        Err(_) => return,
+    };
+
     let mut tiles_map: HashMap<_, _> = tiles.iter_mut().collect();
     renderables
         .iter()
-        .map(|(position, renderable, ordering, visible)| {
-            (position, (renderable, ordering.0, visible.0))
+        .map(|(entity, position, renderable, ordering)| {
+            (position, (renderable, ordering.0, seeing.contains(&entity)))
         })
         .into_grouping_map()
         .fold_first(|current, _, next| -> (&Renderable, u8, bool) {
