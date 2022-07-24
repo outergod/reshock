@@ -39,9 +39,28 @@ impl Default for Position {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Clone)]
 pub enum Sight {
+    Blind,
     Omniscience,
     Eyes,
     Sensors,
+}
+
+#[derive(Component)]
+pub struct Visible(pub bool);
+
+impl Default for Visible {
+    fn default() -> Self {
+        Self(false)
+    }
+}
+
+#[derive(Component)]
+pub struct Opaque(pub bool);
+
+impl Default for Opaque {
+    fn default() -> Self {
+        Self(true)
+    }
 }

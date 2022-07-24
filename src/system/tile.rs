@@ -1,9 +1,10 @@
-use crate::resource::ReshockFont;
-use crate::{component::*, resource::TileDimensions};
 use ab_glyph::ScaleFont;
 use bevy::prelude::*;
 use itertools::Itertools;
 use std::collections::HashMap;
+
+use crate::resource::ReshockFont;
+use crate::{component::*, resource::TileDimensions};
 
 pub fn adapt_glyph_dimensions(
     mut event_asset: EventReader<AssetEvent<Font>>,
@@ -31,29 +32,35 @@ pub fn adapt_glyph_dimensions(
 }
 
 pub fn render(
-    renderables: Query<(&Position, &Renderable, &Ordering)>,
+    renderables: Query<(&Position, &Renderable, &Ordering, &Visible)>,
     mut tiles: Query<(&Position, &mut Text)>,
 ) {
     let mut tiles_map: HashMap<_, _> = tiles.iter_mut().collect();
     renderables
         .iter()
-        .map(|(position, renderable, ordering)| (position, (renderable, ordering)))
+        .map(|(position, renderable, ordering, visible)| {
+            (position, (renderable, ordering.0, visible.0))
+        })
         .into_grouping_map()
-        .fold_first(|current, _, next| -> (&Renderable, &Ordering) {
-            let (_, l_ordering) = current;
-            let (_, r_ordering) = next;
-            if r_ordering.0 < l_ordering.0 {
+        .fold_first(|current, _, next| -> (&Renderable, u8, bool) {
+            let (_, l_ordering, _) = current;
+            let (_, r_ordering, visible) = next;
+            if visible && r_ordering < l_ordering {
                 next
             } else {
                 current
             }
         })
         .into_iter()
-        .for_each(|(position, (renderable, _))| {
+        .for_each(|(position, (renderable, _, visible))| {
             if let Some(text) = tiles_map.get_mut(position) {
                 if let Some(mut section) = text.sections.get_mut(0) {
-                    section.value = renderable.char.to_string();
-                    section.style.color = renderable.color;
+                    if visible {
+                        section.value = renderable.char.to_string();
+                        section.style.color = renderable.color;
+                    } else {
+                        section.value = " ".to_string();
+                    }
                 }
             }
         });

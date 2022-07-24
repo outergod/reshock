@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    component::{self, Obstacle, Ordering, Position, Renderable, Sight},
+    component::{self, Obstacle, Opaque, Ordering, Position, Renderable, Sight, Visible},
     resource::ReshockFont,
 };
 
@@ -12,6 +12,7 @@ pub struct Player {
     ordering: Ordering,
     obstacle: Obstacle,
     sight: Sight,
+    visible: Visible,
     player: component::Player,
 }
 
@@ -27,6 +28,7 @@ impl Player {
             player: component::Player,
             obstacle: Obstacle::Always,
             sight: Sight::Eyes,
+            visible: Visible(true),
         }
     }
 }
@@ -36,6 +38,7 @@ pub struct Floor {
     renderable: Renderable,
     position: Position,
     ordering: Ordering,
+    visible: Visible,
 }
 
 impl Floor {
@@ -47,6 +50,7 @@ impl Floor {
             },
             position,
             ordering: Ordering(u8::MAX),
+            visible: Default::default(),
         }
     }
 }
@@ -58,6 +62,8 @@ pub struct Wall {
     position: Position,
     ordering: Ordering,
     obstacle: Obstacle,
+    visible: Visible,
+    opaque: Opaque,
 }
 
 impl Wall {
@@ -68,6 +74,8 @@ impl Wall {
             position,
             ordering: Ordering(4),
             obstacle: Obstacle::Always,
+            visible: Default::default(),
+            opaque: Default::default(),
         }
     }
 }

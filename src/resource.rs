@@ -1,4 +1,7 @@
-use bevy::prelude::*;
+use bevy::{
+    prelude::*,
+    utils::{HashMap, HashSet},
+};
 
 use crate::asset;
 
@@ -12,3 +15,8 @@ pub struct ReshockFont {
 }
 
 pub struct Room(pub Handle<asset::Room>);
+
+pub type Path = Vec<IVec2>;
+
+#[derive(Debug)]
+pub struct RadialLines(pub HashMap<IVec2, HashSet<Path>>);

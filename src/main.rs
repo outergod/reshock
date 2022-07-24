@@ -9,8 +9,10 @@ mod asset;
 mod component;
 mod system {
     pub mod input;
+    pub mod radial_lines;
     pub mod room;
     pub mod tile;
+    pub mod visibility;
     pub mod wall;
 }
 mod bundle;
@@ -52,11 +54,13 @@ fn main() {
         .add_asset::<asset::Room>()
         .init_asset_loader::<asset::RoomLoader>()
         .add_startup_system(setup)
+        .add_startup_system(radial_lines::setup)
         .add_system(tile::render)
         .add_system(tile::adapt_glyph_dimensions)
         .add_system(tile::position)
         .add_system(input::system)
         .add_system(room::loaded)
         .add_system(wall::system)
+        .add_system(visibility::system)
         .run();
 }
