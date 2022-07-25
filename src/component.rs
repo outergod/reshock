@@ -1,4 +1,7 @@
-use bevy::{prelude::*, utils::HashSet};
+use bevy::{
+    prelude::*,
+    utils::{HashMap, HashSet},
+};
 
 #[derive(Component)]
 pub struct Player;
@@ -6,7 +9,7 @@ pub struct Player;
 #[derive(Component)]
 pub struct Wall;
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Debug)]
 pub struct Renderable {
     pub char: char,
     pub color: Color,
@@ -27,10 +30,10 @@ pub enum Obstacle {
     // Door,
 }
 
-#[derive(Component)]
+#[derive(Component, Clone, Debug)]
 pub struct Ordering(pub u8);
 
-#[derive(Component, Hash, PartialEq, Eq)]
+#[derive(Component, Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Position(pub IVec2);
 
 impl Default for Position {
@@ -39,6 +42,7 @@ impl Default for Position {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Clone)]
 pub enum SightKind {
     Blind,
@@ -53,14 +57,15 @@ pub struct Sight {
     pub seeing: HashSet<Entity>,
 }
 
-// #[derive(Component)]
-// pub struct Visible(pub bool);
+#[derive(Debug)]
+pub struct MemoryComponents {
+    pub renderable: Renderable,
+    pub position: Position,
+    pub ordering: Ordering,
+}
 
-// impl Default for Visible {
-//     fn default() -> Self {
-//         Self(false)
-//     }
-// }
+#[derive(Default, Component)]
+pub struct Memory(pub HashMap<Entity, MemoryComponents>);
 
 #[derive(Component)]
 pub struct Opaque(pub bool);

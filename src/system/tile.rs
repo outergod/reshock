@@ -1,7 +1,6 @@
 use ab_glyph::ScaleFont;
 use bevy::prelude::*;
 use itertools::Itertools;
-use std::collections::HashMap;
 
 use crate::resource::ReshockFont;
 use crate::{component::*, resource::TileDimensions};
@@ -32,44 +31,67 @@ pub fn adapt_glyph_dimensions(
 }
 
 pub fn render(
-    player: Query<&Sight, With<Player>>,
+    player: Query<(&Sight, &Memory), With<Player>>,
     renderables: Query<(Entity, &Position, &Renderable, &Ordering)>,
     mut tiles: Query<(&Position, &mut Text)>,
 ) {
-    let seeing = match player.get_single() {
-        Ok(Sight { seeing, .. }) => seeing,
+    let (seeing, memory) = match player.get_single() {
+        Ok((Sight { seeing, .. }, Memory(memory))) => (seeing, memory),
         Err(_) => return,
     };
 
-    let mut tiles_map: HashMap<_, _> = tiles.iter_mut().collect();
-    renderables
+    let view = renderables
         .iter()
-        .map(|(entity, position, renderable, ordering)| {
-            (position, (renderable, ordering.0, seeing.contains(&entity)))
+        .filter_map(|(entity, position, renderable, ordering)| {
+            if seeing.contains(&entity) {
+                Some((position, (renderable, ordering.0)))
+            } else {
+                None
+            }
         })
         .into_grouping_map()
-        .fold_first(|current, _, next| -> (&Renderable, u8, bool) {
-            let (_, l_ordering, _) = current;
-            let (_, r_ordering, visible) = next;
-            if visible && r_ordering < l_ordering {
+        .fold_first(|current, _, next| -> (&Renderable, u8) {
+            let (_, l_ordering) = current;
+            let (_, r_ordering) = next;
+            if r_ordering < l_ordering {
                 next
             } else {
                 current
             }
+        });
+
+    let memory = memory
+        .iter()
+        .map(|(_, components)| {
+            (
+                &components.position,
+                (&components.renderable, components.ordering.0),
+            )
         })
-        .into_iter()
-        .for_each(|(position, (renderable, _, visible))| {
-            if let Some(text) = tiles_map.get_mut(position) {
-                if let Some(mut section) = text.sections.get_mut(0) {
-                    if visible {
-                        section.value = renderable.char.to_string();
-                        section.style.color = renderable.color;
-                    } else {
-                        section.value = " ".to_string();
-                    }
-                }
+        .into_grouping_map()
+        .fold_first(|current, _, next| -> (&Renderable, u8) {
+            let (_, l_ordering) = current;
+            let (_, r_ordering) = next;
+            if r_ordering < l_ordering {
+                next
+            } else {
+                current
             }
         });
+
+    for (position, mut text) in tiles.iter_mut() {
+        if let Some(mut section) = text.sections.get_mut(0) {
+            if let Some((renderable, _)) = view.get(position) {
+                section.value = renderable.char.to_string();
+                section.style.color = renderable.color;
+            } else if let Some((renderable, _)) = memory.get(position) {
+                section.value = renderable.char.to_string();
+                section.style.color = Color::DARK_GRAY;
+            } else {
+                section.value = " ".to_string();
+            }
+        }
+    }
 }
 
 pub fn position(

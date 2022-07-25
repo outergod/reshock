@@ -1,17 +1,20 @@
-use bevy::{prelude::*, utils::HashSet};
+use bevy::{
+    prelude::*,
+    utils::{HashMap, HashSet},
+};
 
 use crate::{component::*, resource::RadialLines};
 
 pub fn system(
     mut set: ParamSet<(
-        Query<(Entity, &Position), (With<Renderable>, Without<Player>)>,
+        Query<(Entity, &Position, &Renderable, &Ordering), Without<Player>>,
         Query<(&Opaque, &Position)>,
-        Query<(Entity, &Position, &mut Sight), With<Player>>,
+        Query<(Entity, &Position, &mut Sight, &mut Memory), With<Player>>,
     )>,
     lines: Res<RadialLines>,
 ) {
     let (entity, player, sight) = match set.p2().get_single() {
-        Ok((entity, position, sight)) => (entity, position.0, sight.kind.clone()),
+        Ok((entity, position, sight, _)) => (entity, position.0, sight.kind.clone()),
         Err(_) => return,
     };
 
@@ -27,24 +30,44 @@ pub fn system(
         })
         .collect();
 
-    let mut seeing = match sight {
-        SightKind::Blind => HashSet::new(),
-        SightKind::Omniscience => set.p0().iter().map(|(entity, _)| entity).collect(),
+    let seeing: HashMap<Entity, MemoryComponents> = match sight {
+        SightKind::Blind => HashMap::new(),
+        SightKind::Omniscience => set
+            .p0()
+            .iter()
+            .map(|(entity, position, renderable, ordering)| {
+                (
+                    entity,
+                    MemoryComponents {
+                        renderable: renderable.clone(),
+                        position: position.clone(),
+                        ordering: ordering.clone(),
+                    },
+                )
+            })
+            .collect(),
         SightKind::Eyes => {
             let empty = HashSet::new();
 
             set.p0()
                 .iter()
-                .filter_map(|(entity, position)| {
-                    let position = position.0 - player;
+                .filter_map(|(entity, position, renderable, ordering)| {
+                    let pos = position.0 - player;
                     if lines
                         .0
-                        .get(&position)
+                        .get(&pos)
                         .unwrap_or(&empty)
                         .iter()
                         .any(|path| !path.iter().any(|p| obstacles.contains(p)))
                     {
-                        Some(entity)
+                        Some((
+                            entity,
+                            MemoryComponents {
+                                renderable: renderable.clone(),
+                                position: position.clone(),
+                                ordering: ordering.clone(),
+                            },
+                        ))
                     } else {
                         None
                     }
@@ -54,7 +77,12 @@ pub fn system(
         SightKind::Sensors => todo!(),
     };
 
-    seeing.insert(entity);
-
-    set.p2().get_single_mut().unwrap().2.seeing = seeing;
+    match set.p2().get_single_mut() {
+        Ok((_, _, mut sight, mut memory)) => {
+            sight.seeing = seeing.keys().cloned().collect();
+            sight.seeing.insert(entity);
+            memory.0.extend(seeing);
+        }
+        Err(_) => return,
+    }
 }

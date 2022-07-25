@@ -16,7 +16,6 @@ pub fn loaded(
         match event {
             AssetEvent::Created { handle } => {
                 let room = rooms.get(handle).unwrap();
-                log::info!("{:?}", room);
 
                 for (pos, c) in room.0.iter() {
                     if *c != ' ' {
