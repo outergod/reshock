@@ -44,7 +44,3 @@ impl AssetLoader for RoomLoader {
         &["room"]
     }
 }
-
-// #[derive(TypeUuid, Debug)]
-// #[uuid = "06b1db8d-a19c-4a19-a2c6-becc2a01f816"]
-// pub struct RadialLines(pub Vec<Vec<Vec<IVec2>>>);

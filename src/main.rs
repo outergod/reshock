@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_kira_audio::{Audio, AudioPlugin};
 use bevy_pancam::{PanCam, PanCamPlugin};
 use resource::ReshockFont;
 use resource::Room;
@@ -22,6 +23,7 @@ const FONT_PATH: &'static str = "fonts/FiraCode-Regular.otf";
 const FONT_SIZE: f32 = 30.0;
 const FONT_BOUNDING_GLYPH: char = '@';
 const LEVEL01_PATH: &'static str = "rooms/level01.room";
+const LEVEL01_MUSIC: &'static str = "music/Medical Suite (Chicajo Mix).mp3";
 
 // const START_LAB_PATH: &'static str = "rooms/starting-lab.room";
 // const TEST_PATH: &'static str = "rooms/test.room";
@@ -45,15 +47,21 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.insert_resource(room);
 }
 
+fn start_background_audio(asset_server: Res<AssetServer>, audio: Res<Audio>) {
+    audio.play_looped(asset_server.load(LEVEL01_MUSIC));
+}
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(PanCamPlugin::default())
+        .add_plugin(AudioPlugin)
         .insert_resource(ClearColor(Color::BLACK))
         .init_resource::<TileDimensions>()
         .add_asset::<asset::Room>()
         .init_asset_loader::<asset::RoomLoader>()
         .add_startup_system(setup)
+        .add_startup_system(start_background_audio)
         .add_startup_system(radial_lines::setup)
         .add_system(tile::render)
         .add_system(tile::adapt_glyph_dimensions)
