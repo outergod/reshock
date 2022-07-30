@@ -23,7 +23,7 @@ const FONT_PATH: &'static str = "fonts/FiraCode-Regular.otf";
 const FONT_SIZE: f32 = 30.0;
 const FONT_BOUNDING_GLYPH: char = '@';
 const LEVEL01_PATH: &'static str = "rooms/level01.room";
-const LEVEL01_MUSIC: &'static str = "music/Medical Suite (Chicajo Mix).mp3";
+const LEVEL01_MUSIC: &'static str = "sshock/music/chicajo/Medical.ogg";
 
 // const START_LAB_PATH: &'static str = "rooms/starting-lab.room";
 // const TEST_PATH: &'static str = "rooms/test.room";
