@@ -1,7 +1,9 @@
 use bevy::prelude::*;
 
 use crate::{
-    component::{self, Memory, Obstacle, Opaque, Ordering, Position, Renderable, Sight, SightKind},
+    component::{
+        self, Memory, Obstacle, Opaque, Ordering, Position, Renderable, Room, Sight, SightKind,
+    },
     resource::ReshockFont,
 };
 
@@ -26,7 +28,7 @@ impl Player {
             position,
             ordering: Ordering(u8::MIN),
             player: component::Player,
-            obstacle: Obstacle::Always,
+            obstacle: Default::default(),
             sight: Sight {
                 kind: SightKind::Eyes,
                 seeing: Default::default(),
@@ -59,6 +61,7 @@ impl Floor {
 #[derive(Bundle)]
 pub struct Wall {
     wall: component::Wall,
+    room: Room,
     renderable: Renderable,
     position: Position,
     ordering: Ordering,
@@ -70,10 +73,36 @@ impl Wall {
     pub fn new(position: Position) -> Self {
         Self {
             wall: component::Wall,
+            room: Room,
             renderable: Default::default(),
             position,
             ordering: Ordering(4),
-            obstacle: Obstacle::Always,
+            obstacle: Default::default(),
+            opaque: Default::default(),
+        }
+    }
+}
+
+#[derive(Bundle)]
+pub struct Door {
+    door: component::Door,
+    room: Room,
+    renderable: Renderable,
+    position: Position,
+    ordering: Ordering,
+    obstacle: Obstacle,
+    opaque: Opaque,
+}
+
+impl Door {
+    pub fn new(position: Position, open: bool) -> Self {
+        Self {
+            door: component::Door { open },
+            room: Room,
+            renderable: Default::default(),
+            position,
+            ordering: Ordering(4),
+            obstacle: Default::default(),
             opaque: Default::default(),
         }
     }

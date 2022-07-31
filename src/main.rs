@@ -9,6 +9,7 @@ use system::*;
 mod asset;
 mod component;
 mod system {
+    pub mod door;
     pub mod input;
     pub mod radial_lines;
     pub mod room;
@@ -69,6 +70,7 @@ fn main() {
         .add_system(input::system)
         .add_system(room::loaded)
         .add_system(wall::system)
+        .add_system(door::system)
         .add_system(sight::system)
         .run();
 }

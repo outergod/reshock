@@ -2,6 +2,7 @@ use bevy::log;
 use bevy::prelude::*;
 
 use crate::asset::Room;
+use crate::bundle::Door;
 use crate::bundle::{Floor, Player, Tile, Wall};
 use crate::component::Position;
 use crate::resource::ReshockFont;
@@ -30,7 +31,13 @@ pub fn loaded(
                         'X' => {
                             commands.spawn_bundle(Wall::new(Position(*pos)));
                         }
-                        '·' => {}
+                        'O' => {
+                            commands.spawn_bundle(Door::new(Position(*pos), true));
+                        }
+                        'o' => {
+                            commands.spawn_bundle(Door::new(Position(*pos), false));
+                        }
+                        '·' | ' ' => {}
                         _ => {
                             log::error!("Unknown room char {}", c);
                         }

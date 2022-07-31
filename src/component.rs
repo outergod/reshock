@@ -9,6 +9,9 @@ pub struct Player;
 #[derive(Component)]
 pub struct Wall;
 
+#[derive(Component)]
+pub struct Room;
+
 #[derive(Component, Clone, Debug)]
 pub struct Renderable {
     pub char: char,
@@ -25,9 +28,12 @@ impl Default for Renderable {
 }
 
 #[derive(Component)]
-pub enum Obstacle {
-    Always,
-    // Door,
+pub struct Obstacle(pub bool);
+
+impl Default for Obstacle {
+    fn default() -> Self {
+        Self(true)
+    }
 }
 
 #[derive(Component, Clone, Debug)]
@@ -74,4 +80,9 @@ impl Default for Opaque {
     fn default() -> Self {
         Self(true)
     }
+}
+
+#[derive(Component)]
+pub struct Door {
+    pub open: bool,
 }

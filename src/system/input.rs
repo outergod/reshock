@@ -1,11 +1,47 @@
-use crate::component::{Obstacle, Player, Position};
+use crate::component::{Door, Obstacle, Player, Position};
 use bevy::log;
 use bevy::{math::ivec2, prelude::*, utils::HashMap};
+use bevy_kira_audio::Audio;
+
+const DOOR_OPEN_SOUND: &'static str = "sshock/sounds/00206.wav";
+
+// (def sound-resources
+//   {:player-hurt "00265.wav"
+
+//    :door "00206.wav"
+//    :airlock-door "00204.wav"
+//    :blast-door "00268.wav"
+
+//    :lead-pipe-hit "00222.wav"
+//    :lead-pipe-miss "00225.wav"
+//    :ion-rifle "00296.wav"
+//    :gauss-rifle "00230.wav"
+//    :dart "00287.wav"
+//    :pistol "00240.wav"
+//    :flechette "00239.wav"
+//    :magnum-2100 "00241.wav"
+//    :mark-3 "00218.wav"
+//    :skorpion "00266.wav"
+//    :plasma "00298.wav"
+//    :magpulse "00246.wav"
+
+//    :bot-die "00211.wav"
+//    :serv-bot-spot "00275.wav"
+//    :vmail "00293.wav"
+//    :radiation "00203.wav"
+
+//    :appendage-attack "00256.wav"
+//    :hopper-attack "00213.wav"
+
+//    :unknown-assault-rifle-2 "00210.wav"
+//    :unknown-assault-rifle-1 "00292.wav"})
 
 pub fn system(
     keys: Res<Input<KeyCode>>,
     mut player: Query<&mut Position, With<Player>>,
-    obstacles: Query<(&Obstacle, &Position), Without<Player>>,
+    mut obstacles: Query<(&Obstacle, &Position, Option<&mut Door>), Without<Player>>,
+    asset_server: Res<AssetServer>,
+    audio: Res<Audio>,
 ) {
     if player.is_empty() {
         return;
@@ -42,23 +78,34 @@ pub fn system(
     }
 
     if let Some(diff) = diff {
-        let neighbors: HashMap<IVec2, &Obstacle> = obstacles
-            .iter()
-            .filter_map(|(o, p)| {
+        let mut neighbors: HashMap<_, _> = obstacles
+            .iter_mut()
+            .filter_map(|(o, p, d)| {
+                if !o.0 {
+                    return None;
+                }
+
                 let diff = p.0 - position;
                 if diff.x.abs() <= 1 && diff.y.abs() <= 1 {
-                    Some((diff, o))
+                    Some((diff, d))
                 } else {
                     None
                 }
             })
             .collect();
 
-        if neighbors.contains_key(&diff) {
-            // TODO In-game logging
-            log::info!("Player can't move to {:?}", position + diff);
-        } else {
-            player.0 += diff;
+        match neighbors.get_mut(&diff) {
+            Some(Some(door)) => {
+                audio.play(asset_server.load(DOOR_OPEN_SOUND));
+                door.open = true;
+            }
+            Some(None) => {
+                // TODO In-game logging
+                log::info!("Player can't move to {:?}", position + diff);
+            }
+            None => {
+                player.0 += diff;
+            }
         }
     }
 }

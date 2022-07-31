@@ -28,7 +28,7 @@ features = [
 
 [dependencies.bevy_kira_audio]
 version = "0.10"
-features = ["mp3"]
+features = ["wav", "mp3"]
 
 [profile.dev]
 opt-level = 1

@@ -1,8 +1,4 @@
-use bevy::{
-    math::ivec2,
-    prelude::*,
-    utils::{HashMap, HashSet},
-};
+use bevy::{math::ivec2, prelude::*, utils::HashSet};
 
 use crate::component::*;
 
@@ -20,15 +16,13 @@ const HWALL: char = '─';
 const VWALL: char = '│';
 const SWALL: char = '▢';
 
-// :vdoor "║"
-// :hdoor "═"
-// :door "+"
-
-pub fn system(mut walls: Query<(&mut Renderable, &Position), With<Wall>>) {
-    let index: HashMap<_, _> = walls
-        .iter()
-        .map(|(r, p)| (p.0.clone(), r.clone()))
-        .collect();
+pub fn system(
+    mut set: ParamSet<(
+        Query<(&mut Renderable, &Position), With<Wall>>,
+        Query<&Position, With<Room>>,
+    )>,
+) {
+    let index: HashSet<_> = set.p1().iter().map(|p| p.0).collect();
 
     let deltas: HashSet<_> = (-1..=1)
         .flat_map(|x| {
@@ -116,11 +110,11 @@ pub fn system(mut walls: Query<(&mut Renderable, &Position), With<Wall>>) {
     let vwall_3: HashSet<_> = [ivec2(0, 1)].into_iter().collect();
     let vwall_4: HashSet<_> = [ivec2(0, -1)].into_iter().collect();
 
-    for (mut renderable, position) in walls.iter_mut() {
+    for (mut renderable, position) in set.p0().iter_mut() {
         let neighbors: HashSet<_> = deltas
             .iter()
             .cloned()
-            .filter(|n| index.contains_key(&(position.0 + *n)))
+            .filter(|n| index.contains(&(position.0 + *n)))
             .collect();
 
         if neighbors == deltas {
