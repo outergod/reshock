@@ -31,7 +31,7 @@ const LEVEL01_MUSIC: &'static str = "sshock/music/chicajo/Medical.ogg";
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
-        .spawn_bundle(OrthographicCameraBundle::new_2d())
+        .spawn_bundle(Camera2dBundle::default())
         .insert(PanCam::default());
 
     let asset = asset_server.load(FONT_PATH);
@@ -72,5 +72,6 @@ fn main() {
         .add_system(wall::system)
         .add_system(door::system)
         .add_system(sight::system)
+        .add_system(bevy::window::close_on_esc)
         .run();
 }

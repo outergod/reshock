@@ -121,14 +121,13 @@ impl Tile {
         Self {
             position,
             text: Text2dBundle {
-                text: Text::with_section(
+                text: Text::from_section(
                     " ".to_string(),
                     TextStyle {
                         font: font.handle.clone_weak(),
                         font_size: font.size,
                         color: Color::WHITE,
                     },
-                    TextAlignment::default(),
                 ),
                 ..Default::default()
             },
