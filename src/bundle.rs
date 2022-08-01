@@ -96,10 +96,15 @@ pub struct Door {
 
 impl Door {
     pub fn new(position: Position, open: bool) -> Self {
+        let color = if open { Color::DARK_GRAY } else { Color::WHITE };
+
         Self {
-            door: component::Door { open },
+            door: component::Door {
+                open,
+                toggle: false,
+            },
             room: Room,
-            renderable: Default::default(),
+            renderable: Renderable { char: ' ', color },
             position,
             ordering: Ordering(4),
             obstacle: Default::default(),

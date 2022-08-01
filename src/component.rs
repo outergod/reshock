@@ -2,6 +2,7 @@ use bevy::{
     prelude::*,
     utils::{HashMap, HashSet},
 };
+use bevy_tweening::Lens;
 
 #[derive(Component)]
 pub struct Player;
@@ -16,6 +17,20 @@ pub struct Room;
 pub struct Renderable {
     pub char: char,
     pub color: Color,
+}
+
+pub struct ColorLens {
+    pub start: Color,
+    pub end: Color,
+}
+
+impl Lens<Renderable> for ColorLens {
+    fn lerp(&mut self, target: &mut Renderable, ratio: f32) {
+        let start: Vec4 = self.start.into();
+        let end: Vec4 = self.end.into();
+        let value = start.lerp(end, ratio);
+        target.color = value.into();
+    }
 }
 
 impl Default for Renderable {
@@ -85,4 +100,5 @@ impl Default for Opaque {
 #[derive(Component)]
 pub struct Door {
     pub open: bool,
+    pub toggle: bool,
 }

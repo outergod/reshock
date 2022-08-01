@@ -1,9 +1,6 @@
 use crate::component::{Door, Obstacle, Player, Position};
 use bevy::log;
 use bevy::{math::ivec2, prelude::*, utils::HashMap};
-use bevy_kira_audio::Audio;
-
-const DOOR_OPEN_SOUND: &'static str = "sshock/sounds/00206.wav";
 
 // (def sound-resources
 //   {:player-hurt "00265.wav"
@@ -40,8 +37,6 @@ pub fn system(
     keys: Res<Input<KeyCode>>,
     mut player: Query<&mut Position, With<Player>>,
     mut obstacles: Query<(&Obstacle, &Position, Option<&mut Door>), Without<Player>>,
-    asset_server: Res<AssetServer>,
-    audio: Res<Audio>,
 ) {
     if player.is_empty() {
         return;
@@ -96,8 +91,7 @@ pub fn system(
 
         match neighbors.get_mut(&diff) {
             Some(Some(door)) => {
-                audio.play(asset_server.load(DOOR_OPEN_SOUND));
-                door.open = true;
+                door.toggle = true;
             }
             Some(None) => {
                 // TODO In-game logging

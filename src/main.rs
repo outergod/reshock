@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 use bevy_kira_audio::{Audio, AudioPlugin};
 use bevy_pancam::{PanCam, PanCamPlugin};
+use bevy_tweening::component_animator_system;
+use bevy_tweening::TweeningPlugin;
+use component::Renderable;
 use resource::ReshockFont;
 use resource::Room;
 use resource::TileDimensions;
@@ -57,6 +60,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(PanCamPlugin::default())
         .add_plugin(AudioPlugin)
+        .add_plugin(TweeningPlugin)
         .insert_resource(ClearColor(Color::BLACK))
         .init_resource::<TileDimensions>()
         .add_asset::<asset::Room>()
@@ -70,8 +74,12 @@ fn main() {
         .add_system(input::system)
         .add_system(room::loaded)
         .add_system(wall::system)
-        .add_system(door::system)
+        .add_system(door::render)
+        .add_system(door::toggle)
+        .add_system(door::open)
+        .add_system(door::event)
         .add_system(sight::system)
         .add_system(bevy::window::close_on_esc)
+        .add_system(component_animator_system::<Renderable>)
         .run();
 }

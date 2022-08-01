@@ -1,20 +1,22 @@
+use std::time::Duration;
+
 use bevy::{math::ivec2, prelude::*, utils::HashSet};
+use bevy_kira_audio::Audio;
+use bevy_tweening::*;
 
 use crate::component::*;
 
 const VDOOR: char = '║';
 const HDOOR: char = '═';
+// const VDOOR: char = '╎';
+// const HDOOR: char = '╌';
 const DOOR: char = '+';
 
-pub fn system(
+const DOOR_OPEN_SOUND: &'static str = "sshock/sounds/00206.wav";
+
+pub fn render(
     mut set: ParamSet<(
-        Query<(
-            &mut Renderable,
-            &mut Opaque,
-            &mut Obstacle,
-            &Door,
-            &Position,
-        )>,
+        Query<(&mut Renderable, &Position), With<Door>>,
         Query<&Position, With<Room>>,
     )>,
 ) {
@@ -35,7 +37,7 @@ pub fn system(
     let vdoor: HashSet<_> = [ivec2(0, -1), ivec2(0, 1)].into_iter().collect();
     let hdoor: HashSet<_> = [ivec2(1, 0), ivec2(1, 0)].into_iter().collect();
 
-    for (mut renderable, mut opaque, mut obstacle, door, position) in set.p0().iter_mut() {
+    for (mut renderable, position) in set.p0().iter_mut() {
         let neighbors: HashSet<_> = deltas
             .iter()
             .cloned()
@@ -49,15 +51,63 @@ pub fn system(
         } else {
             renderable.char = DOOR;
         }
+    }
+}
 
+pub fn open(mut doors: Query<(&Door, &mut Opaque, &mut Obstacle)>) {
+    for (door, mut opaque, mut obstacle) in doors.iter_mut() {
         if door.open {
-            renderable.color = Color::DARK_GRAY;
             opaque.0 = false;
             obstacle.0 = false;
         } else {
-            renderable.color = Color::WHITE;
             opaque.0 = true;
             obstacle.0 = true;
+        }
+    }
+}
+
+pub fn event(mut reader: EventReader<TweenCompleted>, mut doors: Query<(Entity, &mut Door)>) {
+    let entities: HashSet<_> = reader.iter().map(|e| e.entity).collect();
+
+    for (entity, mut door) in doors.iter_mut() {
+        if entities.contains(&entity) {
+            door.open = !door.open;
+        }
+    }
+}
+
+pub fn toggle(
+    mut doors: Query<(Entity, &mut Door)>,
+    asset_server: Res<AssetServer>,
+    audio: Res<Audio>,
+    mut commands: Commands,
+) {
+    for (entity, mut door) in doors.iter_mut() {
+        if door.toggle {
+            door.toggle = false;
+
+            let color = if door.open {
+                ColorLens {
+                    start: Color::DARK_GRAY,
+                    end: Color::WHITE,
+                }
+            } else {
+                ColorLens {
+                    start: Color::WHITE,
+                    end: Color::DARK_GRAY,
+                }
+            };
+
+            let mut tween = Tween::new(
+                EaseMethod::Linear,
+                TweeningType::Once,
+                Duration::from_secs_f32(1.5),
+                color,
+            );
+
+            tween.set_completed_event(0);
+            commands.entity(entity).insert(Animator::new(tween));
+            audio.play(asset_server.load(DOOR_OPEN_SOUND));
         }
     }
 }

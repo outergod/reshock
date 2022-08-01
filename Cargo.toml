@@ -9,6 +9,7 @@ ab_glyph = "0.2.6"
 itertools = "0.10"
 anyhow = "1.0"
 serde = "1.0"
+bevy_tweening = { path = "../../external/bevy_tweening", default-features = false }
 
 [dependencies.bevy]
 version = "0.8"
