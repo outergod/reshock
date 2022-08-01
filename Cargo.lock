@@ -748,6 +748,7 @@ dependencies = [
 [[package]]
 name = "bevy_tweening"
 version = "0.4.0"
+source = "git+https://github.com/outergod/bevy_tweening.git?branch=bevy-0.8-support#176f18e99673bbc0a2f249f2f7a7453aab2e1404"
 dependencies = [
  "bevy",
  "interpolation",

@@ -9,7 +9,6 @@ ab_glyph = "0.2.6"
 itertools = "0.10"
 anyhow = "1.0"
 serde = "1.0"
-bevy_tweening = { path = "../../external/bevy_tweening", default-features = false }
 
 [dependencies.bevy]
 version = "0.8"
@@ -30,6 +29,11 @@ features = [
 [dependencies.bevy_kira_audio]
 version = "0.11"
 features = ["wav", "mp3"]
+
+[dependencies.bevy_tweening]
+git = "https://github.com/outergod/bevy_tweening.git"
+branch = "bevy-0.8-support"
+default-features = false
 
 [profile.dev]
 opt-level = 1
