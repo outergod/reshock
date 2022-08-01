@@ -33,7 +33,7 @@ impl Player {
                 kind: SightKind::Eyes,
                 seeing: Default::default(),
             },
-            memory: Default::default(),
+            memory: Memory::new(Color::DARK_GRAY),
         }
     }
 }

@@ -81,7 +81,7 @@ pub fn system(
         Ok((_, _, mut sight, mut memory)) => {
             sight.seeing = seeing.keys().cloned().collect();
             sight.seeing.insert(entity);
-            memory.0.extend(seeing);
+            memory.entities.extend(seeing);
         }
         Err(_) => return,
     }

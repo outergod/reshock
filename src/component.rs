@@ -86,7 +86,19 @@ pub struct MemoryComponents {
 }
 
 #[derive(Default, Component)]
-pub struct Memory(pub HashMap<Entity, MemoryComponents>);
+pub struct Memory {
+    pub entities: HashMap<Entity, MemoryComponents>,
+    pub color: Color,
+}
+
+impl Memory {
+    pub fn new(color: Color) -> Self {
+        Self {
+            entities: Default::default(),
+            color,
+        }
+    }
+}
 
 #[derive(Component)]
 pub struct Opaque(pub bool);

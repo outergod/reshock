@@ -35,8 +35,8 @@ pub fn render(
     renderables: Query<(Entity, &Position, &Renderable, &Ordering)>,
     mut tiles: Query<(&Position, &mut Text)>,
 ) {
-    let (seeing, memory) = match player.get_single() {
-        Ok((Sight { seeing, .. }, Memory(memory))) => (seeing, memory),
+    let (seeing, memory, color) = match player.get_single() {
+        Ok((Sight { seeing, .. }, Memory { entities, color })) => (seeing, entities, color),
         Err(_) => return,
     };
 
@@ -86,7 +86,7 @@ pub fn render(
                 section.style.color = renderable.color;
             } else if let Some((renderable, _)) = memory.get(position) {
                 section.value = renderable.char.to_string();
-                section.style.color = Color::DARK_GRAY;
+                section.style.color = color.clone();
             } else {
                 section.value = " ".to_string();
             }
