@@ -95,11 +95,11 @@ pub fn render(
 }
 
 pub fn position(
-    mut query: Query<(&mut Transform, &Position), With<Text>>,
+    mut tiles: Query<(&mut Transform, &Position), With<Text>>,
     dimensions: Res<TileDimensions>,
 ) {
     if let Some(Size { width, height }) = dimensions.0 {
-        for (mut transform, Position(pos)) in query.iter_mut() {
+        for (mut transform, Position(pos)) in tiles.iter_mut() {
             transform.translation.x = pos.x as f32 * width;
             transform.translation.y = pos.y as f32 * height;
             transform.translation.z = 1.0;

@@ -3,18 +3,18 @@ use bevy::{math::ivec2, prelude::*, utils::HashSet};
 use crate::component::*;
 
 const EMPTY: char = ' ';
-const CROSS: char = '┼';
-const HDCROSS: char = '┬';
-const HUCROSS: char = '┴';
-const VRCROSS: char = '├';
-const VLCROSS: char = '┤';
-const TLCORNER: char = '╭';
-const TRCORNER: char = '╮';
-const BLCORNER: char = '╰';
-const BRCORNER: char = '╯';
-const HWALL: char = '─';
-const VWALL: char = '│';
-const SWALL: char = '▢';
+const CROSS: char = '╋';
+const HDCROSS: char = '┳';
+const HUCROSS: char = '┻';
+const VRCROSS: char = '┣';
+const VLCROSS: char = '┫';
+const TLCORNER: char = '┏';
+const TRCORNER: char = '┓';
+const BLCORNER: char = '┗';
+const BRCORNER: char = '┛';
+const HWALL: char = '━';
+const VWALL: char = '┃';
+const SWALL: char = '□';
 
 pub fn system(
     mut set: ParamSet<(

@@ -6,10 +6,10 @@ use bevy_tweening::*;
 
 use crate::component::*;
 
-const VDOOR: char = '║';
-const HDOOR: char = '═';
-// const VDOOR: char = '╎';
-// const HDOOR: char = '╌';
+// const VDOOR: char = '║';
+// const HDOOR: char = '═';
+const VDOOR: char = '╎';
+const HDOOR: char = '╌';
 const DOOR: char = '+';
 
 const DOOR_OPEN_SOUND: &'static str = "sshock/sounds/00206.wav";
