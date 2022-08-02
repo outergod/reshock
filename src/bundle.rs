@@ -9,74 +9,102 @@ use crate::{
 
 #[derive(Bundle)]
 pub struct Player {
-    renderable: Renderable,
-    position: Position,
-    ordering: Ordering,
-    obstacle: Obstacle,
-    sight: Sight,
-    memory: Memory,
-    player: component::Player,
+    pub renderable: Renderable,
+    pub position: Position,
+    pub ordering: Ordering,
+    pub obstacle: Obstacle,
+    pub sight: Sight,
+    pub memory: Memory,
+    pub player: component::Player,
 }
 
-impl Player {
-    pub fn new(position: Position) -> Self {
+impl Default for Player {
+    fn default() -> Self {
         Self {
             renderable: Renderable {
                 char: '@',
                 color: Color::WHITE,
             },
-            position,
-            ordering: Ordering(u8::MIN),
-            player: component::Player,
+            position: Default::default(),
+            ordering: Default::default(),
             obstacle: Default::default(),
             sight: Sight {
                 kind: SightKind::Eyes,
                 seeing: Default::default(),
             },
-            memory: Memory::new(Color::DARK_GRAY),
+            memory: Memory {
+                color: Color::DARK_GRAY,
+                ..Default::default()
+            },
+            player: component::Player,
+        }
+    }
+}
+
+#[derive(Bundle)]
+pub struct NPC {
+    pub renderable: Renderable,
+    pub position: Position,
+    pub ordering: Ordering,
+    pub obstacle: Obstacle,
+    pub sight: Sight,
+    pub memory: Memory,
+    pub ai: component::AI,
+}
+
+impl Default for NPC {
+    fn default() -> Self {
+        Self {
+            renderable: Default::default(),
+            position: Default::default(),
+            ordering: Default::default(),
+            obstacle: Default::default(),
+            sight: Default::default(),
+            memory: Default::default(),
+            ai: Default::default(),
         }
     }
 }
 
 #[derive(Bundle)]
 pub struct Floor {
-    renderable: Renderable,
-    position: Position,
-    ordering: Ordering,
+    pub renderable: Renderable,
+    pub position: Position,
+    pub ordering: Ordering,
 }
 
-impl Floor {
-    pub fn new(position: Position) -> Self {
+impl Default for Floor {
+    fn default() -> Self {
         Self {
             renderable: Renderable {
                 char: '·',
                 color: Color::ALICE_BLUE,
             },
-            position,
-            ordering: Ordering(u8::MAX - 1),
+            position: Default::default(),
+            ordering: Ordering::Floor,
         }
     }
 }
 
 #[derive(Bundle)]
 pub struct Wall {
-    wall: component::Wall,
-    room: Room,
-    renderable: Renderable,
-    position: Position,
-    ordering: Ordering,
-    obstacle: Obstacle,
-    opaque: Opaque,
+    pub wall: component::Wall,
+    pub room: Room,
+    pub renderable: Renderable,
+    pub position: Position,
+    pub ordering: Ordering,
+    pub obstacle: Obstacle,
+    pub opaque: Opaque,
 }
 
-impl Wall {
-    pub fn new(position: Position) -> Self {
+impl Default for Wall {
+    fn default() -> Self {
         Self {
             wall: component::Wall,
             room: Room,
             renderable: Default::default(),
-            position,
-            ordering: Ordering(4),
+            position: Default::default(),
+            ordering: Ordering::Wall,
             obstacle: Default::default(),
             opaque: Default::default(),
         }
@@ -85,28 +113,23 @@ impl Wall {
 
 #[derive(Bundle)]
 pub struct Door {
-    door: component::Door,
-    room: Room,
-    renderable: Renderable,
-    position: Position,
-    ordering: Ordering,
-    obstacle: Obstacle,
-    opaque: Opaque,
+    pub door: component::Door,
+    pub room: Room,
+    pub renderable: Renderable,
+    pub position: Position,
+    pub ordering: Ordering,
+    pub obstacle: Obstacle,
+    pub opaque: Opaque,
 }
 
-impl Door {
-    pub fn new(position: Position, open: bool) -> Self {
-        let color = if open { Color::DARK_GRAY } else { Color::WHITE };
-
+impl Default for Door {
+    fn default() -> Self {
         Self {
-            door: component::Door {
-                open,
-                toggle: false,
-            },
+            door: Default::default(),
             room: Room,
-            renderable: Renderable { char: ' ', color },
-            position,
-            ordering: Ordering(4),
+            renderable: Default::default(),
+            position: Default::default(),
+            ordering: Ordering::Door,
             obstacle: Default::default(),
             opaque: Default::default(),
         }

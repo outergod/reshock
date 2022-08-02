@@ -52,7 +52,18 @@ impl Default for Obstacle {
 }
 
 #[derive(Component, Clone, Debug)]
-pub struct Ordering(pub u8);
+pub enum Ordering {
+    Floor = 0,
+    Door = 1,
+    Wall = 2,
+    Other = 3,
+}
+
+impl Default for Ordering {
+    fn default() -> Self {
+        Self::Other
+    }
+}
 
 #[derive(Component, Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Position(pub IVec2);
@@ -72,7 +83,13 @@ pub enum SightKind {
     Sensors,
 }
 
-#[derive(Component, Clone)]
+impl Default for SightKind {
+    fn default() -> Self {
+        Self::Blind
+    }
+}
+
+#[derive(Component, Clone, Default)]
 pub struct Sight {
     pub kind: SightKind,
     pub seeing: HashSet<Entity>,
@@ -91,15 +108,6 @@ pub struct Memory {
     pub color: Color,
 }
 
-impl Memory {
-    pub fn new(color: Color) -> Self {
-        Self {
-            entities: Default::default(),
-            color,
-        }
-    }
-}
-
 #[derive(Component)]
 pub struct Opaque(pub bool);
 
@@ -113,4 +121,29 @@ impl Default for Opaque {
 pub struct Door {
     pub open: bool,
     pub toggle: bool,
+    pub open_color: Color,
+    pub close_color: Color,
+}
+
+impl Default for Door {
+    fn default() -> Self {
+        Self {
+            open: false,
+            toggle: false,
+            open_color: Default::default(),
+            close_color: Default::default(),
+        }
+    }
+}
+
+#[derive(Component)]
+pub enum AI {
+    None,
+    ServBot,
+}
+
+impl Default for AI {
+    fn default() -> Self {
+        Self::None
+    }
 }

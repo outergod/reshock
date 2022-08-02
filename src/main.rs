@@ -27,8 +27,8 @@ mod plugin {
 mod bundle;
 mod resource;
 
-// const FONT_PATH: &'static str = "fonts/FiraCode-Regular.otf";
 const FONT_PATH: &'static str = "fonts/Hack-Regular.ttf";
+// const FONT_PATH: &'static str = "fonts/DejaVuSansMono.ttf";
 const FONT_SIZE: f32 = 30.0;
 const FONT_BOUNDING_GLYPH: char = '@';
 const LEVEL01_PATH: &'static str = "rooms/level01.room";

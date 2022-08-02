@@ -5,6 +5,7 @@ use crate::asset::Room;
 use crate::asset::RoomLoader;
 use crate::bundle::Door;
 use crate::bundle::{Floor, Player, Tile, Wall};
+use crate::component;
 use crate::component::Position;
 use crate::resource::ReshockFont;
 
@@ -32,21 +33,48 @@ fn loaded(
                 for (pos, c) in room.0.iter() {
                     if *c != ' ' {
                         commands.spawn_bundle(Tile::new(Position(*pos), &font));
-                        commands.spawn_bundle(Floor::new(Position(*pos)));
+                        commands.spawn_bundle(Floor {
+                            position: Position(*pos),
+                            ..Default::default()
+                        });
                     }
 
                     match c {
                         '@' => {
-                            commands.spawn_bundle(Player::new(Position(*pos)));
+                            commands.spawn_bundle(Player {
+                                position: Position(*pos),
+                                ..Default::default()
+                            });
                         }
                         'X' => {
-                            commands.spawn_bundle(Wall::new(Position(*pos)));
+                            commands.spawn_bundle(Wall {
+                                position: Position(*pos),
+                                ..Default::default()
+                            });
                         }
                         'O' => {
-                            commands.spawn_bundle(Door::new(Position(*pos), true));
+                            commands.spawn_bundle(Door {
+                                door: component::Door {
+                                    open_color: Color::DARK_GRAY,
+                                    close_color: Color::WHITE,
+                                    open: true,
+                                    ..Default::default()
+                                },
+                                position: Position(*pos),
+                                ..Default::default()
+                            });
                         }
                         'o' => {
-                            commands.spawn_bundle(Door::new(Position(*pos), false));
+                            commands.spawn_bundle(Door {
+                                door: component::Door {
+                                    open_color: Color::DARK_GRAY,
+                                    close_color: Color::WHITE,
+                                    open: false,
+                                    ..Default::default()
+                                },
+                                position: Position(*pos),
+                                ..Default::default()
+                            });
                         }
                         '·' | ' ' => {}
                         _ => {

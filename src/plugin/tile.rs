@@ -44,7 +44,7 @@ fn adapt_glyph_dimensions(
 fn render(
     player: Query<(&Sight, &Memory), With<Player>>,
     renderables: Query<(Entity, &Position, &Renderable, &Ordering)>,
-    mut tiles: Query<(&Position, &mut Text)>,
+    mut tiles: Query<(&Position, &mut Text, &mut Transform)>,
 ) {
     let (seeing, memory, color) = match player.get_single() {
         Ok((Sight { seeing, .. }, Memory { entities, color })) => (seeing, entities, color),
@@ -55,16 +55,16 @@ fn render(
         .iter()
         .filter_map(|(entity, position, renderable, ordering)| {
             if seeing.contains(&entity) {
-                Some((position, (renderable, ordering.0)))
+                Some((position, (renderable, *ordering as u8)))
             } else {
                 None
             }
         })
         .into_grouping_map()
-        .fold_first(|current, _, next| -> (&Renderable, u8) {
+        .fold_first(|current, _, next| {
             let (_, l_ordering) = current;
             let (_, r_ordering) = next;
-            if r_ordering < l_ordering {
+            if r_ordering > l_ordering {
                 next
             } else {
                 current
@@ -76,30 +76,33 @@ fn render(
         .map(|(_, components)| {
             (
                 &components.position,
-                (&components.renderable, components.ordering.0),
+                (&components.renderable, components.ordering as u8),
             )
         })
         .into_grouping_map()
-        .fold_first(|current, _, next| -> (&Renderable, u8) {
+        .fold_first(|current, _, next| {
             let (_, l_ordering) = current;
             let (_, r_ordering) = next;
-            if r_ordering < l_ordering {
+            if r_ordering > l_ordering {
                 next
             } else {
                 current
             }
         });
 
-    for (position, mut text) in tiles.iter_mut() {
+    for (position, mut text, mut transform) in tiles.iter_mut() {
         if let Some(mut section) = text.sections.get_mut(0) {
-            if let Some((renderable, _)) = view.get(position) {
+            if let Some((renderable, ordering)) = view.get(position) {
                 section.value = renderable.char.to_string();
                 section.style.color = renderable.color;
-            } else if let Some((renderable, _)) = memory.get(position) {
+                transform.translation.z = *ordering as f32;
+            } else if let Some((renderable, ordering)) = memory.get(position) {
                 section.value = renderable.char.to_string();
                 section.style.color = color.clone();
+                transform.translation.z = *ordering as f32;
             } else {
                 section.value = " ".to_string();
+                transform.translation.z = 1.0;
             }
         }
     }
@@ -113,7 +116,6 @@ fn position(
         for (mut transform, Position(pos)) in tiles.iter_mut() {
             transform.translation.x = pos.x as f32 * width;
             transform.translation.y = pos.y as f32 * height;
-            transform.translation.z = 1.0;
         }
     }
 }

@@ -18,7 +18,8 @@ pub struct DoorPlugin;
 
 impl Plugin for DoorPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(render)
+        app.add_system(init)
+            .add_system(render)
             .add_system(toggle)
             .add_system(open)
             .add_system(event);
@@ -65,6 +66,16 @@ fn render(
     }
 }
 
+fn init(mut doors: Query<(&Door, &mut Renderable), Added<Door>>) {
+    for (door, mut renderable) in doors.iter_mut() {
+        renderable.color = if door.open {
+            door.open_color
+        } else {
+            door.close_color
+        }
+    }
+}
+
 fn open(mut doors: Query<(&Door, &mut Opaque, &mut Obstacle)>) {
     for (door, mut opaque, mut obstacle) in doors.iter_mut() {
         if door.open {
@@ -99,13 +110,13 @@ fn toggle(
 
             let color = if door.open {
                 ColorLens {
-                    start: Color::DARK_GRAY,
-                    end: Color::WHITE,
+                    start: door.open_color,
+                    end: door.close_color,
                 }
             } else {
                 ColorLens {
-                    start: Color::WHITE,
-                    end: Color::DARK_GRAY,
+                    start: door.close_color,
+                    end: door.open_color,
                 }
             };
 
