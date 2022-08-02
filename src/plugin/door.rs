@@ -14,7 +14,18 @@ const DOOR: char = '+';
 
 const DOOR_OPEN_SOUND: &'static str = "sshock/sounds/00206.wav";
 
-pub fn render(
+pub struct DoorPlugin;
+
+impl Plugin for DoorPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_system(render)
+            .add_system(toggle)
+            .add_system(open)
+            .add_system(event);
+    }
+}
+
+fn render(
     mut set: ParamSet<(
         Query<(&mut Renderable, &Position), With<Door>>,
         Query<&Position, With<Room>>,
@@ -54,7 +65,7 @@ pub fn render(
     }
 }
 
-pub fn open(mut doors: Query<(&Door, &mut Opaque, &mut Obstacle)>) {
+fn open(mut doors: Query<(&Door, &mut Opaque, &mut Obstacle)>) {
     for (door, mut opaque, mut obstacle) in doors.iter_mut() {
         if door.open {
             opaque.0 = false;
@@ -66,7 +77,7 @@ pub fn open(mut doors: Query<(&Door, &mut Opaque, &mut Obstacle)>) {
     }
 }
 
-pub fn event(mut reader: EventReader<TweenCompleted>, mut doors: Query<(Entity, &mut Door)>) {
+fn event(mut reader: EventReader<TweenCompleted>, mut doors: Query<(Entity, &mut Door)>) {
     let entities: HashSet<_> = reader.iter().map(|e| e.entity).collect();
 
     for (entity, mut door) in doors.iter_mut() {
@@ -76,7 +87,7 @@ pub fn event(mut reader: EventReader<TweenCompleted>, mut doors: Query<(Entity, 
     }
 }
 
-pub fn toggle(
+fn toggle(
     mut doors: Query<(Entity, &mut Door)>,
     asset_server: Res<AssetServer>,
     audio: Res<Audio>,

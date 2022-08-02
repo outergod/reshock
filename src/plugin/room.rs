@@ -2,12 +2,23 @@ use bevy::log;
 use bevy::prelude::*;
 
 use crate::asset::Room;
+use crate::asset::RoomLoader;
 use crate::bundle::Door;
 use crate::bundle::{Floor, Player, Tile, Wall};
 use crate::component::Position;
 use crate::resource::ReshockFont;
 
-pub fn loaded(
+pub struct RoomPlugin;
+
+impl Plugin for RoomPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_asset::<Room>()
+            .init_asset_loader::<RoomLoader>()
+            .add_system(loaded);
+    }
+}
+
+fn loaded(
     mut commands: Commands,
     mut events: EventReader<AssetEvent<Room>>,
     font: Res<ReshockFont>,

@@ -5,7 +5,18 @@ use itertools::Itertools;
 use crate::resource::ReshockFont;
 use crate::{component::*, resource::TileDimensions};
 
-pub fn adapt_glyph_dimensions(
+pub struct TilePlugin;
+
+impl Plugin for TilePlugin {
+    fn build(&self, app: &mut App) {
+        app.add_system(render)
+            .add_system(adapt_glyph_dimensions)
+            .add_system(position)
+            .init_resource::<TileDimensions>();
+    }
+}
+
+fn adapt_glyph_dimensions(
     mut event_asset: EventReader<AssetEvent<Font>>,
     mut assets: ResMut<Assets<Font>>,
     font_resource: Res<ReshockFont>,
@@ -30,7 +41,7 @@ pub fn adapt_glyph_dimensions(
     }
 }
 
-pub fn render(
+fn render(
     player: Query<(&Sight, &Memory), With<Player>>,
     renderables: Query<(Entity, &Position, &Renderable, &Ordering)>,
     mut tiles: Query<(&Position, &mut Text)>,
@@ -94,7 +105,7 @@ pub fn render(
     }
 }
 
-pub fn position(
+fn position(
     mut tiles: Query<(&mut Transform, &Position), With<Text>>,
     dimensions: Res<TileDimensions>,
 ) {

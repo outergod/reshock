@@ -4,21 +4,25 @@ use bevy_pancam::{PanCam, PanCamPlugin};
 use bevy_tweening::component_animator_system;
 use bevy_tweening::TweeningPlugin;
 use component::Renderable;
+use plugin::door::DoorPlugin;
+use plugin::room::RoomPlugin;
+use plugin::tile::TilePlugin;
 use resource::ReshockFont;
 use resource::Room;
-use resource::TileDimensions;
 use system::*;
 
 mod asset;
 mod component;
 mod system {
-    pub mod door;
     pub mod input;
     pub mod radial_lines;
-    pub mod room;
     pub mod sight;
-    pub mod tile;
     pub mod wall;
+}
+mod plugin {
+    pub mod door;
+    pub mod room;
+    pub mod tile;
 }
 mod bundle;
 mod resource;
@@ -62,23 +66,15 @@ fn main() {
         .add_plugin(PanCamPlugin::default())
         .add_plugin(AudioPlugin)
         .add_plugin(TweeningPlugin)
+        .add_plugin(TilePlugin)
+        .add_plugin(RoomPlugin)
+        .add_plugin(DoorPlugin)
         .insert_resource(ClearColor(Color::BLACK))
-        .init_resource::<TileDimensions>()
-        .add_asset::<asset::Room>()
-        .init_asset_loader::<asset::RoomLoader>()
         .add_startup_system(setup)
         .add_startup_system(start_background_audio)
         .add_startup_system(radial_lines::setup)
-        .add_system(tile::render)
-        .add_system(tile::adapt_glyph_dimensions)
-        .add_system(tile::position)
         .add_system(input::system)
-        .add_system(room::loaded)
         .add_system(wall::system)
-        .add_system(door::render)
-        .add_system(door::toggle)
-        .add_system(door::open)
-        .add_system(door::event)
         .add_system(sight::system)
         .add_system(bevy::window::close_on_esc)
         .add_system(component_animator_system::<Renderable>)
