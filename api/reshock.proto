@@ -1,0 +1,82 @@
+syntax = "proto3";
+package reshock;
+
+service Reshock {
+  rpc DumpState(Empty) returns (Dump);
+  // rpc SaveFile(stream File) returns (google.protobuf.Empty);
+  // rpc DeleteFile(Path) returns (google.protobuf.Empty);
+  // rpc CopyFile(SourceDestination) returns (google.protobuf.Empty);
+  // rpc MoveFile(SourceDestination) returns (google.protobuf.Empty);
+  // rpc CreateDirectory(Path) returns (google.protobuf.Empty);
+  // rpc SetMetadata(Metadata) returns (google.protobuf.Empty);
+  // rpc DeleteMetadata(MetadataLocation) returns (google.protobuf.Empty);
+  // rpc LockFile(Lock) returns (google.protobuf.Empty);
+  // rpc UnlockFile(Unlock) returns (google.protobuf.Empty);
+  // rpc Snapshot(google.protobuf.Empty) returns (google.protobuf.Empty);
+}
+
+message Empty {}
+
+message Dump {
+  string value = 1;
+}
+
+// message LockToken {
+//   string value = 1;
+// }
+
+// message Path {
+//   string value = 1;
+//   repeated LockToken tokens = 2;
+// }
+
+// message File {
+//   oneof data {
+//     Path path = 1;
+//     bytes chunk = 2;
+//   }
+// }
+
+// message SourceDestination {
+//   string source = 1;
+//   Path destination = 2;
+//   files.Scope scope = 3;
+// }
+
+// message MetadataLocation {
+//   Path path = 1;
+//   string namespace = 2;
+//   string key = 3;
+// }
+
+// message Metadata {
+//   MetadataLocation location = 1;
+//   string value = 2;
+// }
+
+// message Lock {
+//   string path = 1;
+//   LockToken token = 2;
+//   LockType type = 3;
+//   LockScope scope = 4;
+//   LockOwner owner = 5;
+
+//   enum LockType {
+//     SHARED = 0;
+//     EXCLUSIVE = 1;
+//   }
+
+//   enum LockScope {
+//     SINGLE = 0;
+//     RECURSIVE = 1;
+//   }
+
+//   message LockOwner {
+//     string value = 1;
+//   }
+// }
+
+// message Unlock {
+//   string path = 1;
+//   LockToken token = 2;
+// }

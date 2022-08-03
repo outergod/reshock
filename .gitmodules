@@ -1,3 +1,3 @@
-[submodule "assets/sshock"]
-	path = assets/sshock
+[submodule "ui/assets/sshock"]
+	path = ui/assets/sshock
 	url = git@github.com:outergod/statehack-sshock.git
