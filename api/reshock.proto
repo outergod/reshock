@@ -2,7 +2,8 @@ syntax = "proto3";
 package reshock;
 
 service Reshock {
-  rpc DumpState(Empty) returns (Dump);
+  rpc DumpState(Empty) returns (DumpResponse);
+  rpc ProcessCommand(CommandRequest) returns (EventsResponse);
   // rpc SaveFile(stream File) returns (google.protobuf.Empty);
   // rpc DeleteFile(Path) returns (google.protobuf.Empty);
   // rpc CopyFile(SourceDestination) returns (google.protobuf.Empty);
@@ -17,7 +18,25 @@ service Reshock {
 
 message Empty {}
 
-message Dump {
+message DumpResponse {
+  string value = 1;
+}
+
+message CommandRequest {
+  enum Command {
+    UP_LEFT = 0;
+    UP = 1;
+    UP_RIGHT = 2;
+    RIGHT = 3;
+    DOWN_RIGHT = 4;
+    DOWN = 5;
+    DOWN_LEFT = 6;
+    LEFT = 7;
+  }
+  Command command = 1;
+}
+
+message EventsResponse {
   string value = 1;
 }
 
