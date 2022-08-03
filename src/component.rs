@@ -80,7 +80,6 @@ pub enum SightKind {
     Blind,
     Omniscience,
     Eyes,
-    Sensors,
 }
 
 impl Default for SightKind {

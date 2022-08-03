@@ -7,7 +7,6 @@ use component::Renderable;
 use plugin::door::DoorPlugin;
 use plugin::room::RoomPlugin;
 use plugin::tile::TilePlugin;
-use resource::ReshockFont;
 use resource::Room;
 use system::*;
 
@@ -27,10 +26,6 @@ mod plugin {
 mod bundle;
 mod resource;
 
-const FONT_PATH: &'static str = "fonts/Hack-Regular.ttf";
-// const FONT_PATH: &'static str = "fonts/DejaVuSansMono.ttf";
-const FONT_SIZE: f32 = 30.0;
-const FONT_BOUNDING_GLYPH: char = '@';
 const LEVEL01_PATH: &'static str = "rooms/level01.room";
 const LEVEL01_MUSIC: &'static str = "sshock/music/chicajo/Medical.ogg";
 
@@ -41,15 +36,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn_bundle(Camera2dBundle::default())
         .insert(PanCam::default());
-
-    let asset = asset_server.load(FONT_PATH);
-
-    let font = ReshockFont {
-        handle: asset,
-        size: FONT_SIZE,
-        bounding_glyph: FONT_BOUNDING_GLYPH,
-    };
-    commands.insert_resource(font);
 
     let room = Room(asset_server.load(LEVEL01_PATH));
     // let room = Room(asset_server.load(TEST_PATH));

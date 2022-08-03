@@ -4,9 +4,12 @@ use bevy::prelude::*;
 use crate::asset::Room;
 use crate::asset::RoomLoader;
 use crate::bundle::Door;
+use crate::bundle::NPC;
 use crate::bundle::{Floor, Player, Tile, Wall};
 use crate::component;
 use crate::component::Position;
+use crate::component::Renderable;
+use crate::component::AI;
 use crate::resource::ReshockFont;
 
 pub struct RoomPlugin;
@@ -43,6 +46,17 @@ fn loaded(
                         '@' => {
                             commands.spawn_bundle(Player {
                                 position: Position(*pos),
+                                ..Default::default()
+                            });
+                        }
+                        'b' => {
+                            commands.spawn_bundle(NPC {
+                                position: Position(*pos),
+                                ai: AI::ServBot,
+                                renderable: Renderable {
+                                    char: 'b',
+                                    color: Color::ORANGE_RED,
+                                },
                                 ..Default::default()
                             });
                         }

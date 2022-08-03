@@ -5,15 +5,32 @@ use itertools::Itertools;
 use crate::resource::ReshockFont;
 use crate::{component::*, resource::TileDimensions};
 
+const FONT_PATH: &'static str = "fonts/Hack-Regular.ttf";
+// const FONT_PATH: &'static str = "fonts/DejaVuSansMono.ttf";
+const FONT_SIZE: f32 = 30.0;
+const FONT_BOUNDING_GLYPH: char = '@';
+
 pub struct TilePlugin;
 
 impl Plugin for TilePlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(render)
+        app.add_startup_system(setup)
+            .add_system(render)
             .add_system(adapt_glyph_dimensions)
             .add_system(position)
             .init_resource::<TileDimensions>();
     }
+}
+
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let asset = asset_server.load(FONT_PATH);
+
+    let font = ReshockFont {
+        handle: asset,
+        size: FONT_SIZE,
+        bounding_glyph: FONT_BOUNDING_GLYPH,
+    };
+    commands.insert_resource(font);
 }
 
 fn adapt_glyph_dimensions(

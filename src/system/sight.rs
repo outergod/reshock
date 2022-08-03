@@ -74,7 +74,6 @@ pub fn system(
                 })
                 .collect()
         }
-        SightKind::Sensors => todo!(),
     };
 
     match set.p2().get_single_mut() {
