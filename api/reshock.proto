@@ -2,24 +2,95 @@ syntax = "proto3";
 package reshock;
 
 service Reshock {
-  rpc DumpState(Empty) returns (DumpResponse);
+  rpc DumpState(Empty) returns (StateDumpResponse);
   rpc ProcessCommand(CommandRequest) returns (EventsResponse);
-  // rpc SaveFile(stream File) returns (google.protobuf.Empty);
-  // rpc DeleteFile(Path) returns (google.protobuf.Empty);
-  // rpc CopyFile(SourceDestination) returns (google.protobuf.Empty);
-  // rpc MoveFile(SourceDestination) returns (google.protobuf.Empty);
-  // rpc CreateDirectory(Path) returns (google.protobuf.Empty);
-  // rpc SetMetadata(Metadata) returns (google.protobuf.Empty);
-  // rpc DeleteMetadata(MetadataLocation) returns (google.protobuf.Empty);
-  // rpc LockFile(Lock) returns (google.protobuf.Empty);
-  // rpc UnlockFile(Unlock) returns (google.protobuf.Empty);
-  // rpc Snapshot(google.protobuf.Empty) returns (google.protobuf.Empty);
 }
 
 message Empty {}
 
-message DumpResponse {
-  string value = 1;
+message PlayerComponent {}
+message WallComponent {}
+message RoomComponent {}
+message DoorComponent {
+  bool open = 1;
+}
+message RenderableComponent {
+  enum Renderable {
+    NONE = 0;
+    HUMAN = 1;
+    SERV_BOT = 2;
+    FLOOR = 3;
+    WALL = 4;
+    DOOR = 5;
+  }
+  Renderable renderable = 1;
+}
+message ObstacleComponent {
+  bool obstacle = 1;
+}
+message OrderingComponent {
+  enum Ordering {
+    FLOOR = 0;
+    DOOR = 1;
+    WALL = 2;
+    OTHER = 3;
+  }
+  Ordering ordering = 1;
+}
+message PositionComponent {
+  int32 x = 1;
+  int32 y = 2;
+}
+message SightComponent {
+  enum SightKind {
+    BLIND = 0;
+    OMNISCIENCE = 1;
+    EYES = 2;
+  }
+
+  SightKind kind = 1;
+  repeated uint32 seeing = 2;
+}
+message MemoryComponent {
+  repeated RememberedEntity entities = 1;
+}
+message OpaqueComponent {
+  bool opaque = 1;
+}
+message AiComponent {
+  enum AiKind {
+    NONE = 0;
+    SERV_BOT = 1;
+  }
+
+  AiKind ai = 1;
+}
+
+message RememberedEntity {
+  uint32 entity = 1;
+  RenderableComponent renderable = 2;
+  PositionComponent position = 3;
+  OrderingComponent ordering = 4;
+}
+
+message Entity {
+  uint32 entity = 1;
+  optional PlayerComponent player = 2;
+  optional WallComponent wall = 3;
+  optional RoomComponent room = 4;
+  optional DoorComponent door = 5;
+  optional RenderableComponent renderable = 6;
+  optional ObstacleComponent obstacle = 7;
+  optional OrderingComponent ordering = 8;
+  optional PositionComponent position = 9;
+  optional SightComponent sight = 10;
+  optional MemoryComponent memory = 11;
+  optional OpaqueComponent opaque = 12;
+  optional AiComponent ai = 13;
+}
+
+message StateDumpResponse {
+  repeated Entity entities = 1;
 }
 
 message CommandRequest {
@@ -39,63 +110,3 @@ message CommandRequest {
 message EventsResponse {
   string value = 1;
 }
-
-// message LockToken {
-//   string value = 1;
-// }
-
-// message Path {
-//   string value = 1;
-//   repeated LockToken tokens = 2;
-// }
-
-// message File {
-//   oneof data {
-//     Path path = 1;
-//     bytes chunk = 2;
-//   }
-// }
-
-// message SourceDestination {
-//   string source = 1;
-//   Path destination = 2;
-//   files.Scope scope = 3;
-// }
-
-// message MetadataLocation {
-//   Path path = 1;
-//   string namespace = 2;
-//   string key = 3;
-// }
-
-// message Metadata {
-//   MetadataLocation location = 1;
-//   string value = 2;
-// }
-
-// message Lock {
-//   string path = 1;
-//   LockToken token = 2;
-//   LockType type = 3;
-//   LockScope scope = 4;
-//   LockOwner owner = 5;
-
-//   enum LockType {
-//     SHARED = 0;
-//     EXCLUSIVE = 1;
-//   }
-
-//   enum LockScope {
-//     SINGLE = 0;
-//     RECURSIVE = 1;
-//   }
-
-//   message LockOwner {
-//     string value = 1;
-//   }
-// }
-
-// message Unlock {
-//   string path = 1;
-//   LockToken token = 2;
-// }

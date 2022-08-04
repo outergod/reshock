@@ -3166,6 +3166,7 @@ dependencies = [
  "bevy_ecs",
  "config",
  "env_logger",
+ "glam",
  "log",
  "prost",
  "serde",
