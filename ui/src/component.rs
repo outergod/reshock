@@ -4,6 +4,9 @@ use bevy::{
 };
 use bevy_tweening::Lens;
 
+#[derive(Component, Clone, Hash, Debug, PartialEq, Eq)]
+pub struct ReshockEntity(pub u32);
+
 #[derive(Component)]
 pub struct Player;
 
@@ -53,10 +56,24 @@ impl Default for Obstacle {
 
 #[derive(Component, Clone, Debug)]
 pub enum Ordering {
-    Floor = 0,
-    Door = 1,
-    Wall = 2,
-    Other = 3,
+    Floor,
+    Door,
+    Wall,
+    Other,
+}
+
+impl TryInto<Ordering> for i32 {
+    type Error = ();
+
+    fn try_into(self) -> Result<Ordering, Self::Error> {
+        match self {
+            0 => Ok(Ordering::Floor),
+            1 => Ok(Ordering::Door),
+            2 => Ok(Ordering::Wall),
+            3 => Ok(Ordering::Other),
+            _ => Err(()),
+        }
+    }
 }
 
 impl Default for Ordering {
@@ -82,6 +99,19 @@ pub enum SightKind {
     Eyes,
 }
 
+impl TryInto<SightKind> for i32 {
+    type Error = ();
+
+    fn try_into(self) -> Result<SightKind, Self::Error> {
+        match self {
+            0 => Ok(SightKind::Blind),
+            1 => Ok(SightKind::Omniscience),
+            2 => Ok(SightKind::Eyes),
+            _ => Err(()),
+        }
+    }
+}
+
 impl Default for SightKind {
     fn default() -> Self {
         Self::Blind
@@ -91,7 +121,7 @@ impl Default for SightKind {
 #[derive(Component, Clone, Default)]
 pub struct Sight {
     pub kind: SightKind,
-    pub seeing: HashSet<Entity>,
+    pub seeing: HashSet<ReshockEntity>,
 }
 
 #[derive(Debug)]
@@ -103,7 +133,7 @@ pub struct MemoryComponents {
 
 #[derive(Default, Component)]
 pub struct Memory {
-    pub entities: HashMap<Entity, MemoryComponents>,
+    pub entities: HashMap<ReshockEntity, MemoryComponents>,
     pub color: Color,
 }
 

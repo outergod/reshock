@@ -1,21 +1,15 @@
 use std::sync::Arc;
 
+use api::reshock_server::*;
+use api::*;
 use env_logger::Env;
 use game::Game;
 use tokio::sync::Mutex;
 use tonic::transport::Server;
 use tonic::{Request, Response, Status};
 
-use crate::api::reshock_server::*;
-use crate::api::*;
 use crate::config::Config;
 
-mod api {
-    tonic::include_proto!("reshock");
-
-    pub(crate) const FILE_DESCRIPTOR_SET: &'static [u8] =
-        tonic::include_file_descriptor_set!("reshock_descriptor");
-}
 mod config;
 mod game;
 

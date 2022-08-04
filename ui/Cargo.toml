@@ -4,11 +4,21 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+api = { path = "../api" }
+tonic = "0.8"
 bevy_pancam = "0.5"
 ab_glyph = "0.2.6"
 itertools = "0.10"
 anyhow = "1.0"
 serde = "1.0"
+
+[dependencies.config]
+version = "0.13"
+features = ["toml"]
+
+[dependencies.tokio]
+version = "1.20"
+features = ["rt-multi-thread", "macros"]
 
 [dependencies.bevy]
 version = "0.8"

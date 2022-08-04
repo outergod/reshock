@@ -3,18 +3,25 @@ use bevy::{
     utils::{HashMap, HashSet},
 };
 
-use crate::asset;
-
 #[derive(Default)]
 pub struct TileDimensions(pub Option<Size>);
 
+#[derive(Default)]
 pub struct ReshockFont {
     pub handle: Handle<Font>,
     pub size: f32,
     pub bounding_glyph: char,
 }
 
-pub struct Room(pub Handle<asset::Room>);
+// impl Default for ReshockFont {
+//     fn default() -> Self {
+//         Self {
+//             handle: Default::default(),
+//             size: 30.0,
+//             bounding_glyph: '@',
+//         }
+//     }
+// }
 
 pub type Path = Vec<IVec2>;
 

@@ -1,4 +1,5 @@
 use ab_glyph::ScaleFont;
+use bevy::log;
 use bevy::prelude::*;
 use itertools::Itertools;
 
@@ -18,7 +19,8 @@ impl Plugin for TilePlugin {
             .add_system(render)
             .add_system(adapt_glyph_dimensions)
             .add_system(position)
-            .init_resource::<TileDimensions>();
+            .init_resource::<TileDimensions>()
+            .init_resource::<ReshockFont>();
     }
 }
 
@@ -60,8 +62,9 @@ fn adapt_glyph_dimensions(
 
 fn render(
     player: Query<(&Sight, &Memory), With<Player>>,
-    renderables: Query<(Entity, &Position, &Renderable, &Ordering)>,
+    renderables: Query<(&ReshockEntity, &Position, &Renderable, &Ordering)>,
     mut tiles: Query<(&Position, &mut Text, &mut Transform)>,
+    font_resource: Res<ReshockFont>,
 ) {
     let (seeing, memory, color) = match player.get_single() {
         Ok((Sight { seeing, .. }, Memory { entities, color })) => (seeing, entities, color),
@@ -109,6 +112,9 @@ fn render(
 
     for (position, mut text, mut transform) in tiles.iter_mut() {
         if let Some(mut section) = text.sections.get_mut(0) {
+            section.style.font_size = font_resource.size;
+            section.style.font = font_resource.handle.clone_weak();
+
             if let Some((renderable, ordering)) = view.get(position) {
                 section.value = renderable.char.to_string();
                 section.style.color = renderable.color;

@@ -115,6 +115,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c91f1f46651137be86f3a2b9a8359f9ab421d04d941c62b5982e1ca21113adf9"
 
 [[package]]
+name = "api"
+version = "0.1.0"
+dependencies = [
+ "prost",
+ "tonic",
+ "tonic-build",
+]
+
+[[package]]
 name = "approx"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3051,12 +3060,16 @@ version = "0.1.0"
 dependencies = [
  "ab_glyph",
  "anyhow",
+ "api",
  "bevy",
  "bevy_kira_audio",
  "bevy_pancam",
  "bevy_tweening",
+ "config",
  "itertools",
  "serde",
+ "tokio",
+ "tonic",
 ]
 
 [[package]]
@@ -3163,16 +3176,15 @@ dependencies = [
 name = "server"
 version = "0.1.0"
 dependencies = [
+ "api",
  "bevy_ecs",
  "config",
  "env_logger",
  "glam",
  "log",
- "prost",
  "serde",
  "tokio",
  "tonic",
- "tonic-build",
  "tonic-reflection",
 ]
 

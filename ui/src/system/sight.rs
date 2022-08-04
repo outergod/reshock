@@ -7,14 +7,14 @@ use crate::{component::*, resource::RadialLines};
 
 pub fn system(
     mut set: ParamSet<(
-        Query<(Entity, &Position, &Renderable, &Ordering), Without<Player>>,
+        Query<(&ReshockEntity, &Position, &Renderable, &Ordering), Without<Player>>,
         Query<(&Opaque, &Position)>,
-        Query<(Entity, &Position, &mut Sight, &mut Memory), With<Player>>,
+        Query<(&ReshockEntity, &Position, &mut Sight, &mut Memory), With<Player>>,
     )>,
     lines: Res<RadialLines>,
 ) {
     let (entity, player, sight) = match set.p2().get_single() {
-        Ok((entity, position, sight, _)) => (entity, position.0, sight.kind.clone()),
+        Ok((entity, position, sight, _)) => (entity.clone(), position.0, sight.kind.clone()),
         Err(_) => return,
     };
 
@@ -30,14 +30,14 @@ pub fn system(
         })
         .collect();
 
-    let seeing: HashMap<Entity, MemoryComponents> = match sight {
+    let seeing: HashMap<ReshockEntity, MemoryComponents> = match sight {
         SightKind::Blind => HashMap::new(),
         SightKind::Omniscience => set
             .p0()
             .iter()
             .map(|(entity, position, renderable, ordering)| {
                 (
-                    entity,
+                    entity.clone(),
                     MemoryComponents {
                         renderable: renderable.clone(),
                         position: position.clone(),
@@ -61,7 +61,7 @@ pub fn system(
                         .any(|path| !path.iter().any(|p| obstacles.contains(p)))
                     {
                         Some((
-                            entity,
+                            entity.clone(),
                             MemoryComponents {
                                 renderable: renderable.clone(),
                                 position: position.clone(),
