@@ -18,11 +18,54 @@ pub struct DoorPlugin;
 
 impl Plugin for DoorPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(init)
+        app.add_system(event)
+            .add_system(init)
             .add_system(render)
-            .add_system(toggle)
-            .add_system(open)
-            .add_system(event);
+            .add_system(tween);
+    }
+}
+
+pub fn event(
+    mut reader: EventReader<api::DoorEvent>,
+    doors: Query<(Entity, &ReshockEntity, &Door)>,
+    asset_server: Res<AssetServer>,
+    audio: Res<Audio>,
+    mut commands: Commands,
+) {
+    for api::DoorEvent {
+        actor: _,
+        door: entity,
+        open,
+    } in reader.iter()
+    {
+        for (e, id, door) in doors.iter() {
+            if entity == &id.0 && door.open != *open {
+                let color = if door.open {
+                    ColorLens {
+                        start: door.open_color,
+                        end: door.close_color,
+                    }
+                } else {
+                    ColorLens {
+                        start: door.close_color,
+                        end: door.open_color,
+                    }
+                };
+
+                let mut tween = Tween::new(
+                    EaseMethod::Linear,
+                    TweeningType::Once,
+                    Duration::from_secs_f32(1.5),
+                    color,
+                );
+
+                tween.set_completed_event(0);
+                commands.entity(e).insert(Animator::new(tween));
+                audio.play(asset_server.load(DOOR_OPEN_SOUND));
+
+                return;
+            }
+        }
     }
 }
 
@@ -76,60 +119,12 @@ fn init(mut doors: Query<(&Door, &mut Renderable), Added<Door>>) {
     }
 }
 
-fn open(mut doors: Query<(&Door, &mut Opaque, &mut Obstacle)>) {
-    for (door, mut opaque, mut obstacle) in doors.iter_mut() {
-        if door.open {
-            opaque.0 = false;
-            obstacle.0 = false;
-        } else {
-            opaque.0 = true;
-            obstacle.0 = true;
-        }
-    }
-}
-
-fn event(mut reader: EventReader<TweenCompleted>, mut doors: Query<(Entity, &mut Door)>) {
+fn tween(mut reader: EventReader<TweenCompleted>, mut doors: Query<(Entity, &mut Door)>) {
     let entities: HashSet<_> = reader.iter().map(|e| e.entity).collect();
 
     for (entity, mut door) in doors.iter_mut() {
         if entities.contains(&entity) {
             door.open = !door.open;
-        }
-    }
-}
-
-fn toggle(
-    mut doors: Query<(Entity, &mut Door)>,
-    asset_server: Res<AssetServer>,
-    audio: Res<Audio>,
-    mut commands: Commands,
-) {
-    for (entity, mut door) in doors.iter_mut() {
-        if door.toggle {
-            door.toggle = false;
-
-            let color = if door.open {
-                ColorLens {
-                    start: door.open_color,
-                    end: door.close_color,
-                }
-            } else {
-                ColorLens {
-                    start: door.close_color,
-                    end: door.open_color,
-                }
-            };
-
-            let mut tween = Tween::new(
-                EaseMethod::Linear,
-                TweeningType::Once,
-                Duration::from_secs_f32(1.5),
-                color,
-            );
-
-            tween.set_completed_event(0);
-            commands.entity(entity).insert(Animator::new(tween));
-            audio.play(asset_server.load(DOOR_OPEN_SOUND));
         }
     }
 }

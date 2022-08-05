@@ -1,5 +1,4 @@
 use ab_glyph::ScaleFont;
-use bevy::log;
 use bevy::prelude::*;
 use itertools::Itertools;
 

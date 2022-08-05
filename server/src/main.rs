@@ -115,9 +115,7 @@ impl Reshock for ReshockService {
 
         let events = game.input(request.into_inner().command().into());
 
-        Ok(Response::new(EventsResponse {
-            value: format!("{:?}", events),
-        }))
+        Ok(Response::new(EventsResponse { events }))
     }
 }
 

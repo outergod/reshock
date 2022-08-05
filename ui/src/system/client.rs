@@ -98,7 +98,7 @@ pub fn setup(
                     if let Some(api::PositionComponent { x, y }) = entity.position {
                         let position = component::Position((x, y).into());
                         e.insert(position.clone());
-                        positions.insert(position);
+                        positions.insert(position.clone());
                     }
 
                     if let Some(api::SightComponent { kind, seeing }) = entity.sight {

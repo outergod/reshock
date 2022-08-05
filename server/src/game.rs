@@ -3,10 +3,22 @@ use std::path::Path;
 
 use bevy_ecs::prelude::*;
 use bevy_ecs::query::WorldQuery;
+use bevy_ecs::schedule::ShouldRun;
+
+pub use event::Command;
+use system::*;
 
 mod bundle;
 mod component;
-mod room;
+mod event;
+mod resource;
+mod system {
+    pub mod command;
+    pub mod door;
+    pub mod radial_lines;
+    pub mod room;
+    pub mod sight;
+}
 
 const LEVEL01_PATH: &'static str = "rooms/level01.room";
 
@@ -33,53 +45,59 @@ pub struct Game {
     state: QueryState<StateQuery>,
 }
 
-impl std::fmt::Debug for Game {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Game").field("world", &self.world).finish()
-    }
-}
+#[derive(Default)]
+pub struct GameEvents(Vec<api::Event>);
 
 #[derive(StageLabel)]
 enum Stage {
+    Init,
+    Cleanup,
+    Event,
     Core,
 }
 
-#[derive(Debug, Clone)]
-pub enum Command {
-    UpLeft,
-    Up,
-    UpRight,
-    Right,
-    DownRight,
-    Down,
-    DownLeft,
-    Left,
-}
+#[derive(StageLabel)]
+struct InitStage;
 
-#[derive(Default)]
-struct GameEvents(Vec<Command>);
-
-fn test(mut commands: EventReader<Command>, mut events: ResMut<GameEvents>) {
-    events.0.append(&mut commands.iter().cloned().collect());
+fn cleanup(mut events: ResMut<GameEvents>) {
+    log::debug!("cleanup {:?}", events.0);
+    events.0.clear();
 }
 
 impl Default for Game {
     fn default() -> Self {
         let mut world = World::new();
 
+        let room: room::Room = fs::read_to_string(Path::new("assets").join(LEVEL01_PATH))
+            .unwrap()
+            .into();
+
         world.insert_resource(GameEvents::default());
-        world.init_resource::<Events<Command>>();
+        world.init_resource::<Events<event::Command>>();
+        world.init_resource::<Events<event::ToggleDoor>>();
+        world.insert_resource(room);
 
-        let room = fs::read_to_string(Path::new("assets").join(LEVEL01_PATH)).unwrap();
-        room::setup(&mut world, room.into());
+        let mut schedule = Schedule::default()
+            .with_stage(
+                Stage::Init,
+                Schedule::default()
+                    .with_run_criteria(ShouldRun::once)
+                    .with_stage(InitStage, SystemStage::parallel())
+                    .with_system_in_stage(InitStage, room::setup)
+                    .with_system_in_stage(InitStage, radial_lines::setup),
+            )
+            .with_stage(Stage::Cleanup, SystemStage::single_threaded())
+            .with_system_in_stage(Stage::Cleanup, cleanup)
+            .with_stage(Stage::Event, SystemStage::parallel())
+            .with_system_in_stage(Stage::Event, Events::<event::Command>::update_system)
+            .with_system_in_stage(Stage::Event, Events::<event::ToggleDoor>::update_system)
+            .with_stage(Stage::Core, SystemStage::single_threaded())
+            .with_system_in_stage(Stage::Core, command::system)
+            .with_system_in_stage(Stage::Core, sight::system)
+            .with_system_in_stage(Stage::Core, door::toggle)
+            .with_system_in_stage(Stage::Core, door::open);
 
-        let mut schedule = Schedule::default();
-
-        schedule.add_stage(
-            Stage::Core,
-            SystemStage::single_threaded().with_system(test),
-        );
-        schedule.add_system_to_stage(Stage::Core, Events::<Command>::update_system);
+        schedule.run_once(&mut world);
 
         let state = world.query::<StateQuery>();
 
@@ -92,7 +110,7 @@ impl Default for Game {
 }
 
 impl Game {
-    pub fn input(&mut self, command: Command) -> Vec<Command> {
+    pub fn input(&mut self, command: Command) -> Vec<api::Event> {
         self.world.send_event(command);
         self.schedule.run_once(&mut self.world);
         self.world.get_resource::<GameEvents>().unwrap().0.clone()

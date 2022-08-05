@@ -107,6 +107,25 @@ message CommandRequest {
   Command command = 1;
 }
 
+message MoveEvent {
+  uint32 entity = 1;
+  int32 x = 2;
+  int32 y = 3;
+}
+
+message DoorEvent {
+  uint32 actor = 1;
+  uint32 door = 2;
+  bool open = 3;
+}
+
+message Event {
+  oneof event {
+    MoveEvent move = 1;
+    DoorEvent door = 2;
+  }
+}
+
 message EventsResponse {
-  string value = 1;
+  repeated Event events = 1;
 }

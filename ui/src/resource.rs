@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use bevy::{
     prelude::*,
     utils::{HashMap, HashSet},
@@ -13,17 +15,10 @@ pub struct ReshockFont {
     pub bounding_glyph: char,
 }
 
-// impl Default for ReshockFont {
-//     fn default() -> Self {
-//         Self {
-//             handle: Default::default(),
-//             size: 30.0,
-//             bounding_glyph: '@',
-//         }
-//     }
-// }
-
 pub type Path = Vec<IVec2>;
 
 #[derive(Debug)]
 pub struct RadialLines(pub HashMap<IVec2, HashSet<Path>>);
+
+#[derive(Debug, Default)]
+pub struct ReshockEvents(pub VecDeque<api::Event>);

@@ -7,6 +7,7 @@ use bevy_tweening::component_animator_system;
 use bevy_tweening::TweeningPlugin;
 use component::Renderable;
 use plugin::door::DoorPlugin;
+use plugin::reshock_events::ReshockEventsPlugin;
 use plugin::tile::TilePlugin;
 use system::*;
 use tokio::runtime::Runtime;
@@ -18,12 +19,12 @@ mod config;
 mod system {
     pub mod client;
     pub mod input;
-    pub mod radial_lines;
-    pub mod sight;
+    pub mod r#move;
     pub mod wall;
 }
 mod plugin {
     pub mod door;
+    pub mod reshock_events;
     pub mod tile;
 }
 mod bundle;
@@ -55,16 +56,16 @@ fn main() -> Result<()> {
         .add_plugin(TweeningPlugin)
         .add_plugin(TilePlugin)
         .add_plugin(DoorPlugin)
+        .add_plugin(ReshockEventsPlugin)
         .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(runtime)
         .insert_resource(client)
         .add_startup_system(setup)
         .add_startup_system(start_background_audio)
         .add_startup_system(client::setup)
-        .add_startup_system(radial_lines::setup)
         .add_system(input::system)
         .add_system(wall::system)
-        .add_system(sight::system)
+        .add_system(r#move::system)
         .add_system(bevy::window::close_on_esc)
         .add_system(component_animator_system::<Renderable>)
         .run();

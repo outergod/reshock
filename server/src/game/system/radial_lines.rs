@@ -1,11 +1,12 @@
-use bevy::prelude::*;
-use bevy::utils::HashMap;
-use bevy::utils::HashSet;
+use std::collections::{HashMap, HashSet};
+
+use bevy_ecs::prelude::*;
+use glam::IVec2;
 use itertools::Itertools;
 
-use crate::resource;
+use crate::game::resource::{Path, RadialLines};
 
-fn radial_lines_origin(r: u8) -> HashMap<IVec2, HashSet<resource::Path>> {
+fn radial_lines_origin(r: u8) -> HashMap<IVec2, HashSet<Path>> {
     let turn = std::f32::consts::PI * 2.0;
     let segments = (r.pow(2) as f32 * turn).ceil() + 1.0;
 
@@ -35,7 +36,7 @@ fn radial_lines_origin(r: u8) -> HashMap<IVec2, HashSet<resource::Path>> {
 
 pub fn setup(mut commands: Commands) {
     let lines = radial_lines_origin(10);
-    commands.insert_resource(resource::RadialLines(lines));
+    commands.insert_resource(RadialLines(lines));
 }
 
 #[cfg(test)]

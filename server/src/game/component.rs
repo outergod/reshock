@@ -15,15 +15,11 @@ pub struct Room;
 #[derive(Component)]
 pub struct Door {
     pub open: bool,
-    pub toggle: bool,
 }
 
 impl Default for Door {
     fn default() -> Self {
-        Self {
-            open: false,
-            toggle: false,
-        }
+        Self { open: false }
     }
 }
 

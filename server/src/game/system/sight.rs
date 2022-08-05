@@ -1,15 +1,15 @@
-use bevy::{
-    prelude::*,
-    utils::{HashMap, HashSet},
-};
+use std::collections::{HashMap, HashSet};
 
-use crate::{component::*, resource::RadialLines};
+use bevy_ecs::prelude::*;
+
+use crate::game::component::*;
+use crate::game::resource::RadialLines;
 
 pub fn system(
     mut set: ParamSet<(
-        Query<(&ReshockEntity, &Position, &Renderable, &Ordering), Without<Player>>,
+        Query<(Entity, &Position, &Renderable, &Ordering), Without<Player>>,
         Query<(&Opaque, &Position)>,
-        Query<(&ReshockEntity, &Position, &mut Sight, &mut Memory), With<Player>>,
+        Query<(Entity, &Position, &mut Sight, &mut Memory), With<Player>>,
     )>,
     lines: Res<RadialLines>,
 ) {
@@ -30,7 +30,7 @@ pub fn system(
         })
         .collect();
 
-    let seeing: HashMap<ReshockEntity, MemoryComponents> = match sight {
+    let seeing: HashMap<Entity, MemoryComponents> = match sight {
         SightKind::Blind => HashMap::new(),
         SightKind::Omniscience => set
             .p0()

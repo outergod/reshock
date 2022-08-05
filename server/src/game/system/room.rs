@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use bevy_ecs::prelude::*;
 use glam::IVec2;
 
-use super::bundle::{Door, Floor, Player, Wall, NPC};
-use super::component;
+use crate::game::bundle::{Door, Floor, Player, Wall, NPC};
+use crate::game::component;
 
 pub struct Room(HashMap<IVec2, char>);
 
@@ -25,10 +25,10 @@ impl From<String> for Room {
     }
 }
 
-pub fn setup(world: &mut World, room: Room) {
+pub fn setup(mut commands: Commands, room: Res<Room>) {
     for (pos, c) in room.0.iter() {
         if *c != ' ' {
-            world.spawn().insert_bundle(Floor {
+            commands.spawn_bundle(Floor {
                 position: component::Position(*pos),
                 ..Default::default()
             });
@@ -36,13 +36,13 @@ pub fn setup(world: &mut World, room: Room) {
 
         match c {
             '@' => {
-                world.spawn().insert_bundle(Player {
+                commands.spawn_bundle(Player {
                     position: component::Position(*pos),
                     ..Default::default()
                 });
             }
             'b' => {
-                world.spawn().insert_bundle(NPC {
+                commands.spawn_bundle(NPC {
                     position: component::Position(*pos),
                     ai: component::AI::ServBot,
                     renderable: component::Renderable::ServBot,
@@ -50,13 +50,13 @@ pub fn setup(world: &mut World, room: Room) {
                 });
             }
             'X' => {
-                world.spawn().insert_bundle(Wall {
+                commands.spawn_bundle(Wall {
                     position: component::Position(*pos),
                     ..Default::default()
                 });
             }
             'O' => {
-                world.spawn().insert_bundle(Door {
+                commands.spawn_bundle(Door {
                     door: component::Door {
                         open: true,
                         ..Default::default()
@@ -66,7 +66,7 @@ pub fn setup(world: &mut World, room: Room) {
                 });
             }
             'o' => {
-                world.spawn().insert_bundle(Door {
+                commands.spawn_bundle(Door {
                     door: component::Door {
                         open: false,
                         ..Default::default()
