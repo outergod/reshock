@@ -7,7 +7,7 @@ pub struct Player {
     pub renderable: component::Renderable,
     pub position: component::Position,
     pub ordering: component::Ordering,
-    pub obstacle: component::Obstacle,
+    pub solid: component::Solid,
     pub sight: component::Sight,
     pub memory: component::Memory,
     pub player: component::Player,
@@ -19,7 +19,7 @@ impl Default for Player {
             renderable: component::Renderable::Human,
             position: Default::default(),
             ordering: Default::default(),
-            obstacle: Default::default(),
+            solid: Default::default(),
             sight: component::Sight {
                 kind: component::SightKind::Eyes,
                 seeing: Default::default(),
@@ -35,7 +35,7 @@ pub struct NPC {
     pub renderable: component::Renderable,
     pub position: component::Position,
     pub ordering: component::Ordering,
-    pub obstacle: component::Obstacle,
+    pub solid: component::Solid,
     pub sight: component::Sight,
     pub memory: component::Memory,
     pub ai: component::AI,
@@ -60,24 +60,22 @@ impl Default for Floor {
 
 #[derive(Bundle)]
 pub struct Wall {
-    pub wall: component::Wall,
     pub room: component::Room,
     pub renderable: component::Renderable,
     pub position: component::Position,
     pub ordering: component::Ordering,
-    pub obstacle: component::Obstacle,
+    pub solid: component::Solid,
     pub opaque: component::Opaque,
 }
 
 impl Default for Wall {
     fn default() -> Self {
         Self {
-            wall: component::Wall,
             room: component::Room,
             renderable: component::Renderable::Wall,
             position: Default::default(),
             ordering: component::Ordering::Wall,
-            obstacle: Default::default(),
+            solid: Default::default(),
             opaque: Default::default(),
         }
     }
@@ -90,8 +88,6 @@ pub struct Door {
     pub renderable: component::Renderable,
     pub position: component::Position,
     pub ordering: component::Ordering,
-    pub obstacle: component::Obstacle,
-    pub opaque: component::Opaque,
 }
 
 impl Default for Door {
@@ -102,8 +98,6 @@ impl Default for Door {
             renderable: component::Renderable::Door,
             position: Default::default(),
             ordering: component::Ordering::Door,
-            obstacle: Default::default(),
-            opaque: Default::default(),
         }
     }
 }

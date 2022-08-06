@@ -3,17 +3,15 @@ package reshock;
 
 service Reshock {
   rpc DumpState(Empty) returns (StateDumpResponse);
-  rpc ProcessCommand(CommandRequest) returns (EventsResponse);
+  rpc ProcessAction(ActionRequest) returns (EventsResponse);
 }
 
 message Empty {}
 
-message PlayerComponent {}
-message WallComponent {}
-message RoomComponent {}
 message DoorComponent {
   bool open = 1;
 }
+
 message RenderableComponent {
   enum Renderable {
     NONE = 0;
@@ -25,9 +23,7 @@ message RenderableComponent {
   }
   Renderable renderable = 1;
 }
-message ObstacleComponent {
-  bool obstacle = 1;
-}
+
 message OrderingComponent {
   enum Ordering {
     FLOOR = 0;
@@ -37,64 +33,26 @@ message OrderingComponent {
   }
   Ordering ordering = 1;
 }
+
 message PositionComponent {
   int32 x = 1;
   int32 y = 2;
 }
-message SightComponent {
-  enum SightKind {
-    BLIND = 0;
-    OMNISCIENCE = 1;
-    EYES = 2;
-  }
 
-  SightKind kind = 1;
-  repeated uint32 seeing = 2;
-}
-message MemoryComponent {
-  repeated RememberedEntity entities = 1;
-}
-message OpaqueComponent {
-  bool opaque = 1;
-}
-message AiComponent {
-  enum AiKind {
-    NONE = 0;
-    SERV_BOT = 1;
-  }
-
-  AiKind ai = 1;
-}
-
-message RememberedEntity {
-  uint32 entity = 1;
-  RenderableComponent renderable = 2;
-  PositionComponent position = 3;
-  OrderingComponent ordering = 4;
-}
-
-message Entity {
-  uint32 entity = 1;
-  optional PlayerComponent player = 2;
-  optional WallComponent wall = 3;
-  optional RoomComponent room = 4;
-  optional DoorComponent door = 5;
-  optional RenderableComponent renderable = 6;
-  optional ObstacleComponent obstacle = 7;
-  optional OrderingComponent ordering = 8;
-  optional PositionComponent position = 9;
-  optional SightComponent sight = 10;
-  optional MemoryComponent memory = 11;
-  optional OpaqueComponent opaque = 12;
-  optional AiComponent ai = 13;
+message State {
+  map<uint64, PositionComponent> position = 1;
+  map<uint64, RenderableComponent> renderable = 2;
+  map<uint64, OrderingComponent> ordering = 3;
+  map<uint64, DoorComponent> door = 4;
 }
 
 message StateDumpResponse {
-  repeated Entity entities = 1;
+  State view = 1;
+  State memory = 2;
 }
 
-message CommandRequest {
-  enum Command {
+message ActionRequest {
+  enum DwimAction {
     UP_LEFT = 0;
     UP = 1;
     UP_RIGHT = 2;
@@ -104,25 +62,38 @@ message CommandRequest {
     DOWN_LEFT = 6;
     LEFT = 7;
   }
-  Command command = 1;
+
+  oneof action {
+    DwimAction dwim = 1;
+  }
 }
 
 message MoveEvent {
-  uint32 entity = 1;
+  uint64 entity = 1;
   int32 x = 2;
   int32 y = 3;
 }
 
 message DoorEvent {
-  uint32 actor = 1;
-  uint32 door = 2;
+  uint64 actor = 1;
+  uint64 door = 2;
   bool open = 3;
+}
+
+message ViewUpdateEvent {
+  State view = 1;
+}
+
+message MemoryUpdateEvent {
+  State memory = 1;
 }
 
 message Event {
   oneof event {
     MoveEvent move = 1;
     DoorEvent door = 2;
+    ViewUpdateEvent view = 3;
+    MemoryUpdateEvent memory = 4;
   }
 }
 

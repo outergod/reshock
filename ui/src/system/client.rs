@@ -48,40 +48,11 @@ pub fn setup(
                         });
                     }
 
-                    if let Some(api::RenderableComponent { renderable }) = entity.renderable {
-                        use api::renderable_component::Renderable;
-                        match Renderable::from_i32(renderable) {
-                            Some(Renderable::None)
-                            | Some(Renderable::Wall)
-                            | Some(Renderable::Door) => {
-                                e.insert(component::Renderable::default());
-                            }
-                            Some(Renderable::Human) => {
-                                e.insert(component::Renderable {
-                                    char: '@',
-                                    color: Color::WHITE,
-                                });
-                            }
-                            Some(Renderable::ServBot) => {
-                                e.insert(component::Renderable {
-                                    char: 'b',
-                                    color: Color::ORANGE_RED,
-                                });
-                            }
-                            Some(Renderable::Floor) => {
-                                e.insert(component::Renderable {
-                                    char: '·',
-                                    color: Color::ALICE_BLUE,
-                                });
-                            }
-                            None => {
-                                log::warn!("Received unknown renderable ID {}", renderable);
-                            }
-                        }
-                    }
-
-                    if let Some(obstacle) = entity.obstacle {
-                        e.insert(component::Obstacle(obstacle.obstacle));
+                    if let Some(Ok(renderable)) = entity
+                        .renderable
+                        .map(|it| -> Result<component::Renderable, _> { it.try_into() })
+                    {
+                        e.insert(renderable);
                     }
 
                     if let Some(api::OrderingComponent { ordering }) = entity.ordering {
@@ -101,33 +72,42 @@ pub fn setup(
                         positions.insert(position.clone());
                     }
 
-                    if let Some(api::SightComponent { kind, seeing }) = entity.sight {
-                        match <i32 as TryInto<component::SightKind>>::try_into(kind) {
-                            Ok(kind) => {
-                                e.insert(component::Sight {
-                                    kind,
-                                    seeing: seeing
-                                        .iter()
-                                        .map(|id| component::ReshockEntity(*id))
-                                        .collect(),
-                                });
-                            }
-                            Err(_) => {
-                                log::warn!("Received unknown sight kind ID {}", kind);
-                            }
-                        }
+                    if let Some(api::SightComponent { seeing }) = entity.sight {
+                        e.insert(component::Sight {
+                            seeing: seeing
+                                .iter()
+                                .map(|id| component::ReshockEntity(*id))
+                                .collect(),
+                        });
                     }
 
                     if let Some(api::MemoryComponent { entities }) = entity.memory {
+                        let entities = entities
+                            .into_iter()
+                            .filter_map(|memory| {
+                                let components: component::MemoryComponents =
+                                    match memory.clone().try_into() {
+                                        Ok(it) => it,
+                                        Err(_) => return None,
+                                    };
+                                Some((component::ReshockEntity(memory.entity), components))
+                            })
+                            .collect();
+
                         e.insert(component::Memory {
                             color: Color::DARK_GRAY,
-                            ..Default::default()
+                            entities,
                         });
                     }
                 }
 
-                for position in positions {
-                    commands.spawn_bundle(bundle::Tile::new(position, &font));
+                for y in 0..=100 {
+                    for x in 0..=100 {
+                        commands.spawn_bundle(bundle::Tile::new(
+                            component::Position((x, y).into()),
+                            &font,
+                        ));
+                    }
                 }
             }
             Err(e) => {

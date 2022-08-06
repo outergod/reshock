@@ -1,16 +1,13 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 use bevy_ecs::prelude::*;
 use glam::IVec2;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Player;
 
-#[derive(Component)]
-pub struct Wall;
-
-#[derive(Component)]
-pub struct Room;
+#[derive(Component, Default)]
+pub struct Position(pub IVec2);
 
 #[derive(Component)]
 pub struct Door {
@@ -23,7 +20,7 @@ impl Default for Door {
     }
 }
 
-#[derive(Component, Clone, Debug)]
+#[derive(Component)]
 pub enum Renderable {
     None,
     Human,
@@ -40,15 +37,6 @@ impl Default for Renderable {
 }
 
 #[derive(Component)]
-pub struct Obstacle(pub bool);
-
-impl Default for Obstacle {
-    fn default() -> Self {
-        Self(true)
-    }
-}
-
-#[derive(Component, Clone, Debug)]
 pub enum Ordering {
     Floor = 0,
     Door = 1,
@@ -62,16 +50,6 @@ impl Default for Ordering {
     }
 }
 
-#[derive(Component, Clone, Debug, Hash, PartialEq, Eq)]
-pub struct Position(pub IVec2);
-
-impl Default for Position {
-    fn default() -> Self {
-        Self((0, 0).into())
-    }
-}
-
-#[derive(Clone)]
 pub enum SightKind {
     Blind,
     Omniscience,
@@ -84,32 +62,14 @@ impl Default for SightKind {
     }
 }
 
-#[derive(Component, Clone, Default)]
+#[derive(Component, Default)]
 pub struct Sight {
     pub kind: SightKind,
     pub seeing: HashSet<Entity>,
 }
 
-#[derive(Debug)]
-pub struct MemoryComponents {
-    pub renderable: Renderable,
-    pub position: Position,
-    pub ordering: Ordering,
-}
-
-#[derive(Default, Component)]
-pub struct Memory {
-    pub entities: HashMap<Entity, MemoryComponents>,
-}
-
-#[derive(Component)]
-pub struct Opaque(pub bool);
-
-impl Default for Opaque {
-    fn default() -> Self {
-        Self(true)
-    }
-}
+#[derive(Component, Default)]
+pub struct Memory(pub World);
 
 #[derive(Component)]
 pub enum AI {
@@ -122,3 +82,12 @@ impl Default for AI {
         Self::None
     }
 }
+
+#[derive(Default, Component)]
+pub struct Opaque;
+
+#[derive(Default, Component)]
+pub struct Solid;
+
+#[derive(Default, Component)]
+pub struct Room;

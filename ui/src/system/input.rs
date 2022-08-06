@@ -16,29 +16,29 @@ pub fn system(
         return;
     }
 
-    if let Some(command) = if keys.just_pressed(KeyCode::A) {
-        Some(api::command_request::Command::Left)
+    if let Some(action) = if keys.just_pressed(KeyCode::A) {
+        Some(api::action_request::Action::Left)
     } else if keys.just_pressed(KeyCode::E) {
-        Some(api::command_request::Command::Right)
+        Some(api::action_request::Action::Right)
     } else if keys.just_pressed(KeyCode::Comma) {
-        Some(api::command_request::Command::Up)
+        Some(api::action_request::Action::Up)
     } else if keys.just_pressed(KeyCode::Q) {
-        Some(api::command_request::Command::Down)
+        Some(api::action_request::Action::Down)
     } else if keys.just_pressed(KeyCode::Apostrophe) {
-        Some(api::command_request::Command::UpLeft)
+        Some(api::action_request::Action::UpLeft)
     } else if keys.just_pressed(KeyCode::Period) {
-        Some(api::command_request::Command::UpRight)
+        Some(api::action_request::Action::UpRight)
     } else if keys.just_pressed(KeyCode::Semicolon) {
-        Some(api::command_request::Command::DownLeft)
+        Some(api::action_request::Action::DownLeft)
     } else if keys.just_pressed(KeyCode::J) {
-        Some(api::command_request::Command::DownRight)
+        Some(api::action_request::Action::DownRight)
     } else {
         None
     } {
         runtime.block_on(async move {
             match client
-                .process_command(api::CommandRequest {
-                    command: command as i32,
+                .process_action(api::ActionRequest {
+                    action: action as i32,
                 })
                 .await
             {
@@ -46,7 +46,7 @@ pub fn system(
                     events.0 = response.into_inner().events.into();
                 }
                 Err(e) => {
-                    log::warn!("Couldn't process command {}", e);
+                    log::warn!("Couldn't process action {}", e);
                 }
             }
         });

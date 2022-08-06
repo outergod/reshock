@@ -31,7 +31,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         size: FONT_SIZE,
         bounding_glyph: FONT_BOUNDING_GLYPH,
     };
-    commands.insert_resource(font);
+    commands.insert_resource(font.clone());
 }
 
 fn adapt_glyph_dimensions(

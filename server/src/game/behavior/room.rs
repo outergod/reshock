@@ -25,55 +25,61 @@ impl From<String> for Room {
     }
 }
 
-pub fn setup(mut commands: Commands, room: Res<Room>) {
+pub fn setup(world: &mut World, room: Room) {
     for (pos, c) in room.0.iter() {
         if *c != ' ' {
-            commands.spawn_bundle(Floor {
+            world.spawn().insert_bundle(Floor {
                 position: component::Position(*pos),
                 ..Default::default()
             });
         }
 
+        let position = component::Position(*pos);
+
         match c {
             '@' => {
-                commands.spawn_bundle(Player {
-                    position: component::Position(*pos),
+                world.spawn().insert_bundle(Player {
+                    position,
                     ..Default::default()
                 });
             }
             'b' => {
-                commands.spawn_bundle(NPC {
-                    position: component::Position(*pos),
+                world.spawn().insert_bundle(NPC {
+                    position,
                     ai: component::AI::ServBot,
                     renderable: component::Renderable::ServBot,
                     ..Default::default()
                 });
             }
             'X' => {
-                commands.spawn_bundle(Wall {
-                    position: component::Position(*pos),
+                world.spawn().insert_bundle(Wall {
+                    position,
                     ..Default::default()
                 });
             }
             'O' => {
-                commands.spawn_bundle(Door {
+                world.spawn().insert_bundle(Door {
+                    position,
                     door: component::Door {
                         open: true,
                         ..Default::default()
                     },
-                    position: component::Position(*pos),
                     ..Default::default()
                 });
             }
             'o' => {
-                commands.spawn_bundle(Door {
-                    door: component::Door {
-                        open: false,
+                world
+                    .spawn()
+                    .insert_bundle(Door {
+                        position,
+                        door: component::Door {
+                            open: false,
+                            ..Default::default()
+                        },
                         ..Default::default()
-                    },
-                    position: component::Position(*pos),
-                    ..Default::default()
-                });
+                    })
+                    .insert(component::Solid)
+                    .insert(component::Opaque);
             }
             '·' | ' ' => {}
             _ => {

@@ -34,9 +34,9 @@ fn radial_lines_origin(r: u8) -> HashMap<IVec2, HashSet<Path>> {
         })
 }
 
-pub fn setup(mut commands: Commands) {
+pub fn setup(world: &mut World) {
     let lines = radial_lines_origin(10);
-    commands.insert_resource(RadialLines(lines));
+    world.insert_resource(RadialLines(lines));
 }
 
 #[cfg(test)]

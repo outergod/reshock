@@ -8,7 +8,7 @@ use bevy::{
 #[derive(Default)]
 pub struct TileDimensions(pub Option<Size>);
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct ReshockFont {
     pub handle: Handle<Font>,
     pub size: f32,

@@ -19,7 +19,9 @@ mod config;
 mod system {
     pub mod client;
     pub mod input;
+    pub mod memory;
     pub mod r#move;
+    pub mod view;
     pub mod wall;
 }
 mod plugin {
@@ -66,6 +68,8 @@ fn main() -> Result<()> {
         .add_system(input::system)
         .add_system(wall::system)
         .add_system(r#move::system)
+        .add_system(view::system)
+        .add_system(memory::system)
         .add_system(bevy::window::close_on_esc)
         .add_system(component_animator_system::<Renderable>)
         .run();
