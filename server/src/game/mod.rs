@@ -45,7 +45,10 @@ impl Default for Game {
             (*behavior).initialize(&mut world);
         }
 
-        let mut effects = vec![Box::new(IntoSystem::into_system(effect::r#move)) as BoxedSystem];
+        let mut effects = vec![
+            Box::new(IntoSystem::into_system(effect::r#move)) as BoxedSystem,
+            Box::new(IntoSystem::into_system(effect::door)) as BoxedSystem,
+        ];
         for effect in effects.iter_mut() {
             (*effect).initialize(&mut world);
         }
@@ -86,6 +89,7 @@ pub struct MoveAction {
 
 #[derive(Debug, Clone)]
 pub struct OpenDoorAction {
+    pub actor: Entity,
     pub entity: Entity,
 }
 
@@ -141,6 +145,7 @@ impl Game {
 
             for effect in &mut self.effects {
                 effect.run((), &mut self.world);
+                effect.apply_buffers(&mut self.world);
             }
 
             for action in self.world.resource_mut::<Reactions>().0.drain(..) {

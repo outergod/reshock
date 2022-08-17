@@ -90,10 +90,10 @@ message MemoryUpdateEvent {
 
 message Event {
   oneof event {
-    MoveEvent move = 1;
-    DoorEvent door = 2;
-    ViewUpdateEvent view = 3;
-    MemoryUpdateEvent memory = 4;
+    ViewUpdateEvent view = 1;
+    MemoryUpdateEvent memory = 2;
+    MoveEvent move = 3;
+    DoorEvent door = 4;
   }
 }
 

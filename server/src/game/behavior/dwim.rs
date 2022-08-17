@@ -46,9 +46,10 @@ pub fn behavior(
 
     match doors.get(&direction) {
         Some(entity) => {
-            reactions
-                .0
-                .push(Action::OpenDoor(OpenDoorAction { entity: *entity }));
+            reactions.0.push(Action::OpenDoor(OpenDoorAction {
+                entity: *entity,
+                actor,
+            }));
 
             Status::Accept
         }
