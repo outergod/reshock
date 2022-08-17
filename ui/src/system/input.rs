@@ -1,3 +1,5 @@
+use api::action_request::Action;
+use api::action_request::DwimAction;
 use api::reshock_client::ReshockClient;
 use bevy::log;
 use bevy::prelude::*;
@@ -17,28 +19,28 @@ pub fn system(
     }
 
     if let Some(action) = if keys.just_pressed(KeyCode::A) {
-        Some(api::action_request::Action::Left)
+        Some(Action::Dwim(DwimAction::Left as i32))
     } else if keys.just_pressed(KeyCode::E) {
-        Some(api::action_request::Action::Right)
+        Some(Action::Dwim(DwimAction::Right as i32))
     } else if keys.just_pressed(KeyCode::Comma) {
-        Some(api::action_request::Action::Up)
+        Some(Action::Dwim(DwimAction::Up as i32))
     } else if keys.just_pressed(KeyCode::Q) {
-        Some(api::action_request::Action::Down)
+        Some(Action::Dwim(DwimAction::Down as i32))
     } else if keys.just_pressed(KeyCode::Apostrophe) {
-        Some(api::action_request::Action::UpLeft)
+        Some(Action::Dwim(DwimAction::UpLeft as i32))
     } else if keys.just_pressed(KeyCode::Period) {
-        Some(api::action_request::Action::UpRight)
+        Some(Action::Dwim(DwimAction::UpRight as i32))
     } else if keys.just_pressed(KeyCode::Semicolon) {
-        Some(api::action_request::Action::DownLeft)
+        Some(Action::Dwim(DwimAction::DownLeft as i32))
     } else if keys.just_pressed(KeyCode::J) {
-        Some(api::action_request::Action::DownRight)
+        Some(Action::Dwim(DwimAction::DownRight as i32))
     } else {
         None
     } {
         runtime.block_on(async move {
             match client
                 .process_action(api::ActionRequest {
-                    action: action as i32,
+                    action: Some(action),
                 })
                 .await
             {

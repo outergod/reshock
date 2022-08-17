@@ -203,6 +203,11 @@ impl Game {
         let (player, sight, memory) = player.get_single().map_err(|_| NoPlayer)?;
 
         let view = {
+            let memory = memory
+                .0
+                .iter()
+                .filter_map(|(e, cs)| (!sight.seeing.contains(&e)).then_some((e.id(), cs.into())));
+
             let entities = entities
                 .iter()
                 .filter_map(|(entity, position, renderable, ordering, door)| {
@@ -213,22 +218,19 @@ impl Game {
                             renderable: Some(renderable.into()),
                             ordering: Some(ordering.into()),
                             door: door.map(|it| it.into()),
+                            memory: None,
                         },
                     ))
                 })
+                .chain(memory)
                 .collect();
 
             api::State { entities }
         };
 
-        let memory = api::State {
-            entities: memory.0.iter().map(|(e, cs)| (e.id(), cs.into())).collect(),
-        };
-
         Ok(api::StateDumpResponse {
             player: player.id(),
             view: Some(view),
-            memory: Some(memory),
         })
     }
 }

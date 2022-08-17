@@ -60,44 +60,13 @@ fn adapt_glyph_dimensions(
 }
 
 fn render(
-    player: Query<(&Sight, &Memory), With<Player>>,
-    renderables: Query<(&ReshockEntity, &Position, &Renderable, &Ordering)>,
+    renderables: Query<(&Position, &Renderable, &Ordering)>,
     mut tiles: Query<(&Position, &mut Text, &mut Transform)>,
     font_resource: Res<ReshockFont>,
 ) {
-    let (seeing, memory, color) = match player.get_single() {
-        Ok((Sight { seeing, .. }, Memory { entities, color })) => (seeing, entities, color),
-        Err(_) => return,
-    };
-
     let view = renderables
         .iter()
-        .filter_map(|(entity, position, renderable, ordering)| {
-            if seeing.contains(&entity) {
-                Some((position, (renderable, *ordering as u8)))
-            } else {
-                None
-            }
-        })
-        .into_grouping_map()
-        .fold_first(|current, _, next| {
-            let (_, l_ordering) = current;
-            let (_, r_ordering) = next;
-            if r_ordering > l_ordering {
-                next
-            } else {
-                current
-            }
-        });
-
-    let memory = memory
-        .iter()
-        .map(|(_, components)| {
-            (
-                &components.position,
-                (&components.renderable, components.ordering as u8),
-            )
-        })
+        .map(|(position, renderable, ordering)| (position, (renderable, *ordering as u8)))
         .into_grouping_map()
         .fold_first(|current, _, next| {
             let (_, l_ordering) = current;
@@ -117,10 +86,6 @@ fn render(
             if let Some((renderable, ordering)) = view.get(position) {
                 section.value = renderable.char.to_string();
                 section.style.color = renderable.color;
-                transform.translation.z = *ordering as f32;
-            } else if let Some((renderable, ordering)) = memory.get(position) {
-                section.value = renderable.char.to_string();
-                section.style.color = color.clone();
                 transform.translation.z = *ordering as f32;
             } else {
                 section.value = " ".to_string();

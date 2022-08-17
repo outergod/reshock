@@ -11,7 +11,6 @@ impl Plugin for ReshockEventsPlugin {
             .add_event::<api::MoveEvent>()
             .add_event::<api::DoorEvent>()
             .add_event::<api::ViewUpdateEvent>()
-            .add_event::<api::MemoryUpdateEvent>()
             .add_system(system);
     }
 }
@@ -21,7 +20,6 @@ pub fn system(
     mut r#move: EventWriter<api::MoveEvent>,
     mut door: EventWriter<api::DoorEvent>,
     mut view: EventWriter<api::ViewUpdateEvent>,
-    mut memory: EventWriter<api::MemoryUpdateEvent>,
 ) {
     let event = match events.0.pop_front() {
         Some(api::Event { event: Some(it) }) => it,
@@ -41,9 +39,6 @@ pub fn system(
         }
         api::event::Event::View(event) => {
             view.send(event);
-        }
-        api::event::Event::Memory(event) => {
-            memory.send(event);
         }
     }
 }

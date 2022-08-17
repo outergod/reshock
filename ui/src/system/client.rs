@@ -1,17 +1,19 @@
+use api::ordering_component::Ordering as ApiOrdering;
+use api::renderable_component::Renderable as ApiRenderable;
 use api::reshock_client::ReshockClient;
-use api::StateDumpResponse;
+use api::*;
 use bevy::log;
 use bevy::prelude::*;
-use bevy::utils::HashSet;
 use tokio::runtime::Runtime;
 use tonic::transport::Channel;
 
-use crate::bundle;
-use crate::component;
+use crate::bundle::*;
+use crate::component::*;
 use crate::resource::ReshockFont;
 
 pub fn setup(
     mut commands: Commands,
+    entities: Query<Entity, With<ReshockEntity>>,
     runtime: Res<Runtime>,
     mut client: ResMut<ReshockClient<Channel>>,
     font: Res<ReshockFont>,
@@ -19,94 +21,114 @@ pub fn setup(
     runtime.block_on(async move {
         match client.dump_state(api::Empty {}).await {
             Ok(response) => {
-                let StateDumpResponse { entities } = response.into_inner();
-                let mut positions = HashSet::new();
+                let StateDumpResponse { player, view } = response.into_inner();
+                let view = match view {
+                    Some(it) => it,
+                    None => {
+                        log::error!("Received empty view state from Reshock");
+                        return;
+                    }
+                };
 
-                for entity in entities {
+                for entity in entities.iter() {
+                    commands.entity(entity).despawn();
+                }
+
+                for (entity, components) in view.entities {
+                    let Components {
+                        position,
+                        renderable,
+                        ordering,
+                        door,
+                        memory,
+                    } = components;
                     let mut e = commands.spawn();
 
-                    e.insert(component::ReshockEntity(entity.entity));
-
-                    if entity.player.is_some() {
-                        e.insert(component::Player);
+                    if entity == player {
+                        e.insert(Player);
                     }
 
-                    if entity.wall.is_some() {
-                        e.insert(component::Wall);
+                    e.insert(ReshockEntity(entity));
+
+                    if let Some(PositionComponent { x, y }) = position {
+                        e.insert(Position((x, y).into()));
                     }
 
-                    if entity.room.is_some() {
-                        e.insert(component::Room);
-                    }
+                    let memory = memory.is_some();
 
-                    if let Some(door) = entity.door {
-                        e.insert(component::Door {
-                            open: door.open,
-                            toggle: false,
-                            open_color: Color::DARK_GRAY,
-                            close_color: Color::WHITE,
-                        });
-                    }
-
-                    if let Some(Ok(renderable)) = entity
-                        .renderable
-                        .map(|it| -> Result<component::Renderable, _> { it.try_into() })
-                    {
-                        e.insert(renderable);
-                    }
-
-                    if let Some(api::OrderingComponent { ordering }) = entity.ordering {
-                        match <i32 as TryInto<component::Ordering>>::try_into(ordering) {
-                            Ok(ordering) => {
-                                e.insert(ordering);
-                            }
-                            Err(_) => {
-                                log::warn!("Received unknown ordering ID {}", ordering);
-                            }
+                    if let Some(RenderableComponent { renderable }) = renderable {
+                        if let Some(renderable) = match ApiRenderable::from_i32(renderable) {
+                            Some(ApiRenderable::None) => Some(Renderable::default()),
+                            Some(ApiRenderable::Wall) => Some(Renderable {
+                                char: 'X',
+                                color: if memory {
+                                    Color::DARK_GRAY
+                                } else {
+                                    Color::rgb(0.169, 0.173, 0.29)
+                                },
+                            }),
+                            Some(ApiRenderable::Door) => Some(Renderable {
+                                char: '+',
+                                color: if memory {
+                                    Color::DARK_GRAY
+                                } else {
+                                    Color::WHITE
+                                },
+                            }),
+                            Some(ApiRenderable::Human) => Some(Renderable {
+                                char: '@',
+                                color: if memory {
+                                    Color::DARK_GRAY
+                                } else {
+                                    Color::WHITE
+                                },
+                            }),
+                            Some(ApiRenderable::ServBot) => Some(Renderable {
+                                char: 'b',
+                                color: if memory {
+                                    Color::DARK_GRAY
+                                } else {
+                                    Color::ORANGE_RED
+                                },
+                            }),
+                            Some(ApiRenderable::Floor) => Some(Renderable {
+                                char: '·',
+                                color: if memory {
+                                    Color::DARK_GRAY
+                                } else {
+                                    Color::rgb(0.169, 0.173, 0.29)
+                                },
+                            }),
+                            None => None,
+                        } {
+                            e.insert(renderable);
                         }
                     }
 
-                    if let Some(api::PositionComponent { x, y }) = entity.position {
-                        let position = component::Position((x, y).into());
-                        e.insert(position.clone());
-                        positions.insert(position.clone());
+                    if let Some(OrderingComponent { ordering }) = ordering {
+                        if let Some(ordering) = match ApiOrdering::from_i32(ordering) {
+                            Some(ApiOrdering::Floor) => Some(Ordering::Floor),
+                            Some(ApiOrdering::Door) => Some(Ordering::Door),
+                            Some(ApiOrdering::Wall) => Some(Ordering::Wall),
+                            Some(ApiOrdering::Other) => Some(Ordering::Other),
+                            _ => None,
+                        } {
+                            e.insert(ordering);
+                        }
                     }
 
-                    if let Some(api::SightComponent { seeing }) = entity.sight {
-                        e.insert(component::Sight {
-                            seeing: seeing
-                                .iter()
-                                .map(|id| component::ReshockEntity(*id))
-                                .collect(),
-                        });
-                    }
-
-                    if let Some(api::MemoryComponent { entities }) = entity.memory {
-                        let entities = entities
-                            .into_iter()
-                            .filter_map(|memory| {
-                                let components: component::MemoryComponents =
-                                    match memory.clone().try_into() {
-                                        Ok(it) => it,
-                                        Err(_) => return None,
-                                    };
-                                Some((component::ReshockEntity(memory.entity), components))
-                            })
-                            .collect();
-
-                        e.insert(component::Memory {
-                            color: Color::DARK_GRAY,
-                            entities,
+                    if let Some(DoorComponent { open }) = door {
+                        e.insert(Door {
+                            open,
+                            open_color: Color::DARK_GRAY,
+                            close_color: Color::WHITE,
                         });
                     }
                 }
 
                 for y in 0..=100 {
                     for x in 0..=100 {
-                        commands.spawn_bundle(bundle::Tile::new(
-                            component::Position((x, y).into()),
-                            &font,
-                        ));
+                        commands.spawn_bundle(Tile::new(Position((x, y).into()), &font));
                     }
                 }
             }

@@ -114,6 +114,7 @@ impl From<&MemoryComponents> for api::Components {
             renderable: Some((&memory.renderable).into()),
             ordering: Some((&memory.ordering).into()),
             door: memory.door.map(|it| (&it).into()),
+            memory: Some(api::MemoryComponent {}),
         }
     }
 }

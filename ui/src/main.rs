@@ -6,31 +6,17 @@ use bevy_pancam::{PanCam, PanCamPlugin};
 use bevy_tweening::component_animator_system;
 use bevy_tweening::TweeningPlugin;
 use component::Renderable;
-use plugin::door::DoorPlugin;
-use plugin::reshock_events::ReshockEventsPlugin;
-use plugin::tile::TilePlugin;
-use system::*;
 use tokio::runtime::Runtime;
 
 use crate::config::Config;
+use crate::plugin::*;
 
+mod bundle;
 mod component;
 mod config;
-mod system {
-    pub mod client;
-    pub mod input;
-    pub mod memory;
-    pub mod r#move;
-    pub mod view;
-    pub mod wall;
-}
-mod plugin {
-    pub mod door;
-    pub mod reshock_events;
-    pub mod tile;
-}
-mod bundle;
+mod plugin;
 mod resource;
+mod system;
 
 const LEVEL01_MUSIC: &'static str = "sshock/music/chicajo/Medical.ogg";
 
@@ -57,19 +43,19 @@ fn main() -> Result<()> {
         .add_plugin(AudioPlugin)
         .add_plugin(TweeningPlugin)
         .add_plugin(TilePlugin)
-        .add_plugin(DoorPlugin)
+        // .add_plugin(DoorPlugin)
         .add_plugin(ReshockEventsPlugin)
         .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(runtime)
         .insert_resource(client)
         .add_startup_system(setup)
         .add_startup_system(start_background_audio)
-        .add_startup_system(client::setup)
-        .add_system(input::system)
-        .add_system(wall::system)
-        .add_system(r#move::system)
-        .add_system(view::system)
-        .add_system(memory::system)
+        .add_startup_system(system::client_setup)
+        .add_system(system::input)
+        // .add_system(wall::system)
+        // .add_system(r#move::system)
+        // .add_system(view::system)
+        // .add_system(memory::system)
         .add_system(bevy::window::close_on_esc)
         .add_system(component_animator_system::<Renderable>)
         .run();

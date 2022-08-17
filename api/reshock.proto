@@ -39,11 +39,14 @@ message PositionComponent {
   int32 y = 2;
 }
 
+message MemoryComponent {}
+
 message Components {
   PositionComponent position = 1;
   RenderableComponent renderable = 2;
   OrderingComponent ordering = 3;
   optional DoorComponent door = 4;
+  optional MemoryComponent memory = 5;
 }
 
 message State {
@@ -53,7 +56,6 @@ message State {
 message StateDumpResponse {
   uint32 player = 1;
   State view = 2;
-  State memory = 3;
 }
 
 message ActionRequest {
@@ -89,16 +91,11 @@ message ViewUpdateEvent {
   State view = 1;
 }
 
-message MemoryUpdateEvent {
-  State memory = 1;
-}
-
 message Event {
   oneof event {
     ViewUpdateEvent view = 1;
-    MemoryUpdateEvent memory = 2;
-    MoveEvent move = 3;
-    DoorEvent door = 4;
+    MoveEvent move = 2;
+    DoorEvent door = 3;
   }
 }
 
