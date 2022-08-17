@@ -77,7 +77,7 @@ impl Reshock for ReshockService {
         request: Request<Empty>,
     ) -> Result<Response<StateDumpResponse>, Status> {
         log::info!("Reshock::dump_state {:?}", request.get_ref());
-        let game = self.game.lock().await;
+        let mut game = self.game.lock().await;
         let response = game.state().map_err(|_| Status::internal("Bla"))?;
 
         Ok(Response::new(response))

@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use bevy_ecs::prelude::*;
 use glam::IVec2;
@@ -6,10 +6,19 @@ use glam::IVec2;
 #[derive(Component, Default)]
 pub struct Player;
 
-#[derive(Component, Default)]
+#[derive(Component, Default, Clone)]
 pub struct Position(pub IVec2);
 
-#[derive(Component)]
+impl From<&Position> for api::PositionComponent {
+    fn from(position: &Position) -> Self {
+        Self {
+            x: position.0.x,
+            y: position.0.y,
+        }
+    }
+}
+
+#[derive(Component, Clone, Copy)]
 pub struct Door {
     pub open: bool,
 }
@@ -20,7 +29,13 @@ impl Default for Door {
     }
 }
 
-#[derive(Component)]
+impl From<&Door> for api::DoorComponent {
+    fn from(door: &Door) -> Self {
+        Self { open: door.open }
+    }
+}
+
+#[derive(Component, Clone)]
 pub enum Renderable {
     None,
     Human,
@@ -36,7 +51,15 @@ impl Default for Renderable {
     }
 }
 
-#[derive(Component)]
+impl From<&Renderable> for api::RenderableComponent {
+    fn from(renderable: &Renderable) -> Self {
+        Self {
+            renderable: *renderable as i32,
+        }
+    }
+}
+
+#[derive(Component, Clone)]
 pub enum Ordering {
     Floor = 0,
     Door = 1,
@@ -47,6 +70,14 @@ pub enum Ordering {
 impl Default for Ordering {
     fn default() -> Self {
         Self::Other
+    }
+}
+
+impl From<&Ordering> for api::OrderingComponent {
+    fn from(ordering: &Ordering) -> Self {
+        Self {
+            ordering: *ordering as i32,
+        }
     }
 }
 
@@ -68,8 +99,27 @@ pub struct Sight {
     pub seeing: HashSet<Entity>,
 }
 
+#[derive(Default)]
+pub struct MemoryComponents {
+    pub position: Position,
+    pub renderable: Renderable,
+    pub ordering: Ordering,
+    pub door: Option<Door>,
+}
+
+impl From<&MemoryComponents> for api::Components {
+    fn from(memory: &MemoryComponents) -> Self {
+        Self {
+            position: Some((&memory.position).into()),
+            renderable: Some((&memory.renderable).into()),
+            ordering: Some((&memory.ordering).into()),
+            door: memory.door.map(|it| (&it).into()),
+        }
+    }
+}
+
 #[derive(Component, Default)]
-pub struct Memory(pub World);
+pub struct Memory(pub HashMap<Entity, MemoryComponents>);
 
 #[derive(Component)]
 pub enum AI {

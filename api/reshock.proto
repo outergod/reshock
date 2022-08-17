@@ -39,16 +39,21 @@ message PositionComponent {
   int32 y = 2;
 }
 
+message Components {
+  PositionComponent position = 1;
+  RenderableComponent renderable = 2;
+  OrderingComponent ordering = 3;
+  optional DoorComponent door = 4;
+}
+
 message State {
-  map<uint64, PositionComponent> position = 1;
-  map<uint64, RenderableComponent> renderable = 2;
-  map<uint64, OrderingComponent> ordering = 3;
-  map<uint64, DoorComponent> door = 4;
+  map<uint32, Components> entities = 1;
 }
 
 message StateDumpResponse {
-  State view = 1;
-  State memory = 2;
+  uint32 player = 1;
+  State view = 2;
+  State memory = 3;
 }
 
 message ActionRequest {
@@ -69,14 +74,14 @@ message ActionRequest {
 }
 
 message MoveEvent {
-  uint64 entity = 1;
+  uint32 entity = 1;
   int32 x = 2;
   int32 y = 3;
 }
 
 message DoorEvent {
-  uint64 actor = 1;
-  uint64 door = 2;
+  uint32 actor = 1;
+  uint32 door = 2;
   bool open = 3;
 }
 

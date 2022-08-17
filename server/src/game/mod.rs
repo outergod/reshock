@@ -2,8 +2,9 @@ use std::{collections::VecDeque, fs, path::Path};
 
 use anyhow::Result;
 use bevy_ecs::prelude::*;
-use bevy_ecs::system::BoxedSystem;
+use bevy_ecs::system::{BoxedSystem, SystemState};
 use glam::IVec2;
+use thiserror::Error;
 
 mod behavior;
 mod bundle;
@@ -15,10 +16,35 @@ const LEVEL01_PATH: &'static str = "rooms/level01.room";
 
 type BoxedBehavior = Box<dyn System<In = (), Out = Status>>;
 
+type State = SystemState<(
+    Query<
+        'static,
+        'static,
+        (
+            Entity,
+            &'static component::Sight,
+            &'static component::Memory,
+        ),
+        With<component::Player>,
+    >,
+    Query<
+        'static,
+        'static,
+        (
+            Entity,
+            &'static component::Position,
+            &'static component::Renderable,
+            &'static component::Ordering,
+            Option<&'static component::Door>,
+        ),
+    >,
+)>;
+
 pub struct Game {
     world: World,
     behaviors: Vec<BoxedBehavior>,
     effects: Vec<BoxedSystem>,
+    state: State,
 }
 
 impl Default for Game {
@@ -48,15 +74,21 @@ impl Default for Game {
         let mut effects = vec![
             Box::new(IntoSystem::into_system(effect::r#move)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::door)) as BoxedSystem,
+            Box::new(IntoSystem::into_system(effect::sight)) as BoxedSystem,
         ];
         for effect in effects.iter_mut() {
             (*effect).initialize(&mut world);
+            (*effect).run((), &mut world);
+            (*effect).apply_buffers(&mut world);
         }
+
+        let state = State::new(&mut world);
 
         Self {
             world,
             behaviors,
             effects,
+            state,
         }
     }
 }
@@ -105,6 +137,10 @@ pub enum Status {
     Continue,
     Reject,
 }
+
+#[derive(Debug, Error)]
+#[error("No player found")]
+pub struct NoPlayer;
 
 impl Game {
     pub fn input(&mut self, action: Action) -> Vec<api::Event> {
@@ -161,11 +197,38 @@ impl Game {
         events
     }
 
-    pub fn state(&self) -> Result<api::StateDumpResponse> {
-        // let _player = self.world.unique(UniqueEntity::Player).ok_or(NoPlayer)?;
+    pub fn state(&mut self) -> Result<api::StateDumpResponse> {
+        let (player, entities) = self.state.get(&self.world);
+
+        let (player, sight, memory) = player.get_single().map_err(|_| NoPlayer)?;
+
+        let view = {
+            let entities = entities
+                .iter()
+                .filter_map(|(entity, position, renderable, ordering, door)| {
+                    sight.seeing.contains(&entity).then_some((
+                        entity.id(),
+                        api::Components {
+                            position: Some(position.into()),
+                            renderable: Some(renderable.into()),
+                            ordering: Some(ordering.into()),
+                            door: door.map(|it| it.into()),
+                        },
+                    ))
+                })
+                .collect();
+
+            api::State { entities }
+        };
+
+        let memory = api::State {
+            entities: memory.0.iter().map(|(e, cs)| (e.id(), cs.into())).collect(),
+        };
+
         Ok(api::StateDumpResponse {
-            view: todo!(),
-            memory: todo!(),
+            player: player.id(),
+            view: Some(view),
+            memory: Some(memory),
         })
     }
 }
