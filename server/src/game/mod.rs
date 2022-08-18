@@ -2,7 +2,7 @@ use std::{collections::VecDeque, fs, path::Path};
 
 use anyhow::Result;
 use bevy_ecs::prelude::*;
-use bevy_ecs::system::{BoxedSystem, SystemState};
+use bevy_ecs::system::BoxedSystem;
 use glam::IVec2;
 use thiserror::Error;
 
@@ -16,35 +16,10 @@ const LEVEL01_PATH: &'static str = "rooms/level01.room";
 
 type BoxedBehavior = Box<dyn System<In = (), Out = Status>>;
 
-type State = SystemState<(
-    Query<
-        'static,
-        'static,
-        (
-            Entity,
-            &'static component::Sight,
-            &'static component::Memory,
-        ),
-        With<component::Player>,
-    >,
-    Query<
-        'static,
-        'static,
-        (
-            Entity,
-            &'static component::Position,
-            &'static component::Renderable,
-            &'static component::Ordering,
-            Option<&'static component::Door>,
-        ),
-    >,
-)>;
-
 pub struct Game {
     world: World,
     behaviors: Vec<BoxedBehavior>,
     effects: Vec<BoxedSystem>,
-    state: State,
 }
 
 impl Default for Game {
@@ -61,6 +36,8 @@ impl Default for Game {
         world.init_resource::<ActiveAction>();
         world.init_resource::<Reactions>();
         world.init_resource::<FollowUps>();
+        world.init_resource::<Events>();
+        world.init_resource::<api::State>();
 
         let mut behaviors = vec![
             Box::new(IntoSystem::into_system(behavior::dwim)) as BoxedBehavior,
@@ -77,6 +54,7 @@ impl Default for Game {
             Box::new(IntoSystem::into_system(effect::god_mode)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::door)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::sight)) as BoxedSystem,
+            Box::new(IntoSystem::into_system(effect::state)) as BoxedSystem,
         ];
         for effect in effects.iter_mut() {
             (*effect).initialize(&mut world);
@@ -84,13 +62,13 @@ impl Default for Game {
             (*effect).apply_buffers(&mut world);
         }
 
-        let state = State::new(&mut world);
+        // let state = State::new(&mut world);
 
         Self {
             world,
             behaviors,
             effects,
-            state,
+            // state,
         }
     }
 }
@@ -140,6 +118,8 @@ pub struct ActiveAction(pub Option<Action>);
 pub struct Reactions(pub Vec<Action>);
 #[derive(Default)]
 pub struct FollowUps(pub Vec<Action>);
+#[derive(Default)]
+pub struct Events(pub Vec<api::Event>);
 
 pub enum Status {
     Accept,
@@ -154,7 +134,7 @@ pub struct NoPlayer;
 impl Game {
     pub fn input(&mut self, action: Action) -> Vec<api::Event> {
         let mut actions = VecDeque::from([action]);
-        let events = Vec::new();
+        let mut events = Vec::new();
 
         loop {
             log::debug!("Current action queue is {:?}", actions);
@@ -203,41 +183,22 @@ impl Game {
                 log::debug!("Queueing followup {:?}", action);
                 actions.push_back(action);
             }
+            for event in self.world.resource_mut::<Events>().0.drain(..) {
+                log::debug!("Queueing event {:?}", event);
+                events.push(event);
+            }
         }
 
         events
     }
 
     pub fn state(&mut self) -> Result<api::StateDumpResponse> {
-        let (player, entities) = self.state.get(&self.world);
-
-        let (player, sight, memory) = player.get_single().map_err(|_| NoPlayer)?;
-
-        let view = {
-            let memory = memory
-                .0
-                .iter()
-                .filter_map(|(e, cs)| (!sight.seeing.contains(&e)).then_some((e.id(), cs.into())));
-
-            let entities = entities
-                .iter()
-                .filter_map(|(entity, position, renderable, ordering, door)| {
-                    sight.seeing.contains(&entity).then_some((
-                        entity.id(),
-                        api::Components {
-                            position: Some(position.into()),
-                            renderable: Some(renderable.into()),
-                            ordering: Some(ordering.into()),
-                            door: door.map(|it| it.into()),
-                            memory: None,
-                        },
-                    ))
-                })
-                .chain(memory)
-                .collect();
-
-            api::State { entities }
-        };
+        let view = self.world.resource::<api::State>().clone();
+        let player = self
+            .world
+            .query_filtered::<Entity, With<component::Player>>()
+            .get_single(&self.world)
+            .unwrap();
 
         Ok(api::StateDumpResponse {
             player: player.id(),

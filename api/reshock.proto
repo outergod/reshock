@@ -91,7 +91,8 @@ message DoorEvent {
 }
 
 message ViewUpdateEvent {
-  State view = 1;
+  uint32 player = 1;
+  State view = 2;
 }
 
 message Event {
