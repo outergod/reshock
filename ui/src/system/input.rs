@@ -1,5 +1,4 @@
-use api::action_request::Action;
-use api::action_request::DwimAction;
+use api::action_request::*;
 use api::reshock_client::ReshockClient;
 use bevy::log;
 use bevy::prelude::*;
@@ -34,6 +33,8 @@ pub fn system(
         Some(Action::Dwim(DwimAction::DownLeft as i32))
     } else if keys.just_pressed(KeyCode::J) {
         Some(Action::Dwim(DwimAction::DownRight as i32))
+    } else if keys.just_pressed(KeyCode::G) {
+        Some(Action::God(GodModeAction {}))
     } else {
         None
     } {

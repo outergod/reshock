@@ -6,15 +6,21 @@ use crate::game::component::*;
 use crate::game::resource::RadialLines;
 
 pub fn effect(
-    mut viewers: Query<(Entity, &Position, &mut Sight, &mut Memory)>,
+    mut viewers: Query<(Entity, &Position, &mut Sight, &mut Memory, Option<&God>)>,
     sights: Query<(Entity, &Position, &Renderable, &Ordering, Option<&Door>)>,
     obstacles: Query<&Position, With<Opaque>>,
     lines: Res<RadialLines>,
 ) {
-    for (entity, position, mut sight, mut memory) in viewers.iter_mut() {
+    for (entity, position, mut sight, mut memory, god) in viewers.iter_mut() {
         let obstacles: HashSet<_> = obstacles.iter().map(|p| p.0 - position.0).collect();
 
-        let view: HashMap<Entity, MemoryComponents> = match sight.kind {
+        let kind = if god.is_some() {
+            &SightKind::Omniscience
+        } else {
+            &sight.kind
+        };
+
+        let view: HashMap<Entity, MemoryComponents> = match kind {
             SightKind::Blind => HashMap::new(),
             SightKind::Omniscience => sights
                 .iter()

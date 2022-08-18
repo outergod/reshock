@@ -6,6 +6,9 @@ use glam::IVec2;
 #[derive(Component, Default)]
 pub struct Player;
 
+#[derive(Component, Default)]
+pub struct God;
+
 #[derive(Component, Default, Clone)]
 pub struct Position(pub IVec2);
 

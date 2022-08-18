@@ -15,49 +15,6 @@ use crate::game::Game;
 mod config;
 mod game;
 
-// impl From<action_request::Action> for dyn game::Action {
-//     fn from(action: action_request::Action) -> Self {
-//         match action {
-//             action_request::Action::UpLeft => game::DwimAction::UpLeft,
-//             action_request::Action::Up => game::DwimAction::Up,
-//             action_request::Action::UpRight => game::DwimAction::UpRight,
-//             action_request::Action::Right => game::DwimAction::Right,
-//             action_request::Action::DownRight => game::DwimAction::DownRight,
-//             action_request::Action::Down => game::DwimAction::Down,
-//             action_request::Action::DownLeft => game::DwimAction::DownLeft,
-//             action_request::Action::Left => game::DwimAction::Left,
-//         }
-//     }
-// }
-
-// impl From<&game::StateQueryItem<'_>> for api::Entity {
-//     fn from(item: &game::StateQueryItem<'_>) -> Self {
-//         Self {
-//             entity: item.entity.id(),
-//             player: item.player.map(|_| api::PlayerComponent {}),
-//             wall: item.wall.map(|_| api::WallComponent {}),
-//             room: item.room.map(|_| api::RoomComponent {}),
-//             door: item.door.map(|door| api::DoorComponent { open: door.open }),
-//             renderable: item.renderable.map(|renderable| api::RenderableComponent {
-//                 renderable: *renderable as i32,
-//             }),
-//             ordering: item.ordering.map(|ordering| api::OrderingComponent {
-//                 ordering: *ordering as i32,
-//             }),
-//             position: item.position.map(|position| api::PositionComponent {
-//                 x: position.0.x,
-//                 y: position.0.y,
-//             }),
-//             sight: item.sight.map(|sight| api::SightComponent {
-//                 seeing: sight.seeing.iter().map(|e| e.id()).collect(),
-//             }),
-//             memory: item.memory.map(|memory| api::MemoryComponent {
-//                 entities: memory.clone().into(),
-//             }),
-//         }
-//     }
-// }
-
 struct ReshockService {
     game: Arc<Mutex<Game>>,
 }
@@ -104,6 +61,7 @@ impl Reshock for ReshockService {
                 Some(DwimAction::Left) => game::Action::Dwim(game::DwimAction::Left),
                 None => return Err(Status::invalid_argument("Dwim index out of bounds")),
             },
+            Some(Action::God(_)) => game::Action::GodMode(None),
             None => return Err(Status::invalid_argument("Action not set")),
         };
 

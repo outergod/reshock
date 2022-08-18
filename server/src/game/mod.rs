@@ -64,6 +64,7 @@ impl Default for Game {
 
         let mut behaviors = vec![
             Box::new(IntoSystem::into_system(behavior::dwim)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::god_mode)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::r#move)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::door)) as BoxedBehavior,
         ];
@@ -73,6 +74,7 @@ impl Default for Game {
 
         let mut effects = vec![
             Box::new(IntoSystem::into_system(effect::r#move)) as BoxedSystem,
+            Box::new(IntoSystem::into_system(effect::god_mode)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::door)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::sight)) as BoxedSystem,
         ];
@@ -97,6 +99,7 @@ impl Default for Game {
 pub enum Action {
     EndTurn,
     Dwim(DwimAction),
+    GodMode(Option<GodModeAction>),
     Move(MoveAction),
     OpenDoor(OpenDoorAction),
 }
@@ -111,6 +114,12 @@ pub enum DwimAction {
     Down,
     DownLeft,
     Left,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct GodModeAction {
+    entity: Entity,
+    activate: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -169,6 +178,8 @@ impl Game {
                     Status::Reject => break,
                 }
             }
+
+            let action = &self.world.resource::<ActiveAction>().0;
 
             if !accepted {
                 log::debug!("Action {:?} rejected", action);

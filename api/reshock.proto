@@ -70,8 +70,11 @@ message ActionRequest {
     LEFT = 7;
   }
 
+  message GodModeAction {}
+
   oneof action {
     DwimAction dwim = 1;
+    GodModeAction god = 2;
   }
 }
 
