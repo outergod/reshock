@@ -19,13 +19,21 @@ pub fn setup(
     runtime.block_on(async move {
         match client.dump_state(api::Empty {}).await {
             Ok(response) => {
-                let StateDumpResponse { player, view } = response.into_inner();
+                let StateDumpResponse {
+                    player,
+                    dimensions,
+                    view,
+                } = response.into_inner();
                 writer.send(api::ViewUpdateEvent { player, view });
 
-                for y in 0..=100 {
-                    for x in 0..=100 {
-                        commands.spawn_bundle(Tile::new(Position((x, y).into()), &font));
+                if let Some(api::Dimensions { x, y }) = dimensions {
+                    for y in 0..=y {
+                        for x in 0..=x {
+                            commands.spawn_bundle(Tile::new(Position((x, y).into()), &font));
+                        }
                     }
+                } else {
+                    log::error!("Received empty dimensions, fatal");
                 }
             }
             Err(e) => {

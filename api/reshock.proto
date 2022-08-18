@@ -53,9 +53,15 @@ message State {
   map<uint32, Components> entities = 1;
 }
 
+message Dimensions {
+  int32 x = 1;
+  int32 y = 2;
+}
+
 message StateDumpResponse {
   uint32 player = 1;
-  State view = 2;
+  Dimensions dimensions = 2;
+  State view = 3;
 }
 
 message ActionRequest {

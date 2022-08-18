@@ -62,13 +62,10 @@ impl Default for Game {
             (*effect).apply_buffers(&mut world);
         }
 
-        // let state = State::new(&mut world);
-
         Self {
             world,
             behaviors,
             effects,
-            // state,
         }
     }
 }
@@ -200,8 +197,22 @@ impl Game {
             .get_single(&self.world)
             .unwrap();
 
+        let (x, y) = self
+            .world
+            .query_filtered::<&component::Position, With<component::Renderable>>()
+            .iter(&self.world)
+            .fold(
+                (0, 0),
+                |(max_x, max_y), component::Position(IVec2 { x, y })| {
+                    (max_x.max(*x), max_y.max(*y))
+                },
+            );
+
+        let dimensions = api::Dimensions { x, y };
+
         Ok(api::StateDumpResponse {
             player: player.id(),
+            dimensions: Some(dimensions),
             view: Some(view),
         })
     }
