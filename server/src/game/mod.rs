@@ -181,7 +181,7 @@ impl Game {
                 actions.push_back(action);
             }
             for event in self.world.resource_mut::<Events>().0.drain(..) {
-                log::debug!("Queueing event {:?}", event);
+                log::debug!("Queueing event {}", event);
                 events.push(event);
             }
         }

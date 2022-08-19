@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+use std::fmt::Display;
 
 use bevy::{
     math::ivec2,
@@ -37,6 +38,22 @@ impl Default for TransitionState {
 pub struct ReshockEvents {
     pub queue: VecDeque<api::Event>,
     pub state: TransitionState,
+}
+
+impl Display for ReshockEvents {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let separator = " -> ".to_string();
+        for token in self
+            .queue
+            .iter()
+            .map(|event| event.to_string())
+            .intersperse(separator)
+        {
+            write!(f, "{}", token)?;
+        }
+
+        Ok(())
+    }
 }
 
 pub struct Deltas(pub HashSet<IVec2>);

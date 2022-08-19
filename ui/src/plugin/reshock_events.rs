@@ -35,7 +35,7 @@ pub fn system(
         None => return,
     };
 
-    log::debug!("Processing event {:?}", event);
+    log::debug!("Processing event {}", event);
 
     events.state = TransitionState::Active;
 

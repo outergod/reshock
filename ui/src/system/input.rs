@@ -47,7 +47,7 @@ pub fn system(
             {
                 Ok(response) => {
                     events.queue = response.into_inner().events.into();
-                    log::debug!("Received event queue {:?}", events.queue);
+                    log::debug!("Received event queue {}", *events);
                 }
                 Err(e) => {
                     log::warn!("Couldn't process action {}", e);

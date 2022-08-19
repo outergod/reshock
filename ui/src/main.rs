@@ -1,3 +1,5 @@
+#![feature(iter_intersperse)]
+
 use anyhow::{Context, Result};
 use api::reshock_client::ReshockClient;
 use bevy::prelude::*;
