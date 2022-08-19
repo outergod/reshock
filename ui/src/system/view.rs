@@ -59,7 +59,7 @@ pub fn system(
                         },
                     }),
                     Some(ApiRenderable::Door) => Some(Renderable {
-                        char: '+',
+                        char: ' ',
                         color: if memory {
                             Color::DARK_GRAY
                         } else {
@@ -118,6 +118,10 @@ pub fn system(
 
             if let Some(WallComponent {}) = wall {
                 e.insert(Wall);
+            }
+
+            if memory {
+                e.insert(Memory);
             }
         }
     }

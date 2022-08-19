@@ -10,6 +10,9 @@ pub struct Player;
 #[derive(Component)]
 pub struct Wall;
 
+#[derive(Component)]
+pub struct Memory;
+
 #[derive(Component, Clone, Debug)]
 pub struct Renderable {
     pub char: char,

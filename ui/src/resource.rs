@@ -1,6 +1,7 @@
 use std::collections::VecDeque;
 
 use bevy::{
+    math::ivec2,
     prelude::*,
     utils::{HashMap, HashSet},
 };
@@ -22,3 +23,23 @@ pub struct RadialLines(pub HashMap<IVec2, HashSet<Path>>);
 
 #[derive(Debug, Default)]
 pub struct ReshockEvents(pub VecDeque<api::Event>);
+
+pub struct Deltas(pub HashSet<IVec2>);
+
+impl Default for Deltas {
+    fn default() -> Self {
+        let deltas: HashSet<_> = (-1..=1)
+            .flat_map(|x| {
+                (-1..=1).filter_map(move |y| {
+                    if x == 0 && y == 0 {
+                        None
+                    } else {
+                        Some(ivec2(x, y))
+                    }
+                })
+            })
+            .collect();
+
+        Self(deltas)
+    }
+}

@@ -15,7 +15,7 @@ pub struct TilePlugin;
 impl Plugin for TilePlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup)
-            .add_system(render)
+            .add_system(render.after("view"))
             .add_system(adapt_glyph_dimensions)
             .add_system(position)
             .init_resource::<TileDimensions>()

@@ -1,6 +1,6 @@
 use bevy::{math::ivec2, prelude::*, utils::HashSet};
 
-use crate::component::*;
+use crate::{component::*, resource::Deltas};
 
 const EMPTY: char = ' ';
 const CROSS: char = '╋';
@@ -17,24 +17,19 @@ const VWALL: char = '┃';
 const SWALL: char = '█';
 
 pub fn system(
+    changed: Query<(), Or<(Changed<Door>, Changed<Wall>)>>,
     mut set: ParamSet<(
         Query<(&mut Renderable, &Position), With<Wall>>,
         Query<&Position, Or<(With<Wall>, With<Door>)>>,
     )>,
+    deltas: Res<Deltas>,
 ) {
-    let index: HashSet<_> = set.p1().iter().map(|p| p.0).collect();
+    if changed.is_empty() {
+        return;
+    }
 
-    let deltas: HashSet<_> = (-1..=1)
-        .flat_map(|x| {
-            (-1..=1).filter_map(move |y| {
-                if x == 0 && y == 0 {
-                    None
-                } else {
-                    Some(ivec2(x, y))
-                }
-            })
-        })
-        .collect();
+    let index: HashSet<_> = set.p1().iter().map(|p| p.0).collect();
+    let deltas = &deltas.0;
 
     let cross: HashSet<_> = [ivec2(1, 0), ivec2(-1, 0), ivec2(0, 1), ivec2(0, -1)]
         .into_iter()
@@ -117,7 +112,7 @@ pub fn system(
             .filter(|n| index.contains(&(position.0 + *n)))
             .collect();
 
-        if neighbors == deltas {
+        if neighbors == *deltas {
             renderable.char = EMPTY;
         } else if blcorner_1.is_subset(&neighbors) {
             renderable.char = BLCORNER;
