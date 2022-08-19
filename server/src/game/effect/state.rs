@@ -5,7 +5,14 @@ use crate::game::Events;
 
 pub fn effect(
     player: Query<(Entity, &Sight, &Memory), With<Player>>,
-    entities: Query<(Entity, &Position, &Renderable, &Ordering, Option<&Door>)>,
+    entities: Query<(
+        Entity,
+        &Position,
+        &Renderable,
+        &Ordering,
+        Option<&Door>,
+        Option<&Wall>,
+    )>,
     mut state: ResMut<api::State>,
     mut events: ResMut<Events>,
 ) {
@@ -18,7 +25,7 @@ pub fn effect(
 
     let entities = entities
         .iter()
-        .filter_map(|(entity, position, renderable, ordering, door)| {
+        .filter_map(|(entity, position, renderable, ordering, door, wall)| {
             sight.seeing.contains(&entity).then_some((
                 entity.id(),
                 api::Components {
@@ -26,6 +33,7 @@ pub fn effect(
                     renderable: Some(renderable.into()),
                     ordering: Some(ordering.into()),
                     door: door.map(|it| it.into()),
+                    wall: wall.map(|it| it.into()),
                     memory: None,
                 },
             ))

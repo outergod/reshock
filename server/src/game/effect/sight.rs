@@ -7,7 +7,14 @@ use crate::game::resource::RadialLines;
 
 pub fn effect(
     mut viewers: Query<(Entity, &Position, &mut Sight, &mut Memory, Option<&God>)>,
-    sights: Query<(Entity, &Position, &Renderable, &Ordering, Option<&Door>)>,
+    sights: Query<(
+        Entity,
+        &Position,
+        &Renderable,
+        &Ordering,
+        Option<&Door>,
+        Option<&Wall>,
+    )>,
     obstacles: Query<&Position, With<Opaque>>,
     lines: Res<RadialLines>,
 ) {
@@ -24,7 +31,7 @@ pub fn effect(
             SightKind::Blind => HashMap::new(),
             SightKind::Omniscience => sights
                 .iter()
-                .map(|(entity, position, renderable, ordering, door)| {
+                .map(|(entity, position, renderable, ordering, door, wall)| {
                     (
                         entity.clone(),
                         MemoryComponents {
@@ -32,6 +39,7 @@ pub fn effect(
                             renderable: renderable.clone(),
                             ordering: ordering.clone(),
                             door: door.cloned(),
+                            wall: wall.cloned(),
                         },
                     )
                 })
@@ -41,28 +49,31 @@ pub fn effect(
 
                 sights
                     .iter()
-                    .filter_map(|(seen_entity, seen_position, renderable, ordering, door)| {
-                        let position = seen_position.0 - position.0;
-                        if lines
-                            .0
-                            .get(&position)
-                            .unwrap_or(&empty)
-                            .iter()
-                            .any(|path| !path.iter().any(|p| obstacles.contains(p)))
-                        {
-                            Some((
-                                seen_entity.clone(),
-                                MemoryComponents {
-                                    position: seen_position.clone(),
-                                    renderable: renderable.clone(),
-                                    ordering: ordering.clone(),
-                                    door: door.cloned(),
-                                },
-                            ))
-                        } else {
-                            None
-                        }
-                    })
+                    .filter_map(
+                        |(seen_entity, seen_position, renderable, ordering, door, wall)| {
+                            let position = seen_position.0 - position.0;
+                            if lines
+                                .0
+                                .get(&position)
+                                .unwrap_or(&empty)
+                                .iter()
+                                .any(|path| !path.iter().any(|p| obstacles.contains(p)))
+                            {
+                                Some((
+                                    seen_entity.clone(),
+                                    MemoryComponents {
+                                        position: seen_position.clone(),
+                                        renderable: renderable.clone(),
+                                        ordering: ordering.clone(),
+                                        door: door.cloned(),
+                                        wall: wall.cloned(),
+                                    },
+                                ))
+                            } else {
+                                None
+                            }
+                        },
+                    )
                     .collect()
             }
         };

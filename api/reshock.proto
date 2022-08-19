@@ -41,12 +41,15 @@ message PositionComponent {
 
 message MemoryComponent {}
 
+message WallComponent {}
+
 message Components {
   PositionComponent position = 1;
   RenderableComponent renderable = 2;
   OrderingComponent ordering = 3;
   optional DoorComponent door = 4;
   optional MemoryComponent memory = 5;
+  optional WallComponent wall = 6;
 }
 
 message State {

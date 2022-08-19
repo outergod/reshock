@@ -31,6 +31,7 @@ pub fn system(
                 ordering,
                 door,
                 memory,
+                wall,
             } = components;
             let mut e = commands.spawn();
 
@@ -50,7 +51,7 @@ pub fn system(
                 if let Some(renderable) = match ApiRenderable::from_i32(renderable) {
                     Some(ApiRenderable::None) => Some(Renderable::default()),
                     Some(ApiRenderable::Wall) => Some(Renderable {
-                        char: 'X',
+                        char: ' ',
                         color: if memory {
                             Color::DARK_GRAY
                         } else {
@@ -113,6 +114,10 @@ pub fn system(
                     open_color: Color::DARK_GRAY,
                     close_color: Color::WHITE,
                 });
+            }
+
+            if let Some(WallComponent {}) = wall {
+                e.insert(Wall);
             }
         }
     }

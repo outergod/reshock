@@ -66,6 +66,7 @@ pub struct Wall {
     pub ordering: component::Ordering,
     pub solid: component::Solid,
     pub opaque: component::Opaque,
+    pub wall: component::Wall,
 }
 
 impl Default for Wall {
@@ -77,6 +78,7 @@ impl Default for Wall {
             ordering: component::Ordering::Wall,
             solid: Default::default(),
             opaque: Default::default(),
+            wall: Default::default(),
         }
     }
 }

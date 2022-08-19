@@ -52,6 +52,7 @@ fn main() -> Result<()> {
         .add_startup_system(system::client_setup)
         .add_system(system::input)
         .add_system(system::view)
+        .add_system(system::wall)
         .add_system(bevy::window::close_on_esc)
         .add_system(component_animator_system::<Renderable>)
         .run();

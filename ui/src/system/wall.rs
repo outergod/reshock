@@ -14,12 +14,12 @@ const BLCORNER: char = '┗';
 const BRCORNER: char = '┛';
 const HWALL: char = '━';
 const VWALL: char = '┃';
-const SWALL: char = '□';
+const SWALL: char = '█';
 
 pub fn system(
     mut set: ParamSet<(
         Query<(&mut Renderable, &Position), With<Wall>>,
-        Query<&Position, With<Room>>,
+        Query<&Position, Or<(With<Wall>, With<Door>)>>,
     )>,
 ) {
     let index: HashSet<_> = set.p1().iter().map(|p| p.0).collect();
@@ -156,7 +156,5 @@ pub fn system(
         } else {
             renderable.char = SWALL;
         }
-
-        renderable.color = Color::rgb(0.169, 0.173, 0.29);
     }
 }

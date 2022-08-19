@@ -7,6 +7,9 @@ pub struct ReshockEntity(pub u32);
 #[derive(Component)]
 pub struct Player;
 
+#[derive(Component)]
+pub struct Wall;
+
 #[derive(Component, Clone, Debug)]
 pub struct Renderable {
     pub char: char,

@@ -6,6 +6,15 @@ use glam::IVec2;
 #[derive(Component, Default)]
 pub struct Player;
 
+#[derive(Component, Default, Clone, Copy)]
+pub struct Wall;
+
+impl From<&Wall> for api::WallComponent {
+    fn from(_: &Wall) -> Self {
+        Self {}
+    }
+}
+
 #[derive(Component, Default)]
 pub struct God;
 
@@ -108,6 +117,7 @@ pub struct MemoryComponents {
     pub renderable: Renderable,
     pub ordering: Ordering,
     pub door: Option<Door>,
+    pub wall: Option<Wall>,
 }
 
 impl From<&MemoryComponents> for api::Components {
@@ -117,6 +127,7 @@ impl From<&MemoryComponents> for api::Components {
             renderable: Some((&memory.renderable).into()),
             ordering: Some((&memory.ordering).into()),
             door: memory.door.map(|it| (&it).into()),
+            wall: memory.wall.map(|it| (&it).into()),
             memory: Some(api::MemoryComponent {}),
         }
     }
