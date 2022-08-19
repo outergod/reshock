@@ -14,7 +14,7 @@ const BLCORNER: char = '┗';
 const BRCORNER: char = '┛';
 const HWALL: char = '━';
 const VWALL: char = '┃';
-const SWALL: char = '█';
+const SWALL: char = '░';
 
 pub fn system(
     changed: Query<(), Or<(Changed<Door>, Changed<Wall>)>>,

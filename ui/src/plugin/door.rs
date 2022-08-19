@@ -13,7 +13,7 @@ const VDOOR: char = '║';
 const HDOOR: char = '═';
 // const VDOOR: char = '╎';
 // const HDOOR: char = '╌';
-const DOOR: char = '+';
+const EMPTY: char = ' ';
 
 const DOOR_OPEN_SOUND: &'static str = "sshock/sounds/00206.wav";
 
@@ -95,7 +95,7 @@ pub fn render(
         } else if hdoor.is_subset(&neighbors) {
             renderable.char = HDOOR;
         } else {
-            renderable.char = DOOR;
+            renderable.char = EMPTY;
         }
 
         renderable.color = if door.open || memory.is_some() {
