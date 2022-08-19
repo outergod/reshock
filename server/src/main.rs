@@ -33,7 +33,7 @@ impl Reshock for ReshockService {
         &self,
         request: Request<Empty>,
     ) -> Result<Response<StateDumpResponse>, Status> {
-        log::info!("Reshock::dump_state {:?}", request.get_ref());
+        log::debug!("Reshock::dump_state {:?}", request.get_ref());
         let mut game = self.game.lock().await;
         let response = game.state().map_err(|_| Status::internal("Bla"))?;
 
@@ -46,7 +46,7 @@ impl Reshock for ReshockService {
     ) -> Result<Response<EventsResponse>, Status> {
         use action_request::{Action, DwimAction};
 
-        log::info!("Reshock::process_action {:?}", request.get_ref());
+        log::debug!("Reshock::process_action {:?}", request.get_ref());
         let mut game = self.game.lock().await;
 
         let action = match request.into_inner().action {

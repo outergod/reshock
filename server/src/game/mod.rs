@@ -41,6 +41,8 @@ impl Default for Game {
 
         let mut behaviors = vec![
             Box::new(IntoSystem::into_system(behavior::dwim)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::end_turn)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::ai)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::god_mode)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::r#move)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::door)) as BoxedBehavior,
@@ -72,8 +74,9 @@ impl Default for Game {
 
 #[derive(Debug, Clone)]
 pub enum Action {
-    EndTurn,
     Dwim(DwimAction),
+    AI(Entity),
+    EndTurn,
     GodMode(Option<GodModeAction>),
     Move(MoveAction),
     OpenDoor(OpenDoorAction),
