@@ -2,6 +2,7 @@ use bevy::log;
 use bevy::prelude::*;
 
 use crate::resource::ReshockEvents;
+use crate::resource::TransitionState;
 
 pub struct ReshockEventsPlugin;
 
@@ -21,7 +22,11 @@ pub fn system(
     mut door: EventWriter<api::DoorEvent>,
     mut view: EventWriter<api::ViewUpdateEvent>,
 ) {
-    let event = match events.0.pop_front() {
+    if events.state == TransitionState::Active {
+        return;
+    }
+
+    let event = match events.queue.pop_front() {
         Some(api::Event { event: Some(it) }) => it,
         Some(api::Event { event: None }) => {
             log::warn!("Received empty event");
@@ -29,6 +34,10 @@ pub fn system(
         }
         None => return,
     };
+
+    log::debug!("Processing event {:?}", event);
+
+    events.state = TransitionState::Active;
 
     match event {
         api::event::Event::Move(event) => {

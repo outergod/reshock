@@ -5,11 +5,14 @@ use bevy::log;
 use bevy::prelude::*;
 
 use crate::component::*;
+use crate::resource::ReshockEvents;
+use crate::resource::TransitionState;
 
 pub fn system(
     mut commands: Commands,
     entities: Query<Entity, With<ReshockEntity>>,
     mut reader: EventReader<api::ViewUpdateEvent>,
+    mut events: ResMut<ReshockEvents>,
 ) {
     for api::ViewUpdateEvent { player, view } in reader.iter() {
         let view = match view {
@@ -124,5 +127,7 @@ pub fn system(
                 e.insert(Memory);
             }
         }
+
+        events.state = TransitionState::Inactive;
     }
 }

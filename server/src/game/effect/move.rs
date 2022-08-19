@@ -1,8 +1,13 @@
 use bevy_ecs::prelude::*;
 
+use crate::game::Events;
 use crate::game::{component::*, Action, ActiveAction, MoveAction};
 
-pub fn effect(action: Res<ActiveAction>, mut positions: Query<(Entity, &mut Position)>) {
+pub fn effect(
+    action: Res<ActiveAction>,
+    mut positions: Query<(Entity, &mut Position)>,
+    mut events: ResMut<Events>,
+) {
     let MoveAction {
         entity,
         position: target,
@@ -17,6 +22,13 @@ pub fn effect(action: Res<ActiveAction>, mut positions: Query<(Entity, &mut Posi
     {
         Some(mut position) => {
             position.0 = *target;
+            events.0.push(api::Event {
+                event: Some(api::event::Event::Move(api::MoveEvent {
+                    entity: entity.id(),
+                    x: target.x,
+                    y: target.y,
+                })),
+            });
         }
         None => {
             log::warn!(

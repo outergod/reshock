@@ -13,7 +13,7 @@ pub fn system(
     mut client: ResMut<ReshockClient<Channel>>,
     mut events: ResMut<ReshockEvents>,
 ) {
-    if !events.0.is_empty() {
+    if !events.queue.is_empty() {
         return;
     }
 
@@ -46,7 +46,8 @@ pub fn system(
                 .await
             {
                 Ok(response) => {
-                    events.0 = response.into_inner().events.into();
+                    events.queue = response.into_inner().events.into();
+                    log::debug!("Received event queue {:?}", events.queue);
                 }
                 Err(e) => {
                     log::warn!("Couldn't process action {}", e);

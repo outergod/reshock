@@ -21,8 +21,23 @@ pub type Path = Vec<IVec2>;
 #[derive(Debug)]
 pub struct RadialLines(pub HashMap<IVec2, HashSet<Path>>);
 
+#[derive(Debug, PartialEq)]
+pub enum TransitionState {
+    Active,
+    Inactive,
+}
+
+impl Default for TransitionState {
+    fn default() -> Self {
+        Self::Inactive
+    }
+}
+
 #[derive(Debug, Default)]
-pub struct ReshockEvents(pub VecDeque<api::Event>);
+pub struct ReshockEvents {
+    pub queue: VecDeque<api::Event>,
+    pub state: TransitionState,
+}
 
 pub struct Deltas(pub HashSet<IVec2>);
 

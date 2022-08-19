@@ -44,6 +44,7 @@ fn main() -> Result<()> {
         .add_plugin(TweeningPlugin)
         .add_plugin(TilePlugin)
         .add_plugin(ReshockEventsPlugin)
+        .add_plugin(DoorPlugin)
         .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(runtime)
         .insert_resource(client)
@@ -54,7 +55,7 @@ fn main() -> Result<()> {
         .add_system(system::input)
         .add_system(system::view.label("view"))
         .add_system(system::wall)
-        .add_system(system::door)
+        .add_system(system::r#move)
         .add_system(bevy::window::close_on_esc)
         .add_system(component_animator_system::<Renderable>)
         .run();
