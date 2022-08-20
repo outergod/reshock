@@ -606,15 +606,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_pancam"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "32ba4b3d360adfdb816f1b467d4e66fe34e7438f861d4832b475b5b7cf98ab4b"
-dependencies = [
- "bevy",
-]
-
-[[package]]
 name = "bevy_pbr"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3082,7 +3073,6 @@ dependencies = [
  "api",
  "bevy",
  "bevy_kira_audio",
- "bevy_pancam",
  "bevy_tweening",
  "config",
  "itertools",

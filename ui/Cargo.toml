@@ -6,7 +6,6 @@ edition = "2021"
 [dependencies]
 api = { path = "../api" }
 tonic = "0.8"
-bevy_pancam = "0.5"
 ab_glyph = "0.2.6"
 itertools = "0.10"
 anyhow = "1.0"
