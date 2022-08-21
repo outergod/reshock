@@ -12,6 +12,7 @@ impl Plugin for ReshockEventsPlugin {
             .add_event::<api::MoveEvent>()
             .add_event::<api::DoorEvent>()
             .add_event::<api::ViewUpdateEvent>()
+            .add_event::<api::SpotEvent>()
             .add_system(system);
     }
 }
@@ -21,6 +22,7 @@ pub fn system(
     mut r#move: EventWriter<api::MoveEvent>,
     mut door: EventWriter<api::DoorEvent>,
     mut view: EventWriter<api::ViewUpdateEvent>,
+    mut spot: EventWriter<api::SpotEvent>,
 ) {
     if events.state == TransitionState::Active {
         return;
@@ -48,6 +50,9 @@ pub fn system(
         }
         api::event::Event::View(event) => {
             view.send(event);
+        }
+        api::event::Event::Spot(event) => {
+            spot.send(event);
         }
     }
 }

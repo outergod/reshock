@@ -5,8 +5,11 @@ use api::reshock_client::ReshockClient;
 use bevy::prelude::*;
 use bevy_kira_audio::{Audio, AudioPlugin};
 use bevy_tweening::component_animator_system;
+use bevy_tweening::TweenCompleted;
 use bevy_tweening::TweeningPlugin;
 use component::Renderable;
+use resource::ReshockEvents;
+use resource::TransitionState;
 use tokio::runtime::Runtime;
 
 use crate::config::Config;
@@ -23,6 +26,14 @@ const LEVEL01_MUSIC: &'static str = "sshock/music/chicajo/Medical.ogg";
 
 fn start_background_audio(asset_server: Res<AssetServer>, audio: Res<Audio>) {
     audio.play_looped(asset_server.load(LEVEL01_MUSIC));
+}
+
+fn tween(reader: EventReader<TweenCompleted>, mut events: ResMut<ReshockEvents>) {
+    if reader.is_empty() {
+        return;
+    }
+
+    events.state = TransitionState::Inactive;
 }
 
 fn main() -> Result<()> {
@@ -50,6 +61,8 @@ fn main() -> Result<()> {
         .add_system(system::view.label("view"))
         .add_system(system::wall)
         .add_system(system::r#move)
+        .add_system(system::spot)
+        .add_system(tween)
         .add_system(bevy::window::close_on_esc)
         .add_system(component_animator_system::<Renderable>)
         .run();

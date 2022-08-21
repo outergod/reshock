@@ -11,6 +11,7 @@ pub struct Player {
     pub sight: component::Sight,
     pub memory: component::Memory,
     pub player: component::Player,
+    pub description: component::Description,
 }
 
 impl Default for Player {
@@ -22,10 +23,11 @@ impl Default for Player {
             solid: Default::default(),
             sight: component::Sight {
                 kind: component::SightKind::Eyes,
-                seeing: Default::default(),
+                ..Default::default()
             },
             memory: Default::default(),
             player: component::Player,
+            description: "The Hacker".into(),
         }
     }
 }
@@ -39,6 +41,7 @@ pub struct NPC {
     pub sight: component::Sight,
     pub memory: component::Memory,
     pub ai: component::AI,
+    pub description: component::Description,
 }
 
 #[derive(Bundle)]
@@ -46,6 +49,7 @@ pub struct Floor {
     pub renderable: component::Renderable,
     pub position: component::Position,
     pub ordering: component::Ordering,
+    pub description: component::Description,
 }
 
 impl Default for Floor {
@@ -54,6 +58,7 @@ impl Default for Floor {
             renderable: component::Renderable::Floor,
             position: Default::default(),
             ordering: component::Ordering::Floor,
+            description: "Flooring".into(),
         }
     }
 }
@@ -67,6 +72,7 @@ pub struct Wall {
     pub solid: component::Solid,
     pub opaque: component::Opaque,
     pub wall: component::Wall,
+    pub description: component::Description,
 }
 
 impl Default for Wall {
@@ -79,6 +85,7 @@ impl Default for Wall {
             solid: Default::default(),
             opaque: Default::default(),
             wall: Default::default(),
+            description: "A wall".into(),
         }
     }
 }
@@ -90,6 +97,7 @@ pub struct Door {
     pub renderable: component::Renderable,
     pub position: component::Position,
     pub ordering: component::Ordering,
+    pub description: component::Description,
 }
 
 impl Default for Door {
@@ -100,6 +108,7 @@ impl Default for Door {
             renderable: component::Renderable::Door,
             position: Default::default(),
             ordering: component::Ordering::Door,
+            description: "A door".into(),
         }
     }
 }

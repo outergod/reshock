@@ -1,12 +1,14 @@
+use std::time::Instant;
+
 use bevy_ecs::prelude::*;
 
 use crate::game::component::*;
-use crate::game::Events;
+use crate::game::{Events, *};
 
 pub fn effect(
+    action: Res<ActiveAction>,
     player: Query<(Entity, &Sight, &Memory), With<Player>>,
     entities: Query<(
-        Entity,
         &Position,
         &Renderable,
         &Ordering,
@@ -16,29 +18,43 @@ pub fn effect(
     mut state: ResMut<api::State>,
     mut events: ResMut<Events>,
 ) {
+    match action.0 {
+        Some(Action::View) => {}
+        _ => return,
+    }
+
+    let now = Instant::now();
+
     let (player, sight, memory) = player.get_single().expect("Player not found");
 
-    let memory = memory
+    let view = sight.seeing.iter().filter_map(|e| {
+        entities
+            .get(*e)
+            .ok()
+            .map(|(position, renderable, ordering, door, wall)| {
+                (
+                    e.id(),
+                    api::Components {
+                        position: Some(position.into()),
+                        renderable: Some(renderable.into()),
+                        ordering: Some(ordering.into()),
+                        door: door.map(|it| it.into()),
+                        wall: wall.map(|it| it.into()),
+                        memory: None,
+                    },
+                )
+            })
+    });
+
+    let entities = memory
         .0
         .iter()
-        .filter_map(|(e, cs)| (!sight.seeing.contains(&e)).then_some((e.id(), cs.into())));
-
-    let entities = entities
-        .iter()
-        .filter_map(|(entity, position, renderable, ordering, door, wall)| {
-            sight.seeing.contains(&entity).then_some((
-                entity.id(),
-                api::Components {
-                    position: Some(position.into()),
-                    renderable: Some(renderable.into()),
-                    ordering: Some(ordering.into()),
-                    door: door.map(|it| it.into()),
-                    wall: wall.map(|it| it.into()),
-                    memory: None,
-                },
-            ))
+        .filter_map(|(pos, memory)| {
+            (!sight.mask.contains(&pos))
+                .then_some(memory.iter().map(|cs| (cs.entity.id(), cs.into())))
         })
-        .chain(memory)
+        .flatten()
+        .chain(view)
         .collect();
 
     *state = api::State { entities };
@@ -49,4 +65,7 @@ pub fn effect(
             view: Some(state.clone()),
         })),
     });
+
+    let duration = Instant::now() - now;
+    log::debug!("Time taken: {}µs", duration.as_micros());
 }

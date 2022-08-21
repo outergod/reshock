@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
+use bevy_ecs::prelude::*;
 use glam::{ivec2, IVec2};
 
 pub type Path = Vec<IVec2>;
@@ -25,4 +26,9 @@ impl Default for Deltas {
 
         Self(deltas)
     }
+}
+
+#[derive(Default)]
+pub struct SpatialHash {
+    pub cells: HashMap<IVec2, HashSet<Entity>>,
 }

@@ -6,6 +6,15 @@ use glam::IVec2;
 #[derive(Component, Default)]
 pub struct Player;
 
+#[derive(Component, Default)]
+pub struct Description(pub String);
+
+impl From<&str> for Description {
+    fn from(s: &str) -> Self {
+        Self(s.to_string())
+    }
+}
+
 #[derive(Component, Default, Clone, Copy)]
 pub struct Wall;
 
@@ -18,7 +27,7 @@ impl From<&Wall> for api::WallComponent {
 #[derive(Component, Default)]
 pub struct God;
 
-#[derive(Component, Default, Clone)]
+#[derive(Component, Default, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct Position(pub IVec2);
 
 impl From<&Position> for api::PositionComponent {
@@ -109,10 +118,11 @@ impl Default for SightKind {
 pub struct Sight {
     pub kind: SightKind,
     pub seeing: HashSet<Entity>,
+    pub mask: HashSet<IVec2>,
 }
 
-#[derive(Default)]
 pub struct MemoryComponents {
+    pub entity: Entity,
     pub position: Position,
     pub renderable: Renderable,
     pub ordering: Ordering,
@@ -134,7 +144,16 @@ impl From<&MemoryComponents> for api::Components {
 }
 
 #[derive(Component, Default)]
-pub struct Memory(pub HashMap<Entity, MemoryComponents>);
+pub struct Memory(pub HashMap<IVec2, Vec<MemoryComponents>>);
+
+impl Memory {
+    pub fn entities(&self) -> HashSet<Entity> {
+        self.0
+            .values()
+            .flat_map(|set| set.iter().map(|memory| memory.entity))
+            .collect()
+    }
+}
 
 #[derive(Component)]
 pub enum AI {

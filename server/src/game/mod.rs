@@ -1,3 +1,4 @@
+use std::time::Instant;
 use std::{collections::VecDeque, fs, path::Path};
 
 use anyhow::Result;
@@ -39,7 +40,10 @@ impl Default for Game {
         world.init_resource::<FollowUps>();
         world.init_resource::<Events>();
         world.init_resource::<resource::Deltas>();
+        world.init_resource::<resource::SpatialHash>();
         world.init_resource::<api::State>();
+
+        world.insert_resource(ActiveAction(Some(Action::View)));
 
         let mut behaviors = vec![
             Box::new(IntoSystem::into_system(behavior::dwim)) as BoxedBehavior,
@@ -48,6 +52,8 @@ impl Default for Game {
             Box::new(IntoSystem::into_system(behavior::god_mode)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::r#move)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::door)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::view)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::spot)) as BoxedBehavior,
         ];
         for behavior in behaviors.iter_mut() {
             (*behavior).initialize(&mut world);
@@ -57,7 +63,10 @@ impl Default for Game {
             Box::new(IntoSystem::into_system(effect::r#move)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::god_mode)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::door)) as BoxedSystem,
+            Box::new(IntoSystem::into_system(effect::spatial)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::sight)) as BoxedSystem,
+            Box::new(IntoSystem::into_system(effect::spot)) as BoxedSystem,
+            Box::new(IntoSystem::into_system(effect::memory)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::state)) as BoxedSystem,
         ];
         for effect in effects.iter_mut() {
@@ -82,6 +91,8 @@ pub enum Action {
     GodMode(Option<GodModeAction>),
     Move(MoveAction),
     OpenDoor(OpenDoorAction),
+    View,
+    Spot(SpotAction),
 }
 
 #[derive(Debug, Clone)]
@@ -114,6 +125,12 @@ pub struct OpenDoorAction {
     pub entity: Entity,
 }
 
+#[derive(Debug, Clone)]
+pub struct SpotAction {
+    pub entity: Entity,
+    pub sound: Option<api::spot_event::SpotSound>,
+}
+
 #[derive(Default)]
 pub struct ActiveAction(pub Option<Action>);
 #[derive(Default)]
@@ -137,6 +154,8 @@ impl Game {
     pub fn input(&mut self, action: Action) -> Vec<api::Event> {
         let mut actions = VecDeque::from([action]);
         let mut events = Vec::new();
+
+        let now = Instant::now();
 
         loop {
             log::debug!("Current action queue is {:?}", actions);
@@ -190,6 +209,9 @@ impl Game {
                 events.push(event);
             }
         }
+
+        let duration = Instant::now() - now;
+        log::debug!("Time taken: {}µs", duration.as_micros());
 
         events
     }

@@ -1,12 +1,14 @@
 use bevy_ecs::prelude::*;
 
-use crate::game::Events;
-use crate::game::{component::*, Action, ActiveAction, MoveAction};
+use crate::game::component::*;
+use crate::game::{Events, *};
 
 pub fn effect(
     action: Res<ActiveAction>,
+    sight: Query<&Sight, With<Player>>,
     mut positions: Query<(Entity, &mut Position)>,
     mut events: ResMut<Events>,
+    mut reactions: ResMut<Reactions>,
 ) {
     let MoveAction {
         entity,
@@ -22,13 +24,19 @@ pub fn effect(
     {
         Some(mut position) => {
             position.0 = *target;
-            events.0.push(api::Event {
-                event: Some(api::event::Event::Move(api::MoveEvent {
-                    entity: entity.id(),
-                    x: target.x,
-                    y: target.y,
-                })),
-            });
+            reactions.0.push(Action::View);
+
+            if let Ok(sight) = sight.get_single() {
+                if sight.seeing.contains(entity) {
+                    events.0.push(api::Event {
+                        event: Some(api::event::Event::Move(api::MoveEvent {
+                            entity: entity.id(),
+                            x: target.x,
+                            y: target.y,
+                        })),
+                    });
+                }
+            }
         }
         None => {
             log::warn!(

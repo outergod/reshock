@@ -48,6 +48,11 @@ pub fn setup(world: &mut World, room: Room) {
                     position,
                     ai: component::AI::ServBot,
                     renderable: component::Renderable::ServBot,
+                    sight: component::Sight {
+                        kind: component::SightKind::Eyes,
+                        ..Default::default()
+                    },
+                    description: "Serv-Bot unit".into(),
                     ..Default::default()
                 });
             }

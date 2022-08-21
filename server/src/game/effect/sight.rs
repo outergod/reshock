@@ -1,85 +1,61 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
+use std::time::Instant;
 
 use bevy_ecs::prelude::*;
 
 use crate::game::component::*;
-use crate::game::resource::RadialLines;
+use crate::game::resource::*;
+use crate::game::*;
 
 pub fn effect(
-    mut viewers: Query<(Entity, &Position, &mut Sight, &mut Memory, Option<&God>)>,
-    sights: Query<(
-        Entity,
-        &Position,
-        &Renderable,
-        &Ordering,
-        Option<&Door>,
-        Option<&Wall>,
-    )>,
+    action: Res<ActiveAction>,
+    mut viewers: Query<(&Position, &mut Sight, Option<&God>)>,
     obstacles: Query<&Position, With<Opaque>>,
     lines: Res<RadialLines>,
+    spatial: Res<SpatialHash>,
 ) {
-    for (entity, position, mut sight, mut memory, god) in viewers.iter_mut() {
-        let obstacles: HashSet<_> = obstacles.iter().map(|p| p.0 - position.0).collect();
+    match action.0 {
+        Some(Action::View) => {}
+        _ => return,
+    }
 
+    let now = Instant::now();
+
+    for (position, mut sight, god) in viewers.iter_mut() {
         let kind = if god.is_some() {
             &SightKind::Omniscience
         } else {
             &sight.kind
         };
 
-        let view: HashMap<Entity, MemoryComponents> = match kind {
-            SightKind::Blind => HashMap::new(),
-            SightKind::Omniscience => sights
-                .iter()
-                .map(|(entity, position, renderable, ordering, door, wall)| {
-                    (
-                        entity.clone(),
-                        MemoryComponents {
-                            position: position.clone(),
-                            renderable: renderable.clone(),
-                            ordering: ordering.clone(),
-                            door: door.cloned(),
-                            wall: wall.cloned(),
-                        },
-                    )
-                })
-                .collect(),
+        let mut mask = match kind {
+            SightKind::Blind => HashSet::new(),
+            SightKind::Omniscience => spatial.cells.keys().cloned().collect(),
             SightKind::Eyes => {
-                let empty = HashSet::new();
-
-                sights
+                let obstacles: HashSet<_> = obstacles.iter().map(|p| p.0 - position.0).collect();
+                lines
+                    .0
                     .iter()
-                    .filter_map(
-                        |(seen_entity, seen_position, renderable, ordering, door, wall)| {
-                            let position = seen_position.0 - position.0;
-                            if lines
-                                .0
-                                .get(&position)
-                                .unwrap_or(&empty)
-                                .iter()
-                                .any(|path| !path.iter().any(|p| obstacles.contains(p)))
-                            {
-                                Some((
-                                    seen_entity.clone(),
-                                    MemoryComponents {
-                                        position: seen_position.clone(),
-                                        renderable: renderable.clone(),
-                                        ordering: ordering.clone(),
-                                        door: door.cloned(),
-                                        wall: wall.cloned(),
-                                    },
-                                ))
-                            } else {
-                                None
-                            }
-                        },
-                    )
+                    .filter_map(|(pos, paths)| {
+                        paths
+                            .iter()
+                            .any(|path| !path.iter().any(|p| obstacles.contains(p)))
+                            .then_some(position.0 + *pos)
+                    })
                     .collect()
             }
         };
 
-        sight.seeing = view.keys().cloned().collect();
-        sight.seeing.insert(entity);
-        memory.0.extend(view);
+        mask.insert(position.0);
+
+        let view = mask
+            .iter()
+            .flat_map(|pos| spatial.cells.get(pos).cloned().unwrap_or_default())
+            .collect();
+        sight.mask = mask;
+        sight.seeing = view;
     }
+
+    let duration = Instant::now() - now;
+    log::debug!("Time taken: {}µs", duration.as_micros());
 }

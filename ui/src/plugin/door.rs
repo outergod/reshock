@@ -21,7 +21,7 @@ pub struct DoorPlugin;
 
 impl Plugin for DoorPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(event).add_system(render).add_system(tween);
+        app.add_system(event).add_system(render);
     }
 }
 
@@ -104,12 +104,4 @@ pub fn render(
             Color::WHITE
         }
     }
-}
-
-fn tween(reader: EventReader<TweenCompleted>, mut events: ResMut<ReshockEvents>) {
-    if reader.is_empty() {
-        return;
-    }
-
-    events.state = TransitionState::Inactive;
 }

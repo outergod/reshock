@@ -104,11 +104,21 @@ message ViewUpdateEvent {
   State view = 2;
 }
 
+message SpotEvent {
+  enum SpotSound {
+    SERV_BOT = 0;
+  }
+
+  uint32 entity = 1;
+  SpotSound sound = 2;
+}
+
 message Event {
   oneof event {
     ViewUpdateEvent view = 1;
     MoveEvent move = 2;
     DoorEvent door = 3;
+    SpotEvent spot = 4;
   }
 }
 
