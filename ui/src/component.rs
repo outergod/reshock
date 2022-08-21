@@ -8,6 +8,9 @@ pub struct ReshockEntity(pub u32);
 pub struct Player;
 
 #[derive(Component)]
+pub struct Focus;
+
+#[derive(Component)]
 pub struct Wall;
 
 #[derive(Component)]

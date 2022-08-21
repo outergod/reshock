@@ -1,6 +1,10 @@
-use bevy::prelude::*;
+// use std::time::Duration;
 
-use crate::{component::*, resource::*};
+use bevy::prelude::*;
+// use bevy_tweening::{lens::TransformPositionLens, Animator, EaseMethod, Tween, TweeningType};
+
+use crate::component::*;
+use crate::resource::*;
 
 pub struct CameraPlugin;
 
@@ -16,12 +20,12 @@ impl Plugin for CameraPlugin {
 }
 
 fn follow(
-    player: Query<&Position, With<Player>>,
+    entity: Query<&Position, Changed<Focus>>,
     mut camera: Query<&mut Transform, With<Camera>>,
     dimensions: Res<TileDimensions>,
 ) {
-    let (x, y) = match player.get_single() {
-        Ok(Position(IVec2 { x, y })) => (*x as f32, *y as f32),
+    let IVec2 { x, y } = match entity.get_single() {
+        Ok(Position(it)) => *it,
         Err(_) => return,
     };
 
@@ -31,7 +35,45 @@ fn follow(
     };
 
     for mut transform in camera.iter_mut() {
-        transform.translation.x = (x + 0.5) * size.width;
-        transform.translation.y = (y - 0.5) * size.height;
+        transform.translation.x = (x as f32 + 0.5) * size.width;
+        transform.translation.y = (y as f32 - 0.5) * size.height;
     }
 }
+
+// fn follow(
+//     mut reader: EventReader<api::MoveEvent>,
+//     camera: Query<(Entity, &Transform), With<Camera>>,
+//     dimensions: Res<TileDimensions>,
+//     mut commands: Commands,
+// ) {
+//     let (camera, transform) = match camera.get_single() {
+//         Ok(it) => it,
+//         Err(_) => return,
+//     };
+
+//     let size = match dimensions.0 {
+//         Some(it) => it,
+//         None => return,
+//     };
+
+//     for api::MoveEvent { entity: _, x, y } in reader.iter() {
+//         let lens = TransformPositionLens {
+//             start: transform.translation,
+//             end: (
+//                 (*x as f32 + 0.5) * size.width,
+//                 (*y as f32 - 0.5) * size.height,
+//                 transform.translation.z,
+//             )
+//                 .into(),
+//         };
+
+//         let tween = Tween::new(
+//             EaseMethod::Linear,
+//             TweeningType::Once,
+//             Duration::from_secs_f32(0.1),
+//             lens,
+//         );
+
+//         commands.entity(camera).insert(Animator::new(tween));
+//     }
+// }

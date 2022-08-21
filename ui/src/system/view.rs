@@ -40,6 +40,7 @@ pub fn system(
 
             if entity == *player {
                 e.insert(Player);
+                e.insert(Focus);
             }
 
             e.insert(ReshockEntity(entity));
