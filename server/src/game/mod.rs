@@ -4,6 +4,7 @@ use anyhow::Result;
 use bevy_ecs::prelude::*;
 use bevy_ecs::system::BoxedSystem;
 use glam::IVec2;
+use rand::prelude::*;
 use thiserror::Error;
 
 mod behavior;
@@ -37,6 +38,7 @@ impl Default for Game {
         world.init_resource::<Reactions>();
         world.init_resource::<FollowUps>();
         world.init_resource::<Events>();
+        world.init_resource::<resource::Deltas>();
         world.init_resource::<api::State>();
 
         let mut behaviors = vec![
@@ -76,7 +78,7 @@ impl Default for Game {
 pub enum Action {
     Dwim(DwimAction),
     AI(Entity),
-    EndTurn,
+    EndTurn(Entity),
     GodMode(Option<GodModeAction>),
     Move(MoveAction),
     OpenDoor(OpenDoorAction),
@@ -175,7 +177,7 @@ impl Game {
                 effect.apply_buffers(&mut self.world);
             }
 
-            for action in self.world.resource_mut::<Reactions>().0.drain(..) {
+            for action in self.world.resource_mut::<Reactions>().0.drain(..).rev() {
                 log::debug!("Queueing reaction {:?}", action);
                 actions.push_front(action);
             }

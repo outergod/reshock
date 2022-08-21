@@ -5,9 +5,9 @@ use itertools::Itertools;
 use crate::resource::ReshockFont;
 use crate::{component::*, resource::TileDimensions};
 
-const FONT_PATH: &'static str = "fonts/Hack-Regular.ttf";
+// const FONT_PATH: &'static str = "fonts/Hack-Regular.ttf";
 // const FONT_PATH: &'static str = "fonts/DejaVuSansMono.ttf";
-// const FONT_PATH: &'static str = "fonts/FiraCode-Regular.otf";
+const FONT_PATH: &'static str = "fonts/FiraCode-Regular.otf";
 const FONT_SIZE: f32 = 30.0;
 const FONT_BOUNDING_GLYPH: char = '@';
 

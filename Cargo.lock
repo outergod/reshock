@@ -3057,6 +3057,7 @@ dependencies = [
  "glam",
  "itertools",
  "log",
+ "rand",
  "serde",
  "thiserror",
  "tokio",

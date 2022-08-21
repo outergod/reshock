@@ -29,7 +29,7 @@ pub fn behavior(
         return Status::Reject;
     }
 
-    followups.0.push(Action::EndTurn);
+    followups.0.push(Action::EndTurn(*entity));
 
     Status::Accept
 }
