@@ -122,7 +122,6 @@ pub struct Sight {
 }
 
 pub struct MemoryComponents {
-    pub entity: Entity,
     pub position: Position,
     pub renderable: Renderable,
     pub ordering: Ordering,
@@ -144,16 +143,7 @@ impl From<&MemoryComponents> for api::Components {
 }
 
 #[derive(Component, Default)]
-pub struct Memory(pub HashMap<IVec2, Vec<MemoryComponents>>);
-
-impl Memory {
-    pub fn entities(&self) -> HashSet<Entity> {
-        self.0
-            .values()
-            .flat_map(|set| set.iter().map(|memory| memory.entity))
-            .collect()
-    }
-}
+pub struct Memory(pub HashMap<Entity, MemoryComponents>);
 
 #[derive(Component)]
 pub enum AI {

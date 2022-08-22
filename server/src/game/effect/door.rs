@@ -1,7 +1,7 @@
 use bevy_ecs::prelude::*;
 
+use crate::game::Events;
 use crate::game::{component::*, Action, ActiveAction, OpenDoorAction};
-use crate::game::{Events, Reactions};
 
 pub fn effect(
     action: Res<ActiveAction>,

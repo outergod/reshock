@@ -1,4 +1,5 @@
 use bevy_ecs::prelude::*;
+use itertools::Itertools;
 
 use crate::game::component::*;
 use crate::game::{Events, *};
@@ -18,7 +19,7 @@ pub fn effect(
             };
 
             for (entity, sight, memory) in viewers.iter() {
-                let entities = memory.entities();
+                let mut entities = memory.0.keys();
 
                 if sight.seeing.contains(&player) && !entities.contains(&player) {
                     reactions.0.push(Action::Spot(SpotAction {

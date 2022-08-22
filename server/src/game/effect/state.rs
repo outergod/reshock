@@ -49,11 +49,7 @@ pub fn effect(
     let entities = memory
         .0
         .iter()
-        .filter_map(|(pos, memory)| {
-            (!sight.mask.contains(&pos))
-                .then_some(memory.iter().map(|cs| (cs.entity.id(), cs.into())))
-        })
-        .flatten()
+        .map(|(e, cs)| (e.id(), cs.into()))
         .chain(view)
         .collect();
 

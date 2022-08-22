@@ -1,11 +1,12 @@
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::time::Instant;
 
 use bevy_ecs::prelude::*;
 use glam::IVec2;
+use itertools::Itertools;
 
 use crate::game::component::*;
-use crate::game::resource::*;
 use crate::game::*;
 
 pub fn effect(
@@ -18,7 +19,6 @@ pub fn effect(
         Option<&Door>,
         Option<&Wall>,
     )>,
-    spatial: Res<SpatialHash>,
 ) {
     match action.0 {
         Some(Action::View) => {}
@@ -28,36 +28,40 @@ pub fn effect(
     let now = Instant::now();
 
     for (sight, mut memory) in viewers.iter_mut() {
+        let index: HashMap<IVec2, HashSet<Entity>> = memory
+            .0
+            .iter()
+            .map(|(e, cs)| (cs.position.0, e))
+            .into_grouping_map()
+            .collect();
+
         sight.mask.iter().for_each(|pos| {
-            memory.0.remove(&pos);
+            if let Some(entities) = index.get(&pos) {
+                entities.iter().for_each(|e| {
+                    memory.0.remove(&e);
+                })
+            }
         });
 
-        let view: HashMap<IVec2, Vec<MemoryComponents>> = sight
-            .mask
+        let view: HashMap<Entity, MemoryComponents> = sight
+            .seeing
             .iter()
-            .filter_map(|pos| {
-                spatial.cells.get(pos).map(|entities| {
-                    (
-                        pos.clone(),
-                        entities
-                            .iter()
-                            .filter_map(|e| {
-                                sights.get(*e).ok().map(
-                                    |(position, renderable, ordering, door, wall)| {
-                                        MemoryComponents {
-                                            entity: *e,
-                                            position: position.clone(),
-                                            renderable: renderable.clone(),
-                                            ordering: ordering.clone(),
-                                            door: door.cloned(),
-                                            wall: wall.cloned(),
-                                        }
-                                    },
-                                )
-                            })
-                            .collect(),
-                    )
-                })
+            .filter_map(|e| {
+                sights
+                    .get(*e)
+                    .ok()
+                    .map(|(position, renderable, ordering, door, wall)| {
+                        (
+                            *e,
+                            MemoryComponents {
+                                position: position.clone(),
+                                renderable: renderable.clone(),
+                                ordering: ordering.clone(),
+                                door: door.cloned(),
+                                wall: wall.cloned(),
+                            },
+                        )
+                    })
             })
             .collect();
 
