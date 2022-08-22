@@ -8,7 +8,6 @@ pub fn effect(
     sight: Query<&Sight, With<Player>>,
     mut positions: Query<(Entity, &mut Position)>,
     mut events: ResMut<Events>,
-    mut reactions: ResMut<Reactions>,
 ) {
     let MoveAction {
         entity,
@@ -24,7 +23,6 @@ pub fn effect(
     {
         Some(mut position) => {
             position.0 = *target;
-            reactions.0.push(Action::View);
 
             if let Ok(sight) = sight.get_single() {
                 if sight.seeing.contains(entity) {

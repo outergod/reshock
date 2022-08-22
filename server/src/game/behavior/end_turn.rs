@@ -19,6 +19,7 @@ pub fn behavior(
         for entity in ai.iter() {
             followups.0.push(Action::AI(entity));
         }
+        followups.0.push(Action::View);
     }
 
     Status::Accept

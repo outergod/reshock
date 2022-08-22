@@ -8,7 +8,6 @@ pub fn effect(
     mut doors: Query<(Entity, &mut Door)>,
     mut commands: Commands,
     mut events: ResMut<Events>,
-    mut reactions: ResMut<Reactions>,
 ) {
     let OpenDoorAction { actor, entity } = match &action.0 {
         Some(Action::OpenDoor(it)) => it,
@@ -25,7 +24,6 @@ pub fn effect(
                 .entity(*entity)
                 .remove::<Solid>()
                 .remove::<Opaque>();
-            reactions.0.push(Action::View);
             events.0.push(api::Event {
                 event: Some(api::event::Event::Door(api::DoorEvent {
                     actor: actor.id(),
