@@ -1,29 +1,8 @@
-use std::collections::HashMap;
-
 use bevy_ecs::prelude::*;
-use glam::IVec2;
 
 use crate::game::bundle::{Door, Floor, Player, Wall, NPC};
 use crate::game::component;
-
-pub struct Room(HashMap<IVec2, char>);
-
-impl From<String> for Room {
-    fn from(s: String) -> Self {
-        let room = s
-            .lines()
-            .rev()
-            .enumerate()
-            .flat_map(|(y, line)| {
-                line.chars()
-                    .enumerate()
-                    .map(move |(x, c)| ((x as i32, y as i32).into(), c))
-            })
-            .collect();
-
-        Self(room)
-    }
-}
+use crate::game::resource::Room;
 
 pub fn setup(world: &mut World, room: Room) {
     for (pos, c) in room.0.iter() {

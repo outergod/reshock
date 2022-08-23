@@ -38,19 +38,3 @@ pub fn setup(world: &mut World) {
     let lines = radial_lines_origin(10);
     world.insert_resource(RadialLines(lines));
 }
-
-#[cfg(test)]
-mod test {
-    // use bevy::math::IVec2;
-
-    use super::radial_lines_origin;
-
-    #[test]
-    fn test_lines() {
-        let lines = radial_lines_origin(2);
-        println!("{:#?}", lines.keys());
-
-        // let lines = radial_lines_origin(10);
-        // println!("{:#?}", lines.get(&IVec2::new(1, -1)));
-    }
-}

@@ -12,6 +12,7 @@ mod behavior;
 mod bundle;
 mod component;
 mod effect;
+mod pathfinding;
 mod resource;
 
 const LEVEL01_PATH: &'static str = "rooms/level01.room";
@@ -28,7 +29,7 @@ impl Default for Game {
     fn default() -> Self {
         let mut world = World::new();
 
-        let room: behavior::Room = fs::read_to_string(Path::new("assets").join(LEVEL01_PATH))
+        let room: resource::Room = fs::read_to_string(Path::new("assets").join(LEVEL01_PATH))
             .unwrap()
             .into();
 

@@ -1,4 +1,4 @@
-#![feature(downcast_unchecked)]
+#![feature(downcast_unchecked, is_some_with)]
 
 use std::sync::Arc;
 

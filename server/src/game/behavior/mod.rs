@@ -21,4 +21,3 @@ pub use view::behavior as view;
 
 pub use radial_lines::setup as radial_lines;
 pub use room::setup as room;
-pub use room::Room;

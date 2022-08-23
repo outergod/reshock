@@ -32,3 +32,22 @@ impl Default for Deltas {
 pub struct SpatialHash {
     pub cells: HashMap<IVec2, HashSet<Entity>>,
 }
+
+pub struct Room(pub HashMap<IVec2, char>);
+
+impl From<String> for Room {
+    fn from(s: String) -> Self {
+        let room = s
+            .lines()
+            .rev()
+            .enumerate()
+            .flat_map(|(y, line)| {
+                line.chars()
+                    .enumerate()
+                    .map(move |(x, c)| ((x as i32, y as i32).into(), c))
+            })
+            .collect();
+
+        Self(room)
+    }
+}
