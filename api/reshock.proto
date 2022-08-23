@@ -77,6 +77,7 @@ message ActionRequest {
     DOWN = 5;
     DOWN_LEFT = 6;
     LEFT = 7;
+    CLOSE = 8;
   }
 
   message GodModeAction {}

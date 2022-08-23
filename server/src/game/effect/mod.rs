@@ -7,7 +7,8 @@ mod spatial;
 mod spot;
 mod state;
 
-pub use door::effect as door;
+pub use door::close as door_close;
+pub use door::open as door_open;
 pub use god_mode::effect as god_mode;
 pub use memory::effect as memory;
 pub use r#move::effect as r#move;

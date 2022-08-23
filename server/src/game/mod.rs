@@ -46,7 +46,8 @@ impl Default for Game {
         world.insert_resource(ActiveAction(Some(Action::View)));
 
         let mut behaviors = vec![
-            Box::new(IntoSystem::into_system(behavior::dwim)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::dwim_move)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::dwim_close)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::end_turn)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::ai)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::god_mode)) as BoxedBehavior,
@@ -62,7 +63,8 @@ impl Default for Game {
         let mut effects = vec![
             Box::new(IntoSystem::into_system(effect::r#move)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::god_mode)) as BoxedSystem,
-            Box::new(IntoSystem::into_system(effect::door)) as BoxedSystem,
+            Box::new(IntoSystem::into_system(effect::door_open)) as BoxedSystem,
+            Box::new(IntoSystem::into_system(effect::door_close)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::spatial)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::sight)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::spot)) as BoxedSystem,
@@ -91,6 +93,7 @@ pub enum Action {
     GodMode(Option<GodModeAction>),
     Move(MoveAction),
     OpenDoor(OpenDoorAction),
+    CloseDoor(CloseDoorAction),
     View,
     Spot(SpotAction),
 }
@@ -105,6 +108,7 @@ pub enum DwimAction {
     Down,
     DownLeft,
     Left,
+    Close,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -121,6 +125,12 @@ pub struct MoveAction {
 
 #[derive(Debug, Clone)]
 pub struct OpenDoorAction {
+    pub actor: Entity,
+    pub entity: Entity,
+}
+
+#[derive(Debug, Clone)]
+pub struct CloseDoorAction {
     pub actor: Entity,
     pub entity: Entity,
 }

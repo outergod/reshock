@@ -1,11 +1,11 @@
 use bevy_ecs::prelude::*;
 
 use crate::game::Events;
-use crate::game::{component::*, Action, ActiveAction, OpenDoorAction};
+use crate::game::{component::*, *};
 
-pub fn effect(
+pub fn open(
     action: Res<ActiveAction>,
-    mut doors: Query<(Entity, &mut Door)>,
+    mut doors: Query<&mut Door>,
     mut commands: Commands,
     mut events: ResMut<Events>,
 ) {
@@ -14,11 +14,8 @@ pub fn effect(
         _ => return,
     };
 
-    match doors
-        .iter_mut()
-        .find_map(|(e, d)| if e == *entity { Some(d) } else { None })
-    {
-        Some(mut door) => {
+    match doors.get_mut(*entity) {
+        Ok(mut door) => {
             door.open = true;
             commands
                 .entity(*entity)
@@ -32,9 +29,41 @@ pub fn effect(
                 })),
             });
         }
-        None => {
+        Err(_) => {
             log::warn!(
                 "Invalid open door action, entity {:?} does not have Door component",
+                entity
+            );
+        }
+    }
+}
+
+pub fn close(
+    action: Res<ActiveAction>,
+    mut doors: Query<&mut Door>,
+    mut commands: Commands,
+    mut events: ResMut<Events>,
+) {
+    let CloseDoorAction { actor, entity } = match &action.0 {
+        Some(Action::CloseDoor(it)) => it,
+        _ => return,
+    };
+
+    match doors.get_mut(*entity) {
+        Ok(mut door) => {
+            door.open = false;
+            commands.entity(*entity).insert(Solid).insert(Opaque);
+            events.0.push(api::Event {
+                event: Some(api::event::Event::Door(api::DoorEvent {
+                    actor: actor.id(),
+                    door: entity.id(),
+                    open: false,
+                })),
+            });
+        }
+        Err(_) => {
+            log::warn!(
+                "Invalid close door action, entity {:?} does not have Door component",
                 entity
             );
         }

@@ -11,7 +11,8 @@ mod view;
 
 pub use ai::behavior as ai;
 pub use door::behavior as door;
-pub use dwim::behavior as dwim;
+pub use dwim::close as dwim_close;
+pub use dwim::r#move as dwim_move;
 pub use end_turn::behavior as end_turn;
 pub use god_mode::behavior as god_mode;
 pub use r#move::behavior as r#move;

@@ -15,7 +15,7 @@ const HDOOR: char = '═';
 // const HDOOR: char = '╌';
 const EMPTY: char = ' ';
 
-const DOOR_OPEN_SOUND: &'static str = "sshock/sounds/00206.wav";
+const DOOR_SOUND: &'static str = "sshock/sounds/00206.wav";
 
 pub struct DoorPlugin;
 
@@ -60,7 +60,7 @@ pub fn event(
 
             tween.set_completed_event(0);
             commands.entity(e).insert(Animator::new(tween));
-            audio.play(asset_server.load(DOOR_OPEN_SOUND));
+            audio.play(asset_server.load(DOOR_SOUND));
         }
     }
 }

@@ -59,6 +59,7 @@ impl Reshock for ReshockService {
                 Some(DwimAction::Down) => game::Action::Dwim(game::DwimAction::Down),
                 Some(DwimAction::DownLeft) => game::Action::Dwim(game::DwimAction::DownLeft),
                 Some(DwimAction::Left) => game::Action::Dwim(game::DwimAction::Left),
+                Some(DwimAction::Close) => game::Action::Dwim(game::DwimAction::Close),
                 None => return Err(Status::invalid_argument("Dwim index out of bounds")),
             },
             Some(Action::God(_)) => game::Action::GodMode(None),

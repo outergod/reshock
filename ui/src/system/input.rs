@@ -33,6 +33,8 @@ pub fn system(
         Some(Action::Dwim(DwimAction::DownLeft as i32))
     } else if keys.just_pressed(KeyCode::J) {
         Some(Action::Dwim(DwimAction::DownRight as i32))
+    } else if keys.just_pressed(KeyCode::C) {
+        Some(Action::Dwim(DwimAction::Close as i32))
     } else if keys.just_pressed(KeyCode::G) {
         Some(Action::God(GodModeAction {}))
     } else {
