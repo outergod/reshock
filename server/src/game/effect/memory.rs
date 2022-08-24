@@ -18,6 +18,7 @@ pub fn effect(
         &Ordering,
         Option<&Door>,
         Option<&Wall>,
+        Option<&Player>,
     )>,
 ) {
     match action.0 {
@@ -50,7 +51,7 @@ pub fn effect(
                 sights
                     .get(*e)
                     .ok()
-                    .map(|(position, renderable, ordering, door, wall)| {
+                    .map(|(position, renderable, ordering, door, wall, player)| {
                         (
                             *e,
                             MemoryComponents {
@@ -59,6 +60,7 @@ pub fn effect(
                                 ordering: ordering.clone(),
                                 door: door.cloned(),
                                 wall: wall.cloned(),
+                                player: player.cloned(),
                             },
                         )
                     })

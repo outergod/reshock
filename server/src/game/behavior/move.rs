@@ -1,12 +1,13 @@
 use bevy_ecs::prelude::*;
 
-use crate::game::{component::*, Action, ActiveAction, FollowUps, MoveAction, Status};
+use crate::game::{component::*, resource::*, *};
 
 pub fn behavior(
     action: Res<ActiveAction>,
     mut followups: ResMut<FollowUps>,
-    positions: Query<Entity, With<Position>>,
+    positions: Query<&Position>,
     obstacles: Query<&Position, With<Solid>>,
+    deltas: Res<Deltas>,
 ) -> Status {
     let MoveAction {
         entity,
@@ -21,11 +22,19 @@ pub fn behavior(
         return Status::Reject;
     };
 
-    if positions.iter().find(|e| e == entity).is_none() {
-        log::warn!(
-            "Invalid move action, entity {:?} does not have Position component",
-            entity
-        );
+    let position = match positions.get(*entity) {
+        Ok(it) => it.0,
+        Err(_) => {
+            log::warn!(
+                "Invalid move action, entity {:?} does not have Position component",
+                entity
+            );
+            return Status::Reject;
+        }
+    };
+
+    if !deltas.0.iter().any(|d| position + *d == *target) {
+        log::info!("Invalid move action, {:?} is out of reach", target);
         return Status::Reject;
     }
 

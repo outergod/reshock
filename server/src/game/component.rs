@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use bevy_ecs::prelude::*;
 use glam::IVec2;
 
-#[derive(Component, Default)]
+#[derive(Component, Default, Clone)]
 pub struct Player;
 
 #[derive(Component, Default)]
@@ -127,6 +127,7 @@ pub struct MemoryComponents {
     pub ordering: Ordering,
     pub door: Option<Door>,
     pub wall: Option<Wall>,
+    pub player: Option<Player>,
 }
 
 impl From<&MemoryComponents> for api::Components {
