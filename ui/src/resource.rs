@@ -1,6 +1,5 @@
 use std::collections::VecDeque;
 use std::fmt::Display;
-use std::ops::Deref;
 
 use bevy::{
     math::ivec2,

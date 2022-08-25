@@ -4,10 +4,7 @@ use bevy::{math::ivec2, prelude::*, utils::HashSet};
 use bevy_kira_audio::Audio;
 use bevy_tweening::*;
 
-use crate::{
-    component::*,
-    resource::{Deltas, ReshockEvents, TransitionState},
-};
+use crate::{component::*, resource::Deltas};
 
 const VDOOR: char = '║';
 const HDOOR: char = '═';

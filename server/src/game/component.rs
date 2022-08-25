@@ -45,6 +45,17 @@ impl Display for Description {
     }
 }
 
+impl Description {
+    pub fn to_capitalized_string(&self) -> String {
+        let s = self.to_string();
+        let mut c = s.chars();
+        match c.next() {
+            Some(f) => f.to_uppercase().to_string() + c.as_str(),
+            None => String::new(),
+        }
+    }
+}
+
 #[derive(Component, Default, Clone, Copy)]
 pub struct Wall;
 
