@@ -83,6 +83,6 @@ pub fn close(
 
             Status::Accept
         }
-        None => Status::Reject,
+        None => Status::Reject(None),
     }
 }

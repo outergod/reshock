@@ -10,7 +10,7 @@ pub fn behavior(mut action: ResMut<ActiveAction>, entities: Query<&AI>) -> Statu
                 *sound = Some(api::spot_event::SpotSound::ServBot);
                 Status::Accept
             }
-            _ => Status::Reject,
+            _ => Status::Reject(None),
         },
         _ => Status::Continue,
     }

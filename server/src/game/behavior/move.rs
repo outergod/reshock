@@ -39,32 +39,30 @@ pub fn behavior(
                 "Invalid move action, entity {:?} does not have Position component",
                 entity
             );
-            return Status::Reject;
+            return Status::Reject(None);
         }
     };
 
     if !deltas.0.iter().any(|d| position + *d == *target) {
         log::info!("Invalid move action, {:?} is out of reach", target);
-        return Status::Reject;
+        return Status::Reject(None);
     }
 
     if let Some(desc) = obstacles
         .iter()
         .find_map(|(p, d)| (p.0 == *target).then_some(d))
     {
-        if player.contains(*entity) {
+        let action = player.contains(*entity).then(|| {
             let object = match desc {
                 Some(it) => it.to_string(),
                 None => "something".to_string(),
             };
 
-            followups
-                .0
-                .push(Action::Log(format!("You run into {}", object)));
-        }
+            Action::Log(format!("You run into {}", object))
+        });
 
         log::info!("Entity can't move to {:?}", target);
-        return Status::Reject;
+        return Status::Reject(action);
     };
 
     followups.0.push(Action::EndTurn(*entity));

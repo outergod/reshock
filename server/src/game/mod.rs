@@ -158,7 +158,7 @@ pub struct Events(pub Vec<api::Event>);
 pub enum Status {
     Accept,
     Continue,
-    Reject,
+    Reject(Option<Action>),
 }
 
 #[derive(Debug, Error)]
@@ -191,13 +191,14 @@ impl Game {
                         break;
                     }
                     Status::Continue => {}
-                    Status::Reject => break,
+                    Status::Reject(action) => {
+                        if let Some(action) = action {
+                            log::debug!("Queueing reject followup {:?}", action);
+                            actions.push_back(action);
+                        }
+                        break;
+                    }
                 }
-            }
-
-            for action in self.world.resource_mut::<FollowUps>().0.drain(..) {
-                log::debug!("Queueing followup {:?}", action);
-                actions.push_back(action);
             }
 
             let action = &self.world.resource::<ActiveAction>().0;
@@ -205,6 +206,7 @@ impl Game {
             if !accepted {
                 log::debug!("Action {:?} rejected", action);
                 self.world.resource_mut::<Reactions>().0.clear();
+                self.world.resource_mut::<FollowUps>().0.clear();
                 continue;
             }
 
@@ -218,6 +220,10 @@ impl Game {
             for action in self.world.resource_mut::<Reactions>().0.drain(..).rev() {
                 log::debug!("Queueing reaction {:?}", action);
                 actions.push_front(action);
+            }
+            for action in self.world.resource_mut::<FollowUps>().0.drain(..) {
+                log::debug!("Queueing followup {:?}", action);
+                actions.push_back(action);
             }
             for event in self.world.resource_mut::<Events>().0.drain(..) {
                 log::debug!("Queueing event {}", event);
