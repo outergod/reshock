@@ -31,7 +31,10 @@ pub fn setup(world: &mut World, room: Room) {
                         kind: component::SightKind::Eyes,
                         ..Default::default()
                     },
-                    description: "Serv-Bot unit".into(),
+                    description: component::Description {
+                        name: "Serv-Bot unit".into(),
+                        article: component::Article::A,
+                    },
                     ..Default::default()
                 });
             }

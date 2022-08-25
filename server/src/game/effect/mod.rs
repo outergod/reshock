@@ -1,5 +1,6 @@
 mod door;
 mod god_mode;
+mod log;
 mod memory;
 mod r#move;
 mod sight;
@@ -7,6 +8,7 @@ mod spatial;
 mod spot;
 mod state;
 
+pub use self::log::effect as log;
 pub use door::close as door_close;
 pub use door::open as door_open;
 pub use god_mode::effect as god_mode;

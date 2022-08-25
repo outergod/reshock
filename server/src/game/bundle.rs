@@ -27,7 +27,10 @@ impl Default for Player {
             },
             memory: Default::default(),
             player: component::Player,
-            description: "The Hacker".into(),
+            description: component::Description {
+                name: "the Hacker".to_string(),
+                article: component::Article::None,
+            },
         }
     }
 }
@@ -58,7 +61,10 @@ impl Default for Floor {
             renderable: component::Renderable::Floor,
             position: Default::default(),
             ordering: component::Ordering::Floor,
-            description: "Flooring".into(),
+            description: component::Description {
+                name: "flooring".to_string(),
+                article: component::Article::None,
+            },
         }
     }
 }
@@ -85,7 +91,10 @@ impl Default for Wall {
             solid: Default::default(),
             opaque: Default::default(),
             wall: Default::default(),
-            description: "A wall".into(),
+            description: component::Description {
+                name: "wall".to_string(),
+                article: component::Article::A,
+            },
         }
     }
 }
@@ -108,7 +117,10 @@ impl Default for Door {
             renderable: component::Renderable::Door,
             position: Default::default(),
             ordering: component::Ordering::Door,
-            description: "A door".into(),
+            description: component::Description {
+                name: "door".to_string(),
+                article: component::Article::A,
+            },
         }
     }
 }

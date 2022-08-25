@@ -1,4 +1,7 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    fmt::Display,
+};
 
 use bevy_ecs::prelude::*;
 use glam::IVec2;
@@ -6,12 +9,39 @@ use glam::IVec2;
 #[derive(Component, Default, Clone)]
 pub struct Player;
 
-#[derive(Component, Default)]
-pub struct Description(pub String);
+pub enum Article {
+    None,
+    A,
+    An,
+}
 
-impl From<&str> for Description {
-    fn from(s: &str) -> Self {
-        Self(s.to_string())
+impl Default for Article {
+    fn default() -> Self {
+        Self::None
+    }
+}
+
+impl Display for Article {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let article = match self {
+            Article::None => "",
+            Article::A => "a ",
+            Article::An => "an ",
+        };
+
+        write!(f, "{}", article)
+    }
+}
+
+#[derive(Component, Default)]
+pub struct Description {
+    pub name: String,
+    pub article: Article,
+}
+
+impl Display for Description {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}{}", self.article, self.name)
     }
 }
 

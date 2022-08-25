@@ -61,10 +61,15 @@ message Dimensions {
   int32 y = 2;
 }
 
+message Log {
+  repeated string entries = 1;
+}
+
 message StateDumpResponse {
   uint32 player = 1;
   Dimensions dimensions = 2;
   State view = 3;
+  Log log = 4;
 }
 
 message ActionRequest {
@@ -114,12 +119,17 @@ message SpotEvent {
   SpotSound sound = 2;
 }
 
+message LogEvent {
+  string entry = 1;
+}
+
 message Event {
   oneof event {
     ViewUpdateEvent view = 1;
     MoveEvent move = 2;
     DoorEvent door = 3;
     SpotEvent spot = 4;
+    LogEvent log = 5;
   }
 }
 

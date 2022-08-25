@@ -12,6 +12,7 @@ impl Display for event::Event {
             event::Event::Move(_) => "Move",
             event::Event::Door(_) => "Door",
             event::Event::Spot(_) => "Spot",
+            event::Event::Log(_) => "Log",
         };
 
         write!(f, "{}", name)

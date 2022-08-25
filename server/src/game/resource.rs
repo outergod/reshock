@@ -1,4 +1,8 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    fmt::Display,
+    slice::Iter,
+};
 
 use bevy_ecs::prelude::*;
 use glam::{ivec2, IVec2};
@@ -49,5 +53,20 @@ impl From<String> for Room {
             .collect();
 
         Self(room)
+    }
+}
+
+#[derive(Default)]
+pub struct Log(Vec<String>);
+
+impl Log {
+    #[inline]
+    pub fn add(&mut self, s: impl Display) {
+        self.0.push(s.to_string());
+    }
+
+    #[inline]
+    pub fn read(&self) -> Iter<String> {
+        self.0.iter()
     }
 }

@@ -42,6 +42,7 @@ impl Default for Game {
         world.init_resource::<Events>();
         world.init_resource::<resource::Deltas>();
         world.init_resource::<resource::SpatialHash>();
+        world.init_resource::<resource::Log>();
         world.init_resource::<api::State>();
 
         world.insert_resource(ActiveAction(Some(Action::View)));
@@ -56,6 +57,7 @@ impl Default for Game {
             Box::new(IntoSystem::into_system(behavior::door)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::view)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::spot)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::log)) as BoxedBehavior,
         ];
         for behavior in behaviors.iter_mut() {
             (*behavior).initialize(&mut world);
@@ -71,6 +73,7 @@ impl Default for Game {
             Box::new(IntoSystem::into_system(effect::spot)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::memory)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::state)) as BoxedSystem,
+            Box::new(IntoSystem::into_system(effect::log)) as BoxedSystem,
         ];
         for effect in effects.iter_mut() {
             (*effect).initialize(&mut world);
@@ -97,6 +100,7 @@ pub enum Action {
     CloseDoor(CloseDoorAction),
     View,
     Spot(SpotAction),
+    Log(String),
 }
 
 #[derive(Debug, Clone)]
@@ -191,12 +195,16 @@ impl Game {
                 }
             }
 
+            for action in self.world.resource_mut::<FollowUps>().0.drain(..) {
+                log::debug!("Queueing followup {:?}", action);
+                actions.push_back(action);
+            }
+
             let action = &self.world.resource::<ActiveAction>().0;
 
             if !accepted {
                 log::debug!("Action {:?} rejected", action);
                 self.world.resource_mut::<Reactions>().0.clear();
-                self.world.resource_mut::<FollowUps>().0.clear();
                 continue;
             }
 
@@ -210,10 +218,6 @@ impl Game {
             for action in self.world.resource_mut::<Reactions>().0.drain(..).rev() {
                 log::debug!("Queueing reaction {:?}", action);
                 actions.push_front(action);
-            }
-            for action in self.world.resource_mut::<FollowUps>().0.drain(..) {
-                log::debug!("Queueing followup {:?}", action);
-                actions.push_back(action);
             }
             for event in self.world.resource_mut::<Events>().0.drain(..) {
                 log::debug!("Queueing event {}", event);
@@ -248,10 +252,18 @@ impl Game {
 
         let dimensions = api::Dimensions { x, y };
 
+        let log = self
+            .world
+            .resource::<resource::Log>()
+            .read()
+            .cloned()
+            .collect();
+
         Ok(api::StateDumpResponse {
             player: player.id(),
             dimensions: Some(dimensions),
             view: Some(view),
+            log: Some(api::Log { entries: log }),
         })
     }
 }

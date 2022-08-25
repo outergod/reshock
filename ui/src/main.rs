@@ -3,6 +3,7 @@
 use anyhow::{Context, Result};
 use api::reshock_client::ReshockClient;
 use bevy::prelude::*;
+use bevy_egui::EguiPlugin;
 use bevy_kira_audio::{Audio, AudioPlugin};
 use bevy_tweening::component_animator_system;
 use bevy_tweening::TweenCompleted;
@@ -51,10 +52,13 @@ fn main() -> Result<()> {
         .add_plugin(ReshockEventsPlugin)
         .add_plugin(DoorPlugin)
         .add_plugin(CameraPlugin)
+        .add_plugin(EguiPlugin)
+        .add_plugin(UiPlugin)
         .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(runtime)
         .insert_resource(client)
         .init_resource::<resource::Deltas>()
+        .init_resource::<resource::Log>()
         .add_startup_system(start_background_audio)
         .add_startup_system(system::client_setup)
         .add_system(system::input)
@@ -62,6 +66,7 @@ fn main() -> Result<()> {
         .add_system(system::wall)
         .add_system(system::r#move)
         .add_system(system::spot)
+        .add_system(system::log)
         .add_system(tween)
         .add_system(bevy::window::close_on_esc)
         .add_system(component_animator_system::<Renderable>)

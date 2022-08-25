@@ -1,5 +1,6 @@
 use std::collections::VecDeque;
 use std::fmt::Display;
+use std::ops::Deref;
 
 use bevy::{
     math::ivec2,
@@ -73,5 +74,15 @@ impl Default for Deltas {
             .collect();
 
         Self(deltas)
+    }
+}
+
+#[derive(Default)]
+pub struct Log(pub Vec<String>);
+
+impl Log {
+    #[inline]
+    pub fn read(&self) -> String {
+        self.0.join("\n")
     }
 }

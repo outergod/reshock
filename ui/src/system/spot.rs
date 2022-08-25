@@ -1,25 +1,20 @@
-// use std::thread;
-// use std::time::Duration;
-
 use api::*;
 use bevy::prelude::*;
 use bevy_kira_audio::Audio;
 
-use crate::component::*;
 use crate::resource::ReshockEvents;
 use crate::resource::TransitionState;
 
 const SERV_BOT_SPOT_SOUND: &'static str = "sshock/sounds/00275.wav";
-const SERV_BOT_SPOT_LENGTH: f32 = 0.845;
+// const SERV_BOT_SPOT_LENGTH: f32 = 0.845;
 
 pub fn system(
-    entities: Query<(&ReshockEntity, &Position)>,
     mut reader: EventReader<api::SpotEvent>,
     mut events: ResMut<ReshockEvents>,
     asset_server: Res<AssetServer>,
     audio: Res<Audio>,
 ) {
-    for SpotEvent { entity, sound } in reader.iter() {
+    for SpotEvent { sound, .. } in reader.iter() {
         match spot_event::SpotSound::from_i32(*sound) {
             Some(spot_event::SpotSound::ServBot) => {
                 audio.play(asset_server.load(SERV_BOT_SPOT_SOUND));

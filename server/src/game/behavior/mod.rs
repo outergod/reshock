@@ -3,12 +3,14 @@ mod door;
 mod dwim;
 mod end_turn;
 mod god_mode;
+mod log;
 mod r#move;
 mod radial_lines;
 mod room;
 mod spot;
 mod view;
 
+pub use self::log::behavior as log;
 pub use ai::behavior as ai;
 pub use door::behavior as door;
 pub use dwim::close as dwim_close;

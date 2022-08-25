@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 api = { path = "../api" }
+bevy_egui = { git = "https://github.com/mvlabat/bevy_egui.git" }
 tonic = "0.8"
 ab_glyph = "0.2.6"
 itertools = "0.10"

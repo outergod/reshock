@@ -1,5 +1,5 @@
 use api::reshock_client::ReshockClient;
-use api::*;
+use api::StateDumpResponse;
 use bevy::log;
 use bevy::prelude::*;
 use tokio::runtime::Runtime;
@@ -7,12 +7,14 @@ use tonic::transport::Channel;
 
 use crate::bundle::*;
 use crate::component::*;
+use crate::resource::Log;
 use crate::resource::ReshockFont;
 
 pub fn setup(
     mut commands: Commands,
     runtime: Res<Runtime>,
     mut client: ResMut<ReshockClient<Channel>>,
+    mut log_res: ResMut<Log>,
     font: Res<ReshockFont>,
     mut writer: EventWriter<api::ViewUpdateEvent>,
 ) {
@@ -23,6 +25,7 @@ pub fn setup(
                     player,
                     dimensions,
                     view,
+                    log,
                 } = response.into_inner();
                 writer.send(api::ViewUpdateEvent { player, view });
 
@@ -34,6 +37,12 @@ pub fn setup(
                     }
                 } else {
                     log::error!("Received empty dimensions, fatal");
+                }
+
+                if let Some(api::Log { entries }) = log {
+                    log_res.0 = entries;
+                } else {
+                    log::warn!("Received empty log, suspicious");
                 }
             }
             Err(e) => {
