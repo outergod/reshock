@@ -105,6 +105,11 @@ pub enum Renderable {
     Floor,
     Wall,
     Door,
+    Melee,
+    ProjectileGun,
+    EnergyGun,
+    Magazine,
+    Corpse,
 }
 
 impl Default for Renderable {
@@ -126,7 +131,8 @@ pub enum Ordering {
     Floor = 0,
     Door = 1,
     Wall = 2,
-    Other = 3,
+    Item = 3,
+    Other = 4,
 }
 
 impl Default for Ordering {
@@ -207,3 +213,176 @@ pub struct Solid;
 
 #[derive(Default, Component)]
 pub struct Room;
+
+#[derive(Default, Component)]
+pub struct Item {
+    pub owner: Option<Entity>,
+}
+
+#[allow(dead_code)]
+#[derive(Clone, Debug, Copy)]
+pub enum AttackKind {
+    Kinetic,
+    Beam,
+    Needle,
+    Tranquilizer,
+    Magnetic,
+    Gas,
+}
+
+#[derive(Component, Clone, Debug, Copy)]
+pub struct Damage {
+    pub attack: AttackKind,
+    pub amount: u16,
+    pub penetration: u8,
+    pub offense: u8,
+}
+
+#[allow(dead_code)]
+#[derive(Clone, Debug, Copy)]
+pub enum MeleeWeaponKind {
+    LeadPipe,
+    LaserRapier,
+}
+
+#[derive(Component, Clone, Debug, Copy)]
+pub struct MeleeWeapon {
+    pub kind: MeleeWeaponKind,
+    pub damage: Damage,
+}
+
+#[allow(dead_code)]
+#[derive(Component)]
+pub enum ProjectileKind {
+    RubberSlug,
+    Needle,
+    Bullet,
+    Slug,
+    Slag,
+    EmpBurst,
+    Grenade,
+}
+
+#[derive(Component)]
+pub struct Projectile {
+    pub kind: ProjectileKind,
+    pub damage: Damage,
+}
+
+#[allow(dead_code)]
+pub enum OperationKind {
+    SemiAutomatic,
+    Automatic,
+}
+
+#[derive(Component)]
+pub struct ProjectileGun {
+    pub kind: ProjectileGunKind,
+    pub operation: OperationKind,
+}
+
+#[allow(dead_code)]
+#[derive(Component)]
+pub struct Magazine {
+    pub kind: ProjectileGunKind,
+    pub damage: Damage,
+    pub amount: u16,
+    pub attached: Option<Entity>,
+}
+
+#[allow(dead_code)]
+pub enum ProjectileGunKind {
+    RiotGun,
+    DartPistol,
+    Minipistol,
+    Flechette,
+    Magnum,
+    Skorpion,
+    AssaultRifle,
+    RailGun,
+}
+
+#[allow(dead_code)]
+pub enum EnergyGunKind {
+    StunGun,
+    Sparq,
+    Blaster,
+    IonPulse,
+    Plasma,
+}
+
+#[allow(dead_code)]
+pub enum BeamKind {
+    Stun,
+    SparqBeam,
+    Laser,
+    IonPulse,
+    Plasma,
+}
+
+#[derive(Component)]
+pub struct Beam {
+    pub kind: BeamKind,
+    pub damage: Damage,
+}
+
+#[derive(Component)]
+pub struct EnergyGun {
+    pub kind: EnergyGunKind,
+    pub operation: OperationKind,
+    pub damage: Damage,
+    pub efficiency: f32,
+    pub max: u8,
+}
+
+#[derive(Component)]
+pub struct PersonalBattery {
+    pub max: u16,
+    pub charge: u16,
+}
+
+#[derive(Component, Default)]
+pub struct MeleeSlot;
+
+#[derive(Component, Default)]
+pub struct GunSlot;
+
+#[derive(Component, Default)]
+pub struct Equipped;
+
+#[allow(dead_code)]
+#[derive(Component)]
+pub enum VulnerableKind {
+    None,
+    Avian,
+    GorillaTiger,
+    Humanoid,
+    Invisible,
+    Plant,
+    Virus,
+    ZeroGrav,
+    Robot,
+    RoboticCyborg,
+    HumanoidCyborg,
+}
+
+impl Default for VulnerableKind {
+    fn default() -> Self {
+        Self::None
+    }
+}
+
+#[derive(Component, Default)]
+pub struct Vulnerable {
+    pub kind: VulnerableKind,
+    pub hp: u16,
+    pub max: u16,
+    pub defense: u8,
+    pub armor: u8,
+}
+
+#[derive(Component, Debug, Clone, Copy)]
+pub enum Alive {
+    Human,
+    ServBot,
+}

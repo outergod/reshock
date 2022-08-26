@@ -58,6 +58,11 @@ impl Default for Game {
             Box::new(IntoSystem::into_system(behavior::view)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::spot)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::log)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::melee)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::melee_hit)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::combat)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::health)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::death)) as BoxedBehavior,
         ];
         for behavior in behaviors.iter_mut() {
             (*behavior).initialize(&mut world);
@@ -68,6 +73,10 @@ impl Default for Game {
             Box::new(IntoSystem::into_system(effect::god_mode)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::door_open)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::door_close)) as BoxedSystem,
+            Box::new(IntoSystem::into_system(effect::melee)) as BoxedSystem,
+            Box::new(IntoSystem::into_system(effect::health)) as BoxedSystem,
+            Box::new(IntoSystem::into_system(effect::death)) as BoxedSystem,
+            Box::new(IntoSystem::into_system(effect::render)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::spatial)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::sight)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::spot)) as BoxedSystem,
@@ -101,6 +110,37 @@ pub enum Action {
     View,
     Spot(SpotAction),
     Log(String),
+    Melee(MeleeAttackAction),
+    Damage(DamageAction),
+    HealthLoss(HealthLossAction),
+    Death(DeathAction),
+}
+
+#[derive(Debug, Clone)]
+pub struct DeathAction {
+    actor: Entity,
+    kind: Option<component::Alive>,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct HealthLossAction {
+    actor: Entity,
+    amount: u16,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct DamageAction {
+    actor: Entity,
+    target: Entity,
+    weapon: Entity,
+    damage: component::Damage,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct MeleeAttackAction {
+    actor: Entity,
+    target: Entity,
+    weapon: Option<Entity>,
 }
 
 #[derive(Debug, Clone)]
@@ -118,32 +158,32 @@ pub enum DwimAction {
 
 #[derive(Debug, Clone, Copy)]
 pub struct GodModeAction {
-    entity: Entity,
+    actor: Entity,
     activate: bool,
 }
 
 #[derive(Debug, Clone)]
 pub struct MoveAction {
-    entity: Entity,
+    actor: Entity,
     position: IVec2,
 }
 
 #[derive(Debug, Clone)]
 pub struct OpenDoorAction {
-    pub actor: Entity,
-    pub entity: Entity,
+    actor: Entity,
+    target: Entity,
 }
 
 #[derive(Debug, Clone)]
 pub struct CloseDoorAction {
-    pub actor: Entity,
-    pub entity: Entity,
+    actor: Entity,
+    target: Entity,
 }
 
 #[derive(Debug, Clone)]
 pub struct SpotAction {
-    pub entity: Entity,
-    pub sound: Option<api::spot_event::SpotSound>,
+    actor: Entity,
+    sound: Option<api::spot_event::SpotSound>,
 }
 
 #[derive(Default)]

@@ -13,11 +13,11 @@ pub fn behavior(
             followups.0.push(Action::EndTurn(*actor));
             Status::Accept
         }
-        Some(Action::CloseDoor(CloseDoorAction { actor, entity })) => {
-            let position = match doors.get(*entity) {
+        Some(Action::CloseDoor(CloseDoorAction { actor, target })) => {
+            let position = match doors.get(*target) {
                 Ok(it) => it,
                 Err(_) => {
-                    log::warn!("Tried to close door {:?} without Position", entity);
+                    log::warn!("Tried to close door {:?} without Position", target);
                     return Status::Reject(None);
                 }
             };

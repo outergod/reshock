@@ -60,6 +60,7 @@ fn ui(mut egui_ctx: ResMut<EguiContext>, windows: Res<Windows>, log: Res<Log>) {
         .show(egui_ctx.ctx_mut(), |ui| {
             egui::ScrollArea::vertical()
                 .always_show_scroll(true)
+                .stick_to_bottom(true)
                 .auto_shrink([false, false])
                 .show(ui, |ui| {
                     ui.label(text);

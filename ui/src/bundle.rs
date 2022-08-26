@@ -29,3 +29,11 @@ impl Tile {
         }
     }
 }
+
+#[derive(Bundle)]
+pub struct Effect {
+    pub effect: component::Effect,
+    pub position: component::Position,
+    pub renderable: component::Renderable,
+    pub ordering: component::Ordering,
+}

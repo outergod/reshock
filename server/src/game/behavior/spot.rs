@@ -9,7 +9,7 @@ pub fn behavior(
     mut followups: ResMut<FollowUps>,
 ) -> Status {
     match action.0.as_mut() {
-        Some(Action::Spot(SpotAction { entity, sound })) => match entities.get(*entity) {
+        Some(Action::Spot(SpotAction { actor, sound })) => match entities.get(*actor) {
             Ok((AI::ServBot, desc)) => {
                 *sound = Some(api::spot_event::SpotSound::ServBot);
                 if let Some(desc) = desc {

@@ -13,6 +13,8 @@ impl Display for event::Event {
             event::Event::Door(_) => "Door",
             event::Event::Spot(_) => "Spot",
             event::Event::Log(_) => "Log",
+            event::Event::Hit(_) => "Hit",
+            event::Event::Death(_) => "Death",
         };
 
         write!(f, "{}", name)

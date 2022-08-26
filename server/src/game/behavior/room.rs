@@ -1,6 +1,6 @@
 use bevy_ecs::prelude::*;
 
-use crate::game::bundle::{Door, Floor, Player, Wall, NPC};
+use crate::game::bundle::*;
 use crate::game::component;
 use crate::game::resource::Room;
 
@@ -17,26 +17,60 @@ pub fn setup(world: &mut World, room: Room) {
 
         match c {
             '@' => {
-                world.spawn().insert_bundle(Player {
-                    position,
-                    ..Default::default()
-                });
+                let player = world
+                    .spawn()
+                    .insert_bundle(Player {
+                        position,
+                        ..Default::default()
+                    })
+                    .id();
+
+                world
+                    .spawn()
+                    .insert_bundle(MeleeWeapon::laser_rapier())
+                    .insert(component::Item {
+                        owner: Some(player),
+                    })
+                    .insert(component::Equipped);
+
+                let rifle = world
+                    .spawn()
+                    .insert_bundle(ProjectileGun::assault_rifle())
+                    .insert(component::Item {
+                        owner: Some(player),
+                    })
+                    .insert(component::Equipped)
+                    .id();
+
+                let mut magazine = Magazine::magnesium_tips();
+                magazine.magazine.attached = Some(rifle);
+                world.spawn().insert_bundle(magazine);
             }
             'b' => {
-                world.spawn().insert_bundle(NPC {
-                    position,
-                    ai: component::AI::ServBot,
-                    renderable: component::Renderable::ServBot,
-                    sight: component::Sight {
-                        kind: component::SightKind::Eyes,
+                world
+                    .spawn()
+                    .insert_bundle(NPC {
+                        position,
+                        ai: component::AI::ServBot,
+                        renderable: component::Renderable::ServBot,
+                        sight: component::Sight {
+                            kind: component::SightKind::Eyes,
+                            ..Default::default()
+                        },
+                        description: component::Description {
+                            name: "Serv-Bot unit".into(),
+                            article: component::Article::A,
+                        },
+                        vulnerable: component::Vulnerable {
+                            kind: component::VulnerableKind::Robot,
+                            hp: 20,
+                            max: 20,
+                            defense: 2,
+                            armor: 20,
+                        },
                         ..Default::default()
-                    },
-                    description: component::Description {
-                        name: "Serv-Bot unit".into(),
-                        article: component::Article::A,
-                    },
-                    ..Default::default()
-                });
+                    })
+                    .insert(component::Alive::ServBot);
             }
             'X' => {
                 world.spawn().insert_bundle(Wall {

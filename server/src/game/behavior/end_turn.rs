@@ -6,7 +6,7 @@ pub fn behavior(
     action: Res<ActiveAction>,
     mut followups: ResMut<FollowUps>,
     player: Query<(), With<Player>>,
-    ai: Query<Entity, With<AI>>,
+    ai: Query<Entity, (With<AI>, With<Alive>)>,
 ) -> Status {
     let entity = match action.0 {
         Some(Action::EndTurn(it)) => it,

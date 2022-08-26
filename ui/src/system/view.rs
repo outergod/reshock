@@ -94,7 +94,15 @@ pub fn system(
                             Color::rgb(0.169, 0.173, 0.29)
                         },
                     }),
-                    None => None,
+                    Some(ApiRenderable::Corpse) => Some(Renderable {
+                        char: '%',
+                        color: if memory {
+                            Color::DARK_GRAY
+                        } else {
+                            Color::WHITE
+                        },
+                    }),
+                    _ => None,
                 } {
                     e.insert(renderable);
                 }
@@ -105,6 +113,7 @@ pub fn system(
                     Some(ApiOrdering::Floor) => Some(Ordering::Floor),
                     Some(ApiOrdering::Door) => Some(Ordering::Door),
                     Some(ApiOrdering::Wall) => Some(Ordering::Wall),
+                    Some(ApiOrdering::Item) => Some(Ordering::Item),
                     Some(ApiOrdering::Other) => Some(Ordering::Other),
                     _ => None,
                 } {

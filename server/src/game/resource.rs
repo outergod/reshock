@@ -32,9 +32,38 @@ impl Default for Deltas {
     }
 }
 
+#[derive(Default, Clone, Debug)]
+pub struct Cell {
+    pub visible: HashSet<Entity>,
+    pub door: Option<Entity>,
+    pub solid: Option<Entity>,
+    pub opaque: HashSet<Entity>,
+    pub vulnerable: Option<Entity>,
+}
+
 #[derive(Default)]
 pub struct SpatialHash {
-    pub cells: HashMap<IVec2, HashSet<Entity>>,
+    pub cells: HashMap<IVec2, Cell>,
+}
+
+impl SpatialHash {
+    pub fn entities_at(&self, pos: &IVec2) -> HashSet<Entity> {
+        self.cells.get(pos).cloned().unwrap_or_default().visible
+    }
+
+    pub fn is_opaque(&self, pos: &IVec2) -> bool {
+        self.cells
+            .get(pos)
+            .is_some_and(|cell| !cell.opaque.is_empty())
+    }
+
+    pub fn door_at(&self, pos: &IVec2) -> Option<Entity> {
+        self.cells.get(pos).cloned().unwrap_or_default().door
+    }
+
+    pub fn vulnerable_at(&self, pos: &IVec2) -> Option<Entity> {
+        self.cells.get(pos).cloned().unwrap_or_default().vulnerable
+    }
 }
 
 pub struct Room(pub HashMap<IVec2, char>);

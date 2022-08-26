@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::ops::Not;
 
 use bevy_ecs::prelude::*;
 use glam::ivec2;
@@ -9,7 +9,8 @@ pub fn r#move(
     action: Res<ActiveAction>,
     mut reactions: ResMut<Reactions>,
     player: Query<(Entity, &Position), With<Player>>,
-    doors: Query<(Entity, &Position, &Door), Without<Player>>,
+    doors: Query<&Door>,
+    spatial: Res<SpatialHash>,
 ) -> Status {
     let direction = match &action.0 {
         Some(Action::Dwim(DwimAction::UpLeft)) => ivec2(-1, 1),
@@ -23,66 +24,62 @@ pub fn r#move(
         _ => return Status::Continue,
     };
 
-    let player = player.single();
-    let (actor, position) = player;
+    let (actor, position) = player.single();
+    let target = position.0 + direction;
 
-    let doors: HashMap<_, _> = doors
-        .iter()
-        .filter_map(|(e, p, d)| {
-            let direction = p.0 - position.0;
-            if direction.x.abs() <= 1 && direction.y.abs() <= 1 && !d.open {
-                Some((direction, e))
-            } else {
-                None
-            }
-        })
-        .collect();
-
-    match doors.get(&direction) {
-        Some(entity) => {
-            reactions.0.push(Action::OpenDoor(OpenDoorAction {
-                entity: *entity,
-                actor,
-            }));
-
-            Status::Accept
-        }
-        None => {
-            reactions.0.push(Action::Move(MoveAction {
-                entity: actor,
-                position: position.0 + direction,
-            }));
-            Status::Accept
-        }
+    if let Some(target) = spatial
+        .door_at(&target)
+        .and_then(|entity| doors.get(entity).unwrap().open.not().then_some(entity))
+    {
+        reactions
+            .0
+            .push(Action::OpenDoor(OpenDoorAction { target, actor }));
+    } else if let Some(target) = spatial.vulnerable_at(&target) {
+        reactions.0.push(Action::Melee(MeleeAttackAction {
+            target,
+            actor,
+            weapon: None,
+        }));
+    } else {
+        reactions.0.push(Action::Move(MoveAction {
+            actor,
+            position: target,
+        }));
     }
+
+    Status::Accept
 }
 
 pub fn close(
     action: Res<ActiveAction>,
     mut reactions: ResMut<Reactions>,
     player: Query<(Entity, &Position), With<Player>>,
-    doors: Query<(Entity, &Position, &Door), Without<Player>>,
+    doors: Query<&Door>,
     deltas: Res<Deltas>,
+    spatial: Res<SpatialHash>,
 ) -> Status {
     match &action.0 {
         Some(Action::Dwim(DwimAction::Close)) => {}
         _ => return Status::Continue,
     };
 
-    let player = player.single();
-    let (actor, position) = player;
+    let (actor, position) = player.single();
 
-    match doors
-        .iter()
-        .find_map(|(e, p, d)| (d.open && deltas.0.contains(&(p.0 - position.0))).then_some(e))
-    {
-        Some(entity) => {
+    match deltas.0.iter().find_map(|delta| {
+        spatial
+            .door_at(&(position.0 + *delta))
+            .and_then(|entity| doors.get(entity).unwrap().open.then_some(entity))
+    }) {
+        Some(target) => {
             reactions
                 .0
-                .push(Action::CloseDoor(CloseDoorAction { entity, actor }));
+                .push(Action::CloseDoor(CloseDoorAction { target, actor }));
 
             Status::Accept
         }
-        None => Status::Reject(None),
+        None => {
+            let action = Action::Log("There is no door to close nearby".to_string());
+            Status::Reject(Some(action))
+        }
     }
 }

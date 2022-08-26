@@ -20,6 +20,11 @@ message RenderableComponent {
     FLOOR = 3;
     WALL = 4;
     DOOR = 5;
+    MELEE = 6;
+    PROJECTILE_GUN = 7;
+    ENERGY_GUN = 8;
+    MAGAZINE = 9;
+    CORPSE = 10;
   }
   Renderable renderable = 1;
 }
@@ -29,7 +34,8 @@ message OrderingComponent {
     FLOOR = 0;
     DOOR = 1;
     WALL = 2;
-    OTHER = 3;
+    ITEM = 3;
+    OTHER = 4;
   }
   Ordering ordering = 1;
 }
@@ -94,7 +100,7 @@ message ActionRequest {
 }
 
 message MoveEvent {
-  uint32 entity = 1;
+  uint32 actor = 1;
   int32 x = 2;
   int32 y = 3;
 }
@@ -115,12 +121,45 @@ message SpotEvent {
     SERV_BOT = 0;
   }
 
-  uint32 entity = 1;
+  uint32 actor = 1;
   SpotSound sound = 2;
 }
 
 message LogEvent {
   string entry = 1;
+}
+
+message HitEvent {
+  enum HitKind {
+    LEAD_PIPE = 0;
+    LASER_RAPIER = 1;
+  }
+
+  enum HitDirection {
+    TOP = 0;
+    TOP_RIGHT = 1;
+    RIGHT = 2;
+    BOTTOM_RIGHT = 3;
+    BOTTOM = 4;
+    BOTTOM_LEFT = 5;
+    LEFT = 6;
+    TOP_LEFT = 7;
+    NONE = 8;
+  }
+
+  uint32 target = 1;
+  HitKind kind = 2;
+  HitDirection direction = 3;
+}
+
+message DeathEvent {
+  enum DeathSound {
+    HUMAN = 0;
+    SERV_BOT = 1;
+  }
+
+  uint32 actor = 1;
+  DeathSound sound = 2;
 }
 
 message Event {
@@ -130,6 +169,8 @@ message Event {
     DoorEvent door = 3;
     SpotEvent spot = 4;
     LogEvent log = 5;
+    HitEvent hit = 6;
+    DeathEvent death = 7;
   }
 }
 

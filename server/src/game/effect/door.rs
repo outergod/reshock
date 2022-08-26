@@ -9,33 +9,26 @@ pub fn open(
     mut commands: Commands,
     mut events: ResMut<Events>,
 ) {
-    let OpenDoorAction { actor, entity } = match &action.0 {
+    let OpenDoorAction { actor, target } = match &action.0 {
         Some(Action::OpenDoor(it)) => it,
         _ => return,
     };
 
-    match doors.get_mut(*entity) {
-        Ok(mut door) => {
-            door.open = true;
-            commands
-                .entity(*entity)
-                .remove::<Solid>()
-                .remove::<Opaque>();
-            events.0.push(api::Event {
-                event: Some(api::event::Event::Door(api::DoorEvent {
-                    actor: actor.id(),
-                    door: entity.id(),
-                    open: true,
-                })),
-            });
-        }
-        Err(_) => {
-            log::warn!(
-                "Invalid open door action, entity {:?} does not have Door component",
-                entity
-            );
-        }
-    }
+    let mut door = doors.get_mut(*target).unwrap();
+
+    door.open = true;
+    commands
+        .entity(*target)
+        .remove::<Solid>()
+        .remove::<Opaque>();
+
+    events.0.push(api::Event {
+        event: Some(api::event::Event::Door(api::DoorEvent {
+            actor: actor.id(),
+            door: target.id(),
+            open: true,
+        })),
+    });
 }
 
 pub fn close(
@@ -44,28 +37,20 @@ pub fn close(
     mut commands: Commands,
     mut events: ResMut<Events>,
 ) {
-    let CloseDoorAction { actor, entity } = match &action.0 {
+    let CloseDoorAction { actor, target } = match &action.0 {
         Some(Action::CloseDoor(it)) => it,
         _ => return,
     };
 
-    match doors.get_mut(*entity) {
-        Ok(mut door) => {
-            door.open = false;
-            commands.entity(*entity).insert(Solid).insert(Opaque);
-            events.0.push(api::Event {
-                event: Some(api::event::Event::Door(api::DoorEvent {
-                    actor: actor.id(),
-                    door: entity.id(),
-                    open: false,
-                })),
-            });
-        }
-        Err(_) => {
-            log::warn!(
-                "Invalid close door action, entity {:?} does not have Door component",
-                entity
-            );
-        }
-    }
+    let mut door = doors.get_mut(*target).unwrap();
+
+    door.open = false;
+    commands.entity(*target).insert(Solid).insert(Opaque);
+    events.0.push(api::Event {
+        event: Some(api::event::Event::Door(api::DoorEvent {
+            actor: actor.id(),
+            door: target.id(),
+            open: false,
+        })),
+    });
 }

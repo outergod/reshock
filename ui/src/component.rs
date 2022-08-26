@@ -50,7 +50,9 @@ pub enum Ordering {
     Floor,
     Door,
     Wall,
+    Item,
     Other,
+    Effect,
 }
 
 impl Default for Ordering {
@@ -59,7 +61,7 @@ impl Default for Ordering {
     }
 }
 
-#[derive(Component, Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Component, Clone, Debug, Hash, PartialEq, Eq, Copy)]
 pub struct Position(pub IVec2);
 
 impl Default for Position {
@@ -83,4 +85,9 @@ impl Default for Door {
             close_color: Default::default(),
         }
     }
+}
+
+#[derive(Component, Default)]
+pub struct Effect {
+    pub lifetime: Timer,
 }

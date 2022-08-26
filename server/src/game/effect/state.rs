@@ -25,7 +25,7 @@ pub fn effect(
 
     let now = Instant::now();
 
-    let (player, sight, memory) = player.get_single().expect("Player not found");
+    let (player, sight, memory) = player.single();
 
     let view = sight.seeing.iter().filter_map(|e| {
         entities

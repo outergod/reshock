@@ -18,24 +18,23 @@ pub fn effect(
                 Err(_) => return,
             };
 
-            for (entity, sight, memory) in viewers.iter() {
+            for (actor, sight, memory) in viewers.iter() {
                 let mut entities = memory.0.keys();
 
                 if sight.seeing.contains(&player) && !entities.contains(&player) {
-                    reactions.0.push(Action::Spot(SpotAction {
-                        entity,
-                        sound: None,
-                    }));
+                    reactions
+                        .0
+                        .push(Action::Spot(SpotAction { actor, sound: None }));
                 }
             }
         }
         Some(Action::Spot(SpotAction {
-            entity,
+            actor,
             sound: Some(sound),
         })) => {
             events.0.push(api::Event {
                 event: Some(api::event::Event::Spot(api::SpotEvent {
-                    entity: entity.id(),
+                    actor: actor.id(),
                     sound: sound as i32,
                 })),
             });

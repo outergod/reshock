@@ -4,17 +4,17 @@ use crate::game::component::*;
 use crate::game::*;
 
 pub fn effect(action: Res<ActiveAction>, mut commands: Commands, mut reactions: ResMut<Reactions>) {
-    let GodModeAction { entity, activate } = match action.0 {
+    let GodModeAction { actor, activate } = match action.0 {
         Some(Action::GodMode(Some(it))) => it,
         _ => return,
     };
 
-    let mut entity = commands.entity(entity);
+    let mut actor = commands.entity(actor);
 
     if activate {
-        entity.insert(God);
+        actor.insert(God);
     } else {
-        entity.remove::<God>();
+        actor.remove::<God>();
     }
 
     reactions.0.push(Action::View);

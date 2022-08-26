@@ -10,7 +10,6 @@ use crate::game::*;
 pub fn effect(
     action: Res<ActiveAction>,
     mut viewers: Query<(&Position, &mut Sight, Option<&God>)>,
-    obstacles: Query<&Position, With<Opaque>>,
     lines: Res<RadialLines>,
     spatial: Res<SpatialHash>,
 ) {
@@ -32,15 +31,22 @@ pub fn effect(
             SightKind::Blind => HashSet::new(),
             SightKind::Omniscience => spatial.cells.keys().cloned().collect(),
             SightKind::Eyes => {
-                let obstacles: HashSet<_> = obstacles.iter().map(|p| p.0 - position.0).collect();
-                lines
-                    .0
-                    .iter()
-                    .filter_map(|(pos, paths)| {
-                        paths
-                            .iter()
-                            .any(|path| !path.iter().any(|p| obstacles.contains(p)))
-                            .then_some(position.0 + *pos)
+                let viewer = position.0;
+
+                spatial
+                    .cells
+                    .keys()
+                    .cloned()
+                    .filter_map(|pos| {
+                        let shifted = pos - viewer;
+                        lines.0.get(&shifted).and_then(|lines| {
+                            lines
+                                .iter()
+                                .any(|line| {
+                                    !line.iter().any(|pos| spatial.is_opaque(&(*pos + viewer)))
+                                })
+                                .then_some(pos)
+                        })
                     })
                     .collect()
             }
@@ -50,7 +56,7 @@ pub fn effect(
 
         let view = mask
             .iter()
-            .flat_map(|pos| spatial.cells.get(pos).cloned().unwrap_or_default())
+            .flat_map(|pos| spatial.entities_at(pos))
             .collect();
         sight.mask = mask;
         sight.seeing = view;

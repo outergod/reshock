@@ -25,19 +25,19 @@ pub fn behavior(
     player: Query<(), With<Player>>,
 ) -> Status {
     let MoveAction {
-        entity,
+        actor,
         position: target,
     } = match &action.0 {
         Some(Action::Move(r#move)) => r#move,
         _ => return Status::Continue,
     };
 
-    let position = match positions.get(*entity) {
+    let position = match positions.get(*actor) {
         Ok(it) => it.0,
         Err(_) => {
             log::warn!(
                 "Invalid move action, entity {:?} does not have Position component",
-                entity
+                actor
             );
             return Status::Reject(None);
         }
@@ -52,7 +52,7 @@ pub fn behavior(
         .iter()
         .find_map(|(p, d)| (p.0 == *target).then_some(d))
     {
-        let action = player.contains(*entity).then(|| {
+        let action = player.contains(*actor).then(|| {
             let object = match desc {
                 Some(it) => it.to_string(),
                 None => "something".to_string(),
@@ -65,7 +65,7 @@ pub fn behavior(
         return Status::Reject(action);
     };
 
-    followups.0.push(Action::EndTurn(*entity));
+    followups.0.push(Action::EndTurn(*actor));
 
     Status::Accept
 }

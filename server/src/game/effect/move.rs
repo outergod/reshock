@@ -6,41 +6,30 @@ use crate::game::{Events, *};
 pub fn effect(
     action: Res<ActiveAction>,
     sight: Query<&Sight, With<Player>>,
-    mut positions: Query<(Entity, &mut Position)>,
+    mut positions: Query<&mut Position>,
     mut events: ResMut<Events>,
 ) {
     let MoveAction {
-        entity,
+        actor,
         position: target,
     } = match &action.0 {
         Some(Action::Move(r#move)) => r#move,
         _ => return,
     };
 
-    match positions
-        .iter_mut()
-        .find_map(|(e, p)| if e == *entity { Some(p) } else { None })
-    {
-        Some(mut position) => {
-            position.0 = *target;
+    let mut position = positions.get_mut(*actor).unwrap();
 
-            if let Ok(sight) = sight.get_single() {
-                if sight.seeing.contains(entity) {
-                    events.0.push(api::Event {
-                        event: Some(api::event::Event::Move(api::MoveEvent {
-                            entity: entity.id(),
-                            x: target.x,
-                            y: target.y,
-                        })),
-                    });
-                }
-            }
-        }
-        None => {
-            log::warn!(
-                "Invalid move action, entity {:?} does not have Position component",
-                entity
-            );
-        }
+    position.0 = *target;
+
+    let sight = sight.single();
+
+    if sight.seeing.contains(actor) {
+        events.0.push(api::Event {
+            event: Some(api::event::Event::Move(api::MoveEvent {
+                actor: actor.id(),
+                x: target.x,
+                y: target.y,
+            })),
+        });
     }
 }

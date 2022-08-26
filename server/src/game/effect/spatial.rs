@@ -1,30 +1,38 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::time::Instant;
 
 use bevy_ecs::prelude::*;
 
 use crate::game::component::*;
-use crate::game::resource::SpatialHash;
+use crate::game::resource::{Cell, SpatialHash};
 use crate::game::*;
 
 pub fn effect(
-    action: Res<ActiveAction>,
-    sights: Query<(Entity, &Position), With<Renderable>>,
+    entities: Query<
+        (
+            Entity,
+            &Position,
+            Option<&Door>,
+            Option<&Solid>,
+            Option<&Opaque>,
+            Option<&Vulnerable>,
+        ),
+        With<Renderable>,
+    >,
     mut spatial: ResMut<SpatialHash>,
 ) {
-    match action.0 {
-        Some(Action::View) => {}
-        _ => return,
-    }
-
     let now = Instant::now();
 
-    let mut cells = HashMap::new();
-    sights.for_each(|(entity, position)| {
-        cells
-            .entry(position.0)
-            .or_insert_with(HashSet::new)
-            .insert(entity);
+    let mut cells: HashMap<IVec2, Cell> = HashMap::new();
+    entities.for_each(|(entity, position, door, solid, opaque, vulnerable)| {
+        let mut cell = cells.entry(position.0).or_default();
+        cell.visible.insert(entity);
+        cell.door = door.map(|_| entity);
+        cell.solid = solid.map(|_| entity);
+        if opaque.is_some() {
+            cell.opaque.insert(entity);
+        }
+        cell.vulnerable = solid.and(vulnerable.map(|_| entity));
     });
     spatial.cells = cells;
 

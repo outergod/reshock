@@ -1,19 +1,27 @@
+mod death;
 mod door;
 mod god_mode;
+mod health;
 mod log;
+mod melee;
 mod memory;
 mod r#move;
+mod render;
 mod sight;
 mod spatial;
 mod spot;
 mod state;
 
 pub use self::log::effect as log;
+pub use death::effect as death;
 pub use door::close as door_close;
 pub use door::open as door_open;
 pub use god_mode::effect as god_mode;
+pub use health::effect as health;
+pub use melee::effect as melee;
 pub use memory::effect as memory;
 pub use r#move::effect as r#move;
+pub use render::effect as render;
 pub use sight::effect as sight;
 pub use spatial::effect as spatial;
 pub use spot::effect as spot;

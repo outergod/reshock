@@ -14,6 +14,8 @@ impl Plugin for ReshockEventsPlugin {
             .add_event::<api::ViewUpdateEvent>()
             .add_event::<api::SpotEvent>()
             .add_event::<api::LogEvent>()
+            .add_event::<api::HitEvent>()
+            .add_event::<api::DeathEvent>()
             .add_system(system);
     }
 }
@@ -25,6 +27,8 @@ pub fn system(
     mut view: EventWriter<api::ViewUpdateEvent>,
     mut spot: EventWriter<api::SpotEvent>,
     mut log: EventWriter<api::LogEvent>,
+    mut hit: EventWriter<api::HitEvent>,
+    mut death: EventWriter<api::DeathEvent>,
 ) {
     if events.state == TransitionState::Active {
         return;
@@ -58,6 +62,12 @@ pub fn system(
         }
         api::event::Event::Log(event) => {
             log.send(event);
+        }
+        api::event::Event::Hit(event) => {
+            hit.send(event);
+        }
+        api::event::Event::Death(event) => {
+            death.send(event);
         }
     }
 }
