@@ -4,6 +4,7 @@ package reshock;
 service Reshock {
   rpc DumpState(Empty) returns (StateDumpResponse);
   rpc ProcessAction(ActionRequest) returns (EventsResponse);
+  rpc Restart(Empty) returns (StateDumpResponse);
 }
 
 message Empty {}

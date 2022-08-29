@@ -70,6 +70,18 @@ impl Reshock for ReshockService {
 
         Ok(Response::new(EventsResponse { events }))
     }
+
+    async fn restart(
+        &self,
+        request: Request<Empty>,
+    ) -> Result<Response<StateDumpResponse>, Status> {
+        log::debug!("Reshock::restart {:?}", request.get_ref());
+        let mut game = self.game.lock().await;
+        *game = Game::default();
+        let response = game.state().map_err(|_| Status::internal("Bla"))?;
+
+        Ok(Response::new(response))
+    }
 }
 
 #[tokio::main]

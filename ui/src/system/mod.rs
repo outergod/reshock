@@ -1,4 +1,3 @@
-mod client;
 mod death;
 mod effect;
 mod hit;
@@ -9,7 +8,6 @@ mod spot;
 mod view;
 mod wall;
 
-pub use client::setup as client_setup;
 pub use death::system as death;
 pub use effect::system as effect;
 pub use hit::system as hit;

@@ -5,6 +5,7 @@ use bevy::prelude::*;
 use tokio::runtime::Runtime;
 use tonic::transport::Channel;
 
+use crate::plugin::RestartEvent;
 use crate::resource::ReshockEvents;
 
 pub fn system(
@@ -12,8 +13,16 @@ pub fn system(
     runtime: Res<Runtime>,
     mut client: ResMut<ReshockClient<Channel>>,
     mut events: ResMut<ReshockEvents>,
+    mut writer: EventWriter<RestartEvent>,
 ) {
     if !events.queue.is_empty() {
+        return;
+    }
+
+    let shift = keys.pressed(KeyCode::RShift) || keys.pressed(KeyCode::LShift);
+
+    if shift && keys.just_pressed(KeyCode::R) {
+        writer.send(RestartEvent);
         return;
     }
 
