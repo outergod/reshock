@@ -66,7 +66,6 @@ pub fn system(
             log.send(event);
         }
         api::event::Event::Hit(event) => {
-            events.state = TransitionState::Active;
             hit.send(event);
         }
         api::event::Event::Death(event) => {
