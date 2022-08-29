@@ -19,7 +19,7 @@ pub fn effect(
 
     commands
         .entity(*actor)
-        .remove_bundle::<(Alive, Solid, Opaque, Vulnerable)>();
+        .remove_bundle::<(Alive, Solid, Opaque, Vulnerable, Sight, Memory, AI)>();
 
     let sight = sight.single();
 
