@@ -52,7 +52,6 @@ fn multiplier(attack: &AttackKind, vulnerable: &VulnerableKind) -> u8 {
 pub fn behavior(
     mut action: ResMut<ActiveAction>,
     mut reactions: ResMut<Reactions>,
-    mut followups: ResMut<FollowUps>,
     vulnerables: Query<&Vulnerable>,
     descriptions: Query<&Description>,
 ) -> Status {
@@ -103,7 +102,7 @@ pub fn behavior(
             actor, target, weapon, damage.amount
         ));
 
-        followups.0.push(log);
+        reactions.0.push(log);
     }
 
     let action = Action::HealthLoss(HealthLossAction {

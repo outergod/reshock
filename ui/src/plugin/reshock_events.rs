@@ -45,28 +45,32 @@ pub fn system(
 
     log::debug!("Processing event {}", event);
 
-    events.state = TransitionState::Active;
-
     match event {
         api::event::Event::Move(event) => {
+            events.state = TransitionState::Active;
             r#move.send(event);
         }
         api::event::Event::Door(event) => {
+            events.state = TransitionState::Active;
             door.send(event);
         }
         api::event::Event::View(event) => {
+            events.state = TransitionState::Active;
             view.send(event);
         }
         api::event::Event::Spot(event) => {
+            events.state = TransitionState::Active;
             spot.send(event);
         }
         api::event::Event::Log(event) => {
             log.send(event);
         }
         api::event::Event::Hit(event) => {
+            events.state = TransitionState::Active;
             hit.send(event);
         }
         api::event::Event::Death(event) => {
+            events.state = TransitionState::Active;
             death.send(event);
         }
     }

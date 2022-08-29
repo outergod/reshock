@@ -6,7 +6,7 @@ pub fn behavior(
     mut action: ResMut<ActiveAction>,
     alives: Query<&Alive>,
     descriptions: Query<&Description>,
-    mut followups: ResMut<FollowUps>,
+    mut reactions: ResMut<Reactions>,
 ) -> Status {
     let mut action = match action.0.as_mut() {
         Some(Action::Death(it)) => it,
@@ -23,7 +23,7 @@ pub fn behavior(
 
     if let Ok(description) = descriptions.get(action.actor) {
         let log = Action::Log(format!("{} dies", description.to_capitalized_string()));
-        followups.0.push(log);
+        reactions.0.push(log);
     }
 
     Status::Accept
