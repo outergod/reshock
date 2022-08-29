@@ -126,29 +126,6 @@ impl From<&Renderable> for api::RenderableComponent {
     }
 }
 
-#[derive(Component, Clone)]
-pub enum Ordering {
-    Floor = 0,
-    Door = 1,
-    Wall = 2,
-    Item = 3,
-    Other = 4,
-}
-
-impl Default for Ordering {
-    fn default() -> Self {
-        Self::Other
-    }
-}
-
-impl From<&Ordering> for api::OrderingComponent {
-    fn from(ordering: &Ordering) -> Self {
-        Self {
-            ordering: *ordering as i32,
-        }
-    }
-}
-
 pub enum SightKind {
     Blind,
     Omniscience,
@@ -171,7 +148,6 @@ pub struct Sight {
 pub struct MemoryComponents {
     pub position: Position,
     pub renderable: Renderable,
-    pub ordering: Ordering,
     pub door: Option<Door>,
     pub wall: Option<Wall>,
     pub player: Option<Player>,
@@ -182,7 +158,6 @@ impl From<&MemoryComponents> for api::Components {
         Self {
             position: Some((&memory.position).into()),
             renderable: Some((&memory.renderable).into()),
-            ordering: Some((&memory.ordering).into()),
             door: memory.door.map(|it| (&it).into()),
             wall: memory.wall.map(|it| (&it).into()),
             memory: Some(api::MemoryComponent {}),

@@ -61,18 +61,15 @@ fn adapt_glyph_dimensions(
 }
 
 fn render(
-    renderables: Query<(&Position, &Renderable, &Ordering)>,
+    renderables: Query<(&Position, &Renderable)>,
     mut tiles: Query<(&Position, &mut Text, &mut Transform)>,
     font_resource: Res<ReshockFont>,
 ) {
     let view = renderables
         .iter()
-        .map(|(position, renderable, ordering)| (position, (renderable, *ordering as u8)))
         .into_grouping_map()
         .fold_first(|current, _, next| {
-            let (_, l_ordering) = current;
-            let (_, r_ordering) = next;
-            if r_ordering > l_ordering {
+            if next.ordering as u8 > current.ordering as u8 {
                 next
             } else {
                 current
@@ -84,10 +81,10 @@ fn render(
             section.style.font_size = font_resource.size;
             section.style.font = font_resource.handle.clone_weak();
 
-            if let Some((renderable, ordering)) = view.get(position) {
+            if let Some(renderable) = view.get(position) {
                 section.value = renderable.char.to_string();
                 section.style.color = renderable.color;
-                transform.translation.z = *ordering as f32;
+                transform.translation.z = renderable.ordering as u8 as f32;
             } else {
                 section.value = " ".to_string();
                 transform.translation.z = 1.0;

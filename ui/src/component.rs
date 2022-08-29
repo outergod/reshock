@@ -16,10 +16,31 @@ pub struct Wall;
 #[derive(Component)]
 pub struct Memory;
 
+#[derive(Clone, Debug)]
+pub enum Ordering {
+    Floor,
+    Door,
+    Wall,
+    Item,
+    Actor,
+    Effect,
+}
+
 #[derive(Component, Clone, Debug)]
 pub struct Renderable {
     pub char: char,
     pub color: Color,
+    pub ordering: Ordering,
+}
+
+impl Default for Renderable {
+    fn default() -> Self {
+        Self {
+            char: ' ',
+            color: Default::default(),
+            ordering: Ordering::Actor,
+        }
+    }
 }
 
 pub struct ColorLens {
@@ -33,31 +54,6 @@ impl Lens<Renderable> for ColorLens {
         let end: Vec4 = self.end.into();
         let value = start.lerp(end, ratio);
         target.color = value.into();
-    }
-}
-
-impl Default for Renderable {
-    fn default() -> Self {
-        Self {
-            char: ' ',
-            color: Default::default(),
-        }
-    }
-}
-
-#[derive(Component, Clone, Debug)]
-pub enum Ordering {
-    Floor,
-    Door,
-    Wall,
-    Item,
-    Other,
-    Effect,
-}
-
-impl Default for Ordering {
-    fn default() -> Self {
-        Self::Other
     }
 }
 

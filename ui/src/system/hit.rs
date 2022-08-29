@@ -45,8 +45,11 @@ pub fn system(
 
         commands.spawn_bundle(bundle::Effect {
             position,
-            renderable: Renderable { char, ..default() },
-            ordering: Ordering::Effect,
+            renderable: Renderable {
+                char,
+                ordering: Ordering::Effect,
+                ..default()
+            },
             effect: Effect {
                 lifetime: Timer::new(Duration::from_secs_f32(0.3), false),
             },

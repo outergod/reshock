@@ -8,13 +8,7 @@ use crate::game::{Events, *};
 pub fn effect(
     action: Res<ActiveAction>,
     player: Query<(Entity, &Sight, &Memory), With<Player>>,
-    entities: Query<(
-        &Position,
-        &Renderable,
-        &Ordering,
-        Option<&Door>,
-        Option<&Wall>,
-    )>,
+    entities: Query<(&Position, &Renderable, Option<&Door>, Option<&Wall>)>,
     mut state: ResMut<api::State>,
     mut events: ResMut<Events>,
 ) {
@@ -31,13 +25,12 @@ pub fn effect(
         entities
             .get(*e)
             .ok()
-            .map(|(position, renderable, ordering, door, wall)| {
+            .map(|(position, renderable, door, wall)| {
                 (
                     e.id(),
                     api::Components {
                         position: Some(position.into()),
                         renderable: Some(renderable.into()),
-                        ordering: Some(ordering.into()),
                         door: door.map(|it| it.into()),
                         wall: wall.map(|it| it.into()),
                         memory: None,

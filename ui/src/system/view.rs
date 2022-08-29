@@ -1,4 +1,3 @@
-use api::ordering_component::Ordering as ApiOrdering;
 use api::renderable_component::Renderable as ApiRenderable;
 use api::*;
 use bevy::log;
@@ -31,7 +30,6 @@ pub fn system(
             let Components {
                 position,
                 renderable,
-                ordering,
                 door,
                 memory,
                 wall,
@@ -61,6 +59,7 @@ pub fn system(
                         } else {
                             Color::rgb(0.169, 0.173, 0.29)
                         },
+                        ordering: Ordering::Wall,
                     }),
                     Some(ApiRenderable::Door) => Some(Renderable {
                         char: ' ',
@@ -69,6 +68,7 @@ pub fn system(
                         } else {
                             Color::WHITE
                         },
+                        ordering: Ordering::Door,
                     }),
                     Some(ApiRenderable::Human) => Some(Renderable {
                         char: '@',
@@ -77,6 +77,7 @@ pub fn system(
                         } else {
                             Color::WHITE
                         },
+                        ordering: Ordering::Actor,
                     }),
                     Some(ApiRenderable::ServBot) => Some(Renderable {
                         char: 'b',
@@ -85,6 +86,7 @@ pub fn system(
                         } else {
                             Color::ORANGE_RED
                         },
+                        ordering: Ordering::Actor,
                     }),
                     Some(ApiRenderable::Floor) => Some(Renderable {
                         char: '·',
@@ -93,6 +95,7 @@ pub fn system(
                         } else {
                             Color::rgb(0.169, 0.173, 0.29)
                         },
+                        ordering: Ordering::Floor,
                     }),
                     Some(ApiRenderable::Corpse) => Some(Renderable {
                         char: '%',
@@ -101,23 +104,11 @@ pub fn system(
                         } else {
                             Color::WHITE
                         },
+                        ordering: Ordering::Item,
                     }),
                     _ => None,
                 } {
                     e.insert(renderable);
-                }
-            }
-
-            if let Some(OrderingComponent { ordering }) = ordering {
-                if let Some(ordering) = match ApiOrdering::from_i32(ordering) {
-                    Some(ApiOrdering::Floor) => Some(Ordering::Floor),
-                    Some(ApiOrdering::Door) => Some(Ordering::Door),
-                    Some(ApiOrdering::Wall) => Some(Ordering::Wall),
-                    Some(ApiOrdering::Item) => Some(Ordering::Item),
-                    Some(ApiOrdering::Other) => Some(Ordering::Other),
-                    _ => None,
-                } {
-                    e.insert(ordering);
                 }
             }
 

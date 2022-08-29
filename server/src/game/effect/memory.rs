@@ -15,7 +15,6 @@ pub fn effect(
     sights: Query<(
         &Position,
         &Renderable,
-        &Ordering,
         Option<&Door>,
         Option<&Wall>,
         Option<&Player>,
@@ -51,13 +50,12 @@ pub fn effect(
                 sights
                     .get(*e)
                     .ok()
-                    .map(|(position, renderable, ordering, door, wall, player)| {
+                    .map(|(position, renderable, door, wall, player)| {
                         (
                             *e,
                             MemoryComponents {
                                 position: position.clone(),
                                 renderable: renderable.clone(),
-                                ordering: ordering.clone(),
                                 door: door.cloned(),
                                 wall: wall.cloned(),
                                 player: player.cloned(),

@@ -26,18 +26,8 @@ message RenderableComponent {
     MAGAZINE = 9;
     CORPSE = 10;
   }
-  Renderable renderable = 1;
-}
 
-message OrderingComponent {
-  enum Ordering {
-    FLOOR = 0;
-    DOOR = 1;
-    WALL = 2;
-    ITEM = 3;
-    OTHER = 4;
-  }
-  Ordering ordering = 1;
+  Renderable renderable = 1;
 }
 
 message PositionComponent {
@@ -52,7 +42,6 @@ message WallComponent {}
 message Components {
   PositionComponent position = 1;
   RenderableComponent renderable = 2;
-  OrderingComponent ordering = 3;
   optional DoorComponent door = 4;
   optional MemoryComponent memory = 5;
   optional WallComponent wall = 6;

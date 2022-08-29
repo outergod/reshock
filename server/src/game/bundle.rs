@@ -6,7 +6,6 @@ use super::component;
 pub struct Player {
     pub renderable: component::Renderable,
     pub position: component::Position,
-    pub ordering: component::Ordering,
     pub solid: component::Solid,
     pub sight: component::Sight,
     pub memory: component::Memory,
@@ -24,7 +23,6 @@ impl Default for Player {
         Self {
             renderable: component::Renderable::Human,
             position: Default::default(),
-            ordering: Default::default(),
             solid: Default::default(),
             sight: component::Sight {
                 kind: component::SightKind::Eyes,
@@ -58,7 +56,6 @@ impl Default for Player {
 pub struct NPC {
     pub renderable: component::Renderable,
     pub position: component::Position,
-    pub ordering: component::Ordering,
     pub solid: component::Solid,
     pub sight: component::Sight,
     pub memory: component::Memory,
@@ -71,7 +68,6 @@ pub struct NPC {
 pub struct Floor {
     pub renderable: component::Renderable,
     pub position: component::Position,
-    pub ordering: component::Ordering,
     pub description: component::Description,
 }
 
@@ -80,7 +76,6 @@ impl Default for Floor {
         Self {
             renderable: component::Renderable::Floor,
             position: Default::default(),
-            ordering: component::Ordering::Floor,
             description: component::Description {
                 name: "flooring".to_string(),
                 article: component::Article::None,
@@ -94,7 +89,6 @@ pub struct Wall {
     pub room: component::Room,
     pub renderable: component::Renderable,
     pub position: component::Position,
-    pub ordering: component::Ordering,
     pub solid: component::Solid,
     pub opaque: component::Opaque,
     pub wall: component::Wall,
@@ -107,7 +101,6 @@ impl Default for Wall {
             room: component::Room,
             renderable: component::Renderable::Wall,
             position: Default::default(),
-            ordering: component::Ordering::Wall,
             solid: Default::default(),
             opaque: Default::default(),
             wall: Default::default(),
@@ -125,7 +118,6 @@ pub struct Door {
     pub room: component::Room,
     pub renderable: component::Renderable,
     pub position: component::Position,
-    pub ordering: component::Ordering,
     pub description: component::Description,
 }
 
@@ -136,7 +128,6 @@ impl Default for Door {
             room: component::Room,
             renderable: component::Renderable::Door,
             position: Default::default(),
-            ordering: component::Ordering::Door,
             description: component::Description {
                 name: "door".to_string(),
                 article: component::Article::A,
@@ -150,7 +141,6 @@ pub struct MeleeWeapon {
     pub melee: component::MeleeWeapon,
     pub item: component::Item,
     pub renderable: component::Renderable,
-    pub ordering: component::Ordering,
     pub description: component::Description,
 }
 
@@ -168,7 +158,6 @@ impl MeleeWeapon {
             },
             item: Default::default(),
             renderable: component::Renderable::Melee,
-            ordering: component::Ordering::Item,
             description: component::Description {
                 name: "lead pipe".to_string(),
                 article: component::Article::A,
@@ -189,7 +178,6 @@ impl MeleeWeapon {
             },
             item: Default::default(),
             renderable: component::Renderable::Melee,
-            ordering: component::Ordering::Item,
             description: component::Description {
                 name: "TS-04 Laser Rapier".to_string(),
                 article: component::Article::A,
@@ -203,7 +191,6 @@ pub struct ProjectileGun {
     pub gun: component::ProjectileGun,
     pub item: component::Item,
     pub renderable: component::Renderable,
-    pub ordering: component::Ordering,
     pub description: component::Description,
 }
 
@@ -216,7 +203,6 @@ impl ProjectileGun {
             },
             item: Default::default(),
             renderable: component::Renderable::ProjectileGun,
-            ordering: component::Ordering::Item,
             description: component::Description {
                 name: "MARK III Assault Rifle".to_string(),
                 article: component::Article::A,
@@ -230,7 +216,6 @@ pub struct Magazine {
     pub magazine: component::Magazine,
     pub item: component::Item,
     pub renderable: component::Renderable,
-    pub ordering: component::Ordering,
     pub description: component::Description,
 }
 
@@ -250,7 +235,6 @@ impl Magazine {
             },
             item: Default::default(),
             renderable: component::Renderable::Magazine,
-            ordering: component::Ordering::Item,
             description: component::Description {
                 name: "magazine of 10 magnesium-tipped rounds".to_string(),
                 article: component::Article::A,
@@ -264,7 +248,6 @@ pub struct EnergyGun {
     pub gun: component::EnergyGun,
     pub item: component::Item,
     pub renderable: component::Renderable,
-    pub ordering: component::Ordering,
     pub description: component::Description,
 }
 
@@ -285,7 +268,6 @@ impl EnergyGun {
             },
             item: Default::default(),
             renderable: component::Renderable::EnergyGun,
-            ordering: component::Ordering::Item,
             description: component::Description {
                 name: "RW-45 Ion Rifle".to_string(),
                 article: component::Article::An,
