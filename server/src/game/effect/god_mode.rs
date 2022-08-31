@@ -9,13 +9,16 @@ pub fn effect(action: Res<ActiveAction>, mut commands: Commands, mut reactions: 
         _ => return,
     };
 
-    let mut actor = commands.entity(actor);
+    let mut entity = commands.entity(actor);
 
     if activate {
-        actor.insert(God);
+        entity.insert(God);
     } else {
-        actor.remove::<God>();
+        entity.remove::<God>();
     }
 
-    reactions.0.push(Action::View);
+    reactions.0.push(Action::View(Some(ViewAction {
+        actor,
+        sight: Default::default(),
+    })));
 }

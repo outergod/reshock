@@ -64,7 +64,7 @@ message Log {
 message StateDumpResponse {
   uint32 player = 1;
   Dimensions dimensions = 2;
-  State view = 3;
+  State state = 3;
   Log log = 4;
 }
 
@@ -101,9 +101,9 @@ message DoorEvent {
   bool open = 3;
 }
 
-message ViewUpdateEvent {
+message StateUpdateEvent {
   uint32 player = 1;
-  State view = 2;
+  State state = 2;
 }
 
 message SpotEvent {
@@ -154,7 +154,7 @@ message DeathEvent {
 
 message Event {
   oneof event {
-    ViewUpdateEvent view = 1;
+    StateUpdateEvent state = 1;
     MoveEvent move = 2;
     DoorEvent door = 3;
     SpotEvent spot = 4;

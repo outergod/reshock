@@ -10,14 +10,14 @@ use crate::resource::TransitionState;
 pub fn system(
     mut commands: Commands,
     entities: Query<Entity, With<ReshockEntity>>,
-    mut reader: EventReader<api::ViewUpdateEvent>,
+    mut reader: EventReader<api::StateUpdateEvent>,
     mut events: ResMut<ReshockEvents>,
 ) {
-    for api::ViewUpdateEvent { player, view } in reader.iter() {
-        let view = match view {
+    for api::StateUpdateEvent { player, state } in reader.iter() {
+        let state = match state {
             Some(it) => it,
             None => {
-                log::error!("Received empty view state from Reshock");
+                log::error!("Received empty state from Reshock");
                 return;
             }
         };
@@ -26,7 +26,7 @@ pub fn system(
             commands.entity(entity).despawn();
         }
 
-        for (entity, components) in view.entities.clone() {
+        for (entity, components) in state.entities.clone() {
             let Components {
                 position,
                 renderable,

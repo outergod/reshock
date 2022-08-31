@@ -112,5 +112,5 @@ pub fn behavior(
 
     reactions.0.push(action);
 
-    Status::Accept
+    Status::Continue
 }

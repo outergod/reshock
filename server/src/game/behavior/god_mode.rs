@@ -15,7 +15,14 @@ pub fn behavior(
                 activate: god.is_none(),
             });
 
-            Status::Accept
+            Status::Continue
+        }
+        Some(Action::View(Some(ViewAction { actor, sight }))) => {
+            if actor == &player && god.is_some() {
+                sight.kind = SightKind::Omniscience;
+            }
+
+            Status::Continue
         }
         Some(Action::HealthLoss(HealthLossAction { actor, amount })) => {
             if actor == &player && god.is_some() {

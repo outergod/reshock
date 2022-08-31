@@ -17,9 +17,18 @@ pub fn behavior(
     deltas: Res<Deltas>,
     obstacles: Query<&Position, With<Solid>>,
     player: Query<(Entity, &Position), With<Player>>,
+    mut followups: ResMut<FollowUps>,
 ) -> Status {
     let actor = match &action.0 {
         Some(Action::AI(it)) => it,
+        Some(Action::EndTurn(entity)) => {
+            if player.contains(*entity) {
+                for (entity, ..) in ai.iter() {
+                    followups.0.push(Action::AI(entity));
+                }
+            }
+            return Status::Continue;
+        }
         _ => return Status::Continue,
     };
 
@@ -85,5 +94,5 @@ pub fn behavior(
         }
     }
 
-    Status::Accept
+    Status::Continue
 }

@@ -11,7 +11,7 @@ impl Plugin for ReshockEventsPlugin {
         app.init_resource::<ReshockEvents>()
             .add_event::<api::MoveEvent>()
             .add_event::<api::DoorEvent>()
-            .add_event::<api::ViewUpdateEvent>()
+            .add_event::<api::StateUpdateEvent>()
             .add_event::<api::SpotEvent>()
             .add_event::<api::LogEvent>()
             .add_event::<api::HitEvent>()
@@ -24,7 +24,7 @@ pub fn system(
     mut events: ResMut<ReshockEvents>,
     mut r#move: EventWriter<api::MoveEvent>,
     mut door: EventWriter<api::DoorEvent>,
-    mut view: EventWriter<api::ViewUpdateEvent>,
+    mut state: EventWriter<api::StateUpdateEvent>,
     mut spot: EventWriter<api::SpotEvent>,
     mut log: EventWriter<api::LogEvent>,
     mut hit: EventWriter<api::HitEvent>,
@@ -54,9 +54,9 @@ pub fn system(
             events.state = TransitionState::Active;
             door.send(event);
         }
-        api::event::Event::View(event) => {
+        api::event::Event::State(event) => {
             events.state = TransitionState::Active;
-            view.send(event);
+            state.send(event);
         }
         api::event::Event::Spot(event) => {
             events.state = TransitionState::Active;

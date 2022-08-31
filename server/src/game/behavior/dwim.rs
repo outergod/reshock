@@ -47,7 +47,7 @@ pub fn r#move(
         }));
     }
 
-    Status::Accept
+    Status::Continue
 }
 
 pub fn close(
@@ -75,7 +75,7 @@ pub fn close(
                 .0
                 .push(Action::CloseDoor(CloseDoorAction { target, actor }));
 
-            Status::Accept
+            Status::Continue
         }
         None => {
             let action = Action::Log("There is no door to close nearby".to_string());

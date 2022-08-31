@@ -67,5 +67,5 @@ pub fn behavior(
 
     followups.0.push(Action::EndTurn(*actor));
 
-    Status::Accept
+    Status::Continue
 }

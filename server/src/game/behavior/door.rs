@@ -11,7 +11,7 @@ pub fn behavior(
     match &action.0 {
         Some(Action::OpenDoor(OpenDoorAction { actor, .. })) => {
             followups.0.push(Action::EndTurn(*actor));
-            Status::Accept
+            Status::Continue
         }
         Some(Action::CloseDoor(CloseDoorAction { actor, target })) => {
             let position = match doors.get(*target) {
@@ -27,7 +27,7 @@ pub fn behavior(
                 Status::Reject(Some(action))
             } else {
                 followups.0.push(Action::EndTurn(*actor));
-                Status::Accept
+                Status::Continue
             }
         }
         _ => Status::Continue,

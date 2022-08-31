@@ -8,7 +8,7 @@ pub const FILE_DESCRIPTOR_SET: &'static [u8] =
 impl Display for event::Event {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let name = match self {
-            event::Event::View(_) => "View",
+            event::Event::State(_) => "State",
             event::Event::Move(_) => "Move",
             event::Event::Door(_) => "Door",
             event::Event::Spot(_) => "Spot",

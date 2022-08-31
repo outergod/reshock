@@ -6,7 +6,7 @@ use std::{
 use bevy_ecs::prelude::*;
 use glam::IVec2;
 
-#[derive(Component, Default, Clone)]
+#[derive(Component, Default, Clone, Debug)]
 pub struct Player;
 
 pub enum Article {
@@ -56,7 +56,7 @@ impl Description {
     }
 }
 
-#[derive(Component, Default, Clone, Copy)]
+#[derive(Component, Default, Clone, Copy, Debug)]
 pub struct Wall;
 
 impl From<&Wall> for api::WallComponent {
@@ -68,7 +68,7 @@ impl From<&Wall> for api::WallComponent {
 #[derive(Component, Default)]
 pub struct God;
 
-#[derive(Component, Default, Clone, Copy, Hash, PartialEq, Eq)]
+#[derive(Component, Default, Clone, Copy, Hash, PartialEq, Eq, Debug)]
 pub struct Position(pub IVec2);
 
 impl From<&Position> for api::PositionComponent {
@@ -80,7 +80,7 @@ impl From<&Position> for api::PositionComponent {
     }
 }
 
-#[derive(Component, Clone, Copy)]
+#[derive(Component, Clone, Copy, Debug)]
 pub struct Door {
     pub open: bool,
 }
@@ -97,7 +97,7 @@ impl From<&Door> for api::DoorComponent {
     }
 }
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Debug)]
 pub enum Renderable {
     None,
     Human,
@@ -126,6 +126,7 @@ impl From<&Renderable> for api::RenderableComponent {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
 pub enum SightKind {
     Blind,
     Omniscience,
@@ -138,13 +139,14 @@ impl Default for SightKind {
     }
 }
 
-#[derive(Component, Default)]
+#[derive(Component, Default, Debug, Clone)]
 pub struct Sight {
     pub kind: SightKind,
     pub seeing: HashSet<Entity>,
     pub mask: HashSet<IVec2>,
 }
 
+#[derive(Debug, Clone)]
 pub struct MemoryComponents {
     pub position: Position,
     pub renderable: Renderable,
@@ -165,7 +167,7 @@ impl From<&MemoryComponents> for api::Components {
     }
 }
 
-#[derive(Component, Default)]
+#[derive(Component, Default, Debug, Clone)]
 pub struct Memory(pub HashMap<Entity, MemoryComponents>);
 
 #[derive(Component)]

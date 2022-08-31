@@ -68,21 +68,21 @@ pub fn restart(
 pub fn load(
     mut commands: Commands,
     mut log_res: ResMut<Log>,
-    mut state: ResMut<GameState>,
+    mut game_state: ResMut<GameState>,
     font: Res<ReshockFont>,
-    mut writer: EventWriter<api::ViewUpdateEvent>,
+    mut writer: EventWriter<api::StateUpdateEvent>,
 ) {
     let StateDumpResponse {
         player,
         dimensions,
-        view,
+        state,
         log,
-    } = match state.0.to_owned() {
+    } = match game_state.0.to_owned() {
         Some(it) => it,
         None => return,
     };
 
-    writer.send(api::ViewUpdateEvent { player, view });
+    writer.send(api::StateUpdateEvent { player, state });
 
     if let Some(api::Dimensions { x, y }) = dimensions {
         for y in 0..=y {
@@ -100,5 +100,5 @@ pub fn load(
         log::warn!("Received empty log, suspicious");
     }
 
-    *state = GameState(None);
+    *game_state = GameState(None);
 }

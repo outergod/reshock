@@ -78,5 +78,5 @@ pub fn hit(
         }
     }
 
-    Status::Accept
+    Status::Continue
 }

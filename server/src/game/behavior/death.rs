@@ -26,5 +26,5 @@ pub fn behavior(
         reactions.0.push(log);
     }
 
-    Status::Accept
+    Status::Continue
 }
