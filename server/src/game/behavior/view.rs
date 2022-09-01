@@ -32,12 +32,12 @@ pub fn behavior(
     positions: Query<&Position>,
     lines: Res<RadialLines>,
     spatial: Res<SpatialHash>,
-    mut followups: ResMut<FollowUps>,
+    mut reactions: ResMut<Reactions>,
 ) -> Status {
     let ViewAction { sight, actor } = match action.0.as_mut() {
         Some(Action::View(Some(it))) => it,
         Some(Action::EndTurn(_)) => {
-            followups.0.push(Action::View(None));
+            reactions.0.push(Action::View(None));
             return Status::Continue;
         }
         _ => return Status::Continue,

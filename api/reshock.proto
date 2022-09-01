@@ -138,9 +138,10 @@ message HitEvent {
     NONE = 8;
   }
 
-  uint32 target = 1;
-  HitKind kind = 2;
-  HitDirection direction = 3;
+  int32 x = 1;
+  int32 y = 2;
+  HitKind kind = 3;
+  HitDirection direction = 4;
 }
 
 message DeathEvent {

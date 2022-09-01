@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use api::hit_event::{HitDirection, HitKind};
-use bevy::prelude::*;
+use bevy::{math::ivec2, prelude::*};
 use bevy_kira_audio::Audio;
 
 use crate::{bundle, component::*};
@@ -13,14 +13,15 @@ const APPENDAGES_SOUND: &'static str = "sshock/sounds/00256.wav";
 pub fn system(
     mut commands: Commands,
     mut reader: EventReader<api::HitEvent>,
-    positions: Query<(&ReshockEntity, &Position)>,
     asset_server: Res<AssetServer>,
     audio: Res<Audio>,
 ) {
     for api::HitEvent {
-        target,
         kind,
         direction,
+        x,
+        y,
+        ..
     } in reader.iter()
     {
         if let Some(sound) = match HitKind::from_i32(*kind) {
@@ -40,13 +41,8 @@ pub fn system(
             _ => '*',
         };
 
-        let position = positions
-            .iter()
-            .find_map(|(entity, pos)| (&entity.0 == target).then_some(*pos))
-            .unwrap();
-
         commands.spawn_bundle(bundle::Effect {
-            position,
+            position: Position(ivec2(*x, *y)),
             renderable: Renderable {
                 char,
                 ordering: Ordering::Effect,

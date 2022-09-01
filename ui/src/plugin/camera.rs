@@ -20,7 +20,7 @@ impl Plugin for CameraPlugin {
 }
 
 fn follow(
-    entity: Query<&Position, Changed<Focus>>,
+    entity: Query<&Position, With<Focus>>,
     mut camera: Query<&mut Transform, With<Camera>>,
     dimensions: Res<TileDimensions>,
 ) {

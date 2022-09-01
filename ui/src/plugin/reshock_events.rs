@@ -31,7 +31,15 @@ pub fn system(
     mut death: EventWriter<api::DeathEvent>,
 ) {
     if events.state == TransitionState::Active {
-        return;
+        match events.queue.front() {
+            Some(api::Event {
+                event: Some(api::event::Event::Log(_)),
+            }) => {}
+            Some(api::Event {
+                event: Some(api::event::Event::Death(_)),
+            }) => {}
+            _ => return,
+        }
     }
 
     let event = match events.queue.pop_front() {
@@ -66,10 +74,10 @@ pub fn system(
             log.send(event);
         }
         api::event::Event::Hit(event) => {
+            events.state = TransitionState::Active;
             hit.send(event);
         }
         api::event::Event::Death(event) => {
-            events.state = TransitionState::Active;
             death.send(event);
         }
     }

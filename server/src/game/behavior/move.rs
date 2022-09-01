@@ -2,20 +2,6 @@ use bevy_ecs::prelude::*;
 
 use crate::game::{component::*, resource::*, *};
 
-trait ArticleFor {
-    fn article_for(&self) -> String;
-}
-
-impl ArticleFor for &str {
-    fn article_for(&self) -> String {
-        match self.chars().next() {
-            Some('a') | Some('e') | Some('i') | Some('o') => "an",
-            _ => "a",
-        }
-        .to_string()
-    }
-}
-
 pub fn behavior(
     action: Res<ActiveAction>,
     mut followups: ResMut<FollowUps>,

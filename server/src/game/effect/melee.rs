@@ -33,10 +33,11 @@ pub fn effect(
         MeleeWeaponKind::Appendages => HitKind::Appendages,
     };
 
+    let pos = positions.get(*target).unwrap().0;
+
     let direction = {
         let actor = positions.get(*actor).unwrap();
-        let target = positions.get(*target).unwrap();
-        let (x, y) = (target.0 - actor.0).into();
+        let (x, y) = (pos - actor.0).into();
         match (x, y) {
             (0, 1) => HitDirection::Top,
             (1, 1) => HitDirection::TopRight,
@@ -52,7 +53,8 @@ pub fn effect(
 
     events.0.push(api::Event {
         event: Some(api::event::Event::Hit(api::HitEvent {
-            target: target.id(),
+            x: pos.x,
+            y: pos.y,
             kind: kind as i32,
             direction: direction as i32,
         })),

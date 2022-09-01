@@ -2,16 +2,12 @@ use api::death_event::DeathSound;
 use bevy::prelude::*;
 use bevy_kira_audio::Audio;
 
-use crate::{
-    component::*,
-    resource::{ReshockEvents, TransitionState},
-};
+use crate::component::*;
 
 const SERV_BOT_SOUND: &'static str = "sshock/sounds/00211.wav";
 
 pub fn system(
     mut reader: EventReader<api::DeathEvent>,
-    mut events: ResMut<ReshockEvents>,
     mut renderables: Query<(&ReshockEntity, &mut Renderable)>,
     asset_server: Res<AssetServer>,
     audio: Res<Audio>,
@@ -31,7 +27,5 @@ pub fn system(
 
         renderable.char = '%';
         renderable.color = Color::WHITE;
-
-        events.state = TransitionState::Inactive;
     }
 }
