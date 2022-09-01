@@ -123,6 +123,7 @@ message HitEvent {
   enum HitKind {
     LEAD_PIPE = 0;
     LASER_RAPIER = 1;
+    APPENDAGES = 2;
   }
 
   enum HitDirection {

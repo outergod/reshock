@@ -30,6 +30,7 @@ pub fn effect(
     let kind = match weapon.kind {
         MeleeWeaponKind::LeadPipe => HitKind::LeadPipe,
         MeleeWeaponKind::LaserRapier => HitKind::LaserRapier,
+        MeleeWeaponKind::Appendages => HitKind::Appendages,
     };
 
     let direction = {

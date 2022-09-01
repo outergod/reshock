@@ -19,7 +19,7 @@ mod resource;
 
 const LEVEL01_PATH: &'static str = "rooms/level01.room";
 
-type BoxedBehavior = Box<dyn System<In = (), Out = Status>>;
+type BoxedBehavior = BoxedSystem<(), Status>;
 
 pub struct Game {
     world: World,

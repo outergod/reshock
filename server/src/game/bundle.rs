@@ -137,6 +137,34 @@ impl Default for Door {
 }
 
 #[derive(Bundle)]
+pub struct NaturalMeleeWeapon {
+    pub melee: component::MeleeWeapon,
+    pub item: component::Item,
+    pub description: component::Description,
+}
+
+impl NaturalMeleeWeapon {
+    pub fn appendages() -> Self {
+        Self {
+            melee: component::MeleeWeapon {
+                kind: component::MeleeWeaponKind::Appendages,
+                damage: component::Damage {
+                    attack: component::AttackKind::Kinetic,
+                    amount: 8,
+                    penetration: 0,
+                    offense: 1,
+                },
+            },
+            item: Default::default(),
+            description: component::Description {
+                name: "appendages".to_string(),
+                article: component::Article::None,
+            },
+        }
+    }
+}
+
+#[derive(Bundle)]
 pub struct MeleeWeapon {
     pub melee: component::MeleeWeapon,
     pub item: component::Item,

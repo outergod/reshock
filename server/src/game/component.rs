@@ -220,6 +220,7 @@ pub struct Damage {
 pub enum MeleeWeaponKind {
     LeadPipe,
     LaserRapier,
+    Appendages,
 }
 
 #[derive(Component, Clone, Debug, Copy)]

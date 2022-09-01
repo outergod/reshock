@@ -84,7 +84,11 @@ pub fn behavior(
                             position: path[1],
                         }));
                     } else {
-                        log::debug!("TODO melee");
+                        reactions.0.push(Action::Melee(MeleeAttackAction {
+                            actor,
+                            target: player.0,
+                            weapon: None,
+                        }))
                     }
                 }
                 None => {

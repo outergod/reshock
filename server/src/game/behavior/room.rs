@@ -47,7 +47,7 @@ pub fn setup(world: &mut World, room: Room) {
                 world.spawn().insert_bundle(magazine);
             }
             'b' => {
-                world
+                let npc = world
                     .spawn()
                     .insert_bundle(NPC {
                         position,
@@ -70,7 +70,14 @@ pub fn setup(world: &mut World, room: Room) {
                         },
                         ..Default::default()
                     })
-                    .insert(component::Alive::ServBot);
+                    .insert(component::Alive::ServBot)
+                    .id();
+
+                world
+                    .spawn()
+                    .insert_bundle(NaturalMeleeWeapon::appendages())
+                    .insert(component::Item { owner: Some(npc) })
+                    .insert(component::Equipped);
             }
             'X' => {
                 world.spawn().insert_bundle(Wall {
