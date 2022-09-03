@@ -50,6 +50,7 @@ impl Default for Game {
         let mut behaviors = vec![
             Box::new(IntoSystem::into_system(behavior::dwim_move)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::dwim_close)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::dwim_shoot)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::ai)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::god_mode)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::r#move)) as BoxedBehavior,
@@ -58,9 +59,13 @@ impl Default for Game {
             Box::new(IntoSystem::into_system(behavior::view_all)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::spot)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::memorize)) as BoxedBehavior,
-            Box::new(IntoSystem::into_system(behavior::melee)) as BoxedBehavior,
-            Box::new(IntoSystem::into_system(behavior::melee_hit)) as BoxedBehavior,
-            Box::new(IntoSystem::into_system(behavior::combat)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::melee_intent)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::melee_attack)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::shoot_intent)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::shoot_projectile)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::dispatch_projectile)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::combat_damage)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::combat_hit)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::death)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::state)) as BoxedBehavior,
         ];
@@ -74,6 +79,7 @@ impl Default for Game {
             Box::new(IntoSystem::into_system(effect::door_open)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::door_close)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::melee)) as BoxedSystem,
+            Box::new(IntoSystem::into_system(effect::shoot)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::health)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::death)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::render)) as BoxedSystem,
@@ -116,6 +122,8 @@ pub enum Action {
     Spot(SpotAction),
     Log(String),
     Melee(MeleeAttackAction),
+    Shoot(ShootAction),
+    Hit(HitAction),
     Damage(DamageAction),
     HealthLoss(HealthLossAction),
     Death(DeathAction),
@@ -137,6 +145,8 @@ impl Display for Action {
             Action::Spot(_) => "Spot",
             Action::Log(_) => "Log",
             Action::Melee(_) => "Melee",
+            Action::Shoot(_) => "Shoot",
+            Action::Hit(_) => "Hit",
             Action::Damage(_) => "Damage",
             Action::HealthLoss(_) => "HealthLoss",
             Action::Death(_) => "Death",
@@ -172,6 +182,14 @@ pub struct HealthLossAction {
 }
 
 #[derive(Debug, Clone, Copy)]
+pub struct HitAction {
+    actor: Entity,
+    target: Entity,
+    weapon: Entity,
+    damage: component::Damage,
+}
+
+#[derive(Debug, Clone, Copy)]
 pub struct DamageAction {
     actor: Entity,
     target: Entity,
@@ -180,10 +198,35 @@ pub struct DamageAction {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct MeleeAttackAction {
-    actor: Entity,
-    target: Entity,
-    weapon: Option<Entity>,
+pub enum MeleeAttackAction {
+    Intent {
+        actor: Entity,
+        target: Entity,
+    },
+    Attack {
+        actor: Entity,
+        target: Entity,
+        weapon: Entity,
+    },
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum ShootAction {
+    Intent {
+        actor: Entity,
+        target: Entity,
+    },
+    ProjectileGun {
+        actor: Entity,
+        target: Entity,
+        weapon: Entity,
+    },
+    DispatchProjectile {
+        actor: Entity,
+        target: Entity,
+        weapon: Entity,
+        magazine: Entity,
+    },
 }
 
 #[derive(Debug, Clone)]
@@ -197,6 +240,7 @@ pub enum DwimAction {
     DownLeft,
     Left,
     Close,
+    Shoot,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -284,7 +328,7 @@ impl Game {
                 }
             }
 
-            let action = &self
+            let action = self
                 .world
                 .resource::<ActiveAction>()
                 .0
@@ -322,7 +366,21 @@ impl Game {
         let duration = Instant::now() - now;
         log::debug!("Time taken: {}µs", duration.as_micros());
 
-        events
+        // Deduplicate state events, last one wins; TODO move to impl
+        events.into_iter().fold(vec![], |mut acc, ev| {
+            match (acc.last(), &ev) {
+                (
+                    Some(api::Event {
+                        event: Some(api::event::Event::State(_)),
+                    }),
+                    api::Event {
+                        event: Some(api::event::Event::State(_)),
+                    },
+                ) => *acc.last_mut().unwrap() = ev,
+                _ => acc.push(ev),
+            }
+            acc
+        })
     }
 
     pub fn state(&mut self) -> Result<api::StateDumpResponse> {

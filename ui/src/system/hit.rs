@@ -19,11 +19,15 @@ pub fn system(
     for api::HitEvent {
         kind,
         direction,
-        x,
-        y,
+        position,
         ..
     } in reader.iter()
     {
+        let (x, y) = match position {
+            Some(pos) => (pos.x, pos.y),
+            None => continue,
+        };
+
         if let Some(sound) = match HitKind::from_i32(*kind) {
             Some(HitKind::LeadPipe) => Some(LEAD_PIPE_SOUND),
             Some(HitKind::LaserRapier) => Some(LASER_RAPIER_SOUND),
@@ -42,7 +46,7 @@ pub fn system(
         };
 
         commands.spawn_bundle(bundle::Effect {
-            position: Position(ivec2(*x, *y)),
+            position: Position(ivec2(x, y)),
             renderable: Renderable {
                 char,
                 ordering: Ordering::Effect,

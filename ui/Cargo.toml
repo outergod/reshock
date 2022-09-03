@@ -11,6 +11,7 @@ ab_glyph = "0.2.6"
 itertools = "0.10"
 anyhow = "1.0"
 serde = "1.0"
+bevy_prototype_lyon = "0.6.0"
 
 [dependencies.config]
 version = "0.13"

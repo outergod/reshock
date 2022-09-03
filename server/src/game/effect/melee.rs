@@ -12,10 +12,11 @@ pub fn effect(
     mut events: ResMut<Events>,
 ) {
     let (actor, target, weapon) = match &action.0 {
-        Some(Action::Melee(MeleeAttackAction {
+        Some(Action::Hit(HitAction {
             actor,
             target,
-            weapon: Some(weapon),
+            weapon,
+            ..
         })) => (actor, target, weapon),
         _ => return,
     };
@@ -26,7 +27,11 @@ pub fn effect(
         return;
     }
 
-    let weapon = weapons.get(*weapon).unwrap();
+    let weapon = match weapons.get(*weapon) {
+        Ok(it) => it,
+        Err(_) => return,
+    };
+
     let kind = match weapon.kind {
         MeleeWeaponKind::LeadPipe => HitKind::LeadPipe,
         MeleeWeaponKind::LaserRapier => HitKind::LaserRapier,
@@ -53,8 +58,7 @@ pub fn effect(
 
     events.0.push(api::Event {
         event: Some(api::event::Event::Hit(api::HitEvent {
-            x: pos.x,
-            y: pos.y,
+            position: Some(api::Position { x: pos.x, y: pos.y }),
             kind: kind as i32,
             direction: direction as i32,
         })),

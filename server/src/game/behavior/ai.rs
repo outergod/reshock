@@ -84,10 +84,9 @@ pub fn behavior(
                             position: path[1],
                         }));
                     } else {
-                        reactions.0.push(Action::Melee(MeleeAttackAction {
+                        reactions.0.push(Action::Melee(MeleeAttackAction::Intent {
                             actor,
                             target: player.0,
-                            weapon: None,
                         }))
                     }
                 }

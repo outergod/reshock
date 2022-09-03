@@ -15,6 +15,7 @@ impl Display for event::Event {
             event::Event::Log(_) => "Log",
             event::Event::Hit(_) => "Hit",
             event::Event::Death(_) => "Death",
+            event::Event::Shoot(_) => "Shoot",
         };
 
         write!(f, "{}", name)

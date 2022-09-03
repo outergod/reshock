@@ -35,11 +35,9 @@ pub fn r#move(
             .0
             .push(Action::OpenDoor(OpenDoorAction { target, actor }));
     } else if let Some(target) = spatial.vulnerable_at(&target) {
-        reactions.0.push(Action::Melee(MeleeAttackAction {
-            target,
-            actor,
-            weapon: None,
-        }));
+        reactions
+            .0
+            .push(Action::Melee(MeleeAttackAction::Intent { target, actor }));
     } else {
         reactions.0.push(Action::Move(MoveAction {
             actor,
@@ -79,6 +77,34 @@ pub fn close(
         }
         None => {
             let action = Action::Log("There is no door to close nearby".to_string());
+            Status::Reject(Some(action))
+        }
+    }
+}
+
+pub fn shoot(
+    action: Res<ActiveAction>,
+    mut reactions: ResMut<Reactions>,
+    player: Query<(Entity, &Sight), With<Player>>,
+    npcs: Query<Entity, (With<Vulnerable>, Without<Player>)>,
+) -> Status {
+    match &action.0 {
+        Some(Action::Dwim(DwimAction::Shoot)) => {}
+        _ => return Status::Continue,
+    };
+
+    let (actor, sight) = player.single();
+
+    match npcs.iter().find(|e| sight.seeing.contains(&e)) {
+        Some(target) => {
+            reactions
+                .0
+                .push(Action::Shoot(ShootAction::Intent { actor, target }));
+
+            Status::Continue
+        }
+        None => {
+            let action = Action::Log("No one to shoot at in sight".to_string());
             Status::Reject(Some(action))
         }
     }

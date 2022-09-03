@@ -49,18 +49,61 @@ fn multiplier(attack: &AttackKind, vulnerable: &VulnerableKind) -> u8 {
     }
 }
 
-pub fn behavior(
-    mut action: ResMut<ActiveAction>,
+pub fn hit(
+    action: Res<ActiveAction>,
+    descriptions: Query<&Description>,
+    vulnerables: Query<(), With<Vulnerable>>,
     mut reactions: ResMut<Reactions>,
+) -> Status {
+    let (actor, target, weapon, damage) = match &action.0 {
+        Some(Action::Hit(HitAction {
+            actor,
+            target,
+            weapon,
+            damage,
+        })) => (actor, target, weapon, damage),
+        _ => return Status::Continue,
+    };
+
+    if vulnerables.contains(*target) {
+        let action = Action::Damage(DamageAction {
+            actor: *actor,
+            target: *target,
+            weapon: *weapon,
+            damage: *damage,
+        });
+
+        reactions.0.push(action);
+    } else {
+        if let (Ok(actor), Ok(target), Ok(weapon)) = (
+            descriptions.get(*actor),
+            descriptions.get(*target),
+            descriptions.get(*weapon),
+        ) {
+            let action = Action::Log(format!(
+                "{} strikes {} with {}, but it doesn't leave a scratch",
+                actor, target, weapon
+            ));
+
+            reactions.0.push(action);
+        }
+    }
+
+    Status::Continue
+}
+
+pub fn damage(
+    action: Res<ActiveAction>,
     vulnerables: Query<&Vulnerable>,
     descriptions: Query<&Description>,
+    mut reactions: ResMut<Reactions>,
 ) -> Status {
     let DamageAction {
         actor,
         target,
         weapon,
-        mut damage,
-    } = match action.0.as_mut() {
+        damage,
+    } = match &action.0 {
         Some(Action::Damage(it)) => it,
         _ => return Status::Continue,
     };
@@ -90,7 +133,7 @@ pub fn behavior(
     let random = rng.gen_range(0.9..=1.1);
     amount *= random;
 
-    damage.amount = amount as u16;
+    let amount = amount as u16;
 
     if let (Ok(actor), Ok(target), Ok(weapon)) = (
         descriptions.get(*actor),
@@ -99,7 +142,7 @@ pub fn behavior(
     ) {
         let log = Action::Log(format!(
             "{} strikes {} with {}, dealing {} damage",
-            actor, target, weapon, damage.amount
+            actor, target, weapon, amount
         ));
 
         reactions.0.push(log);
@@ -107,7 +150,7 @@ pub fn behavior(
 
     let action = Action::HealthLoss(HealthLossAction {
         actor: *target,
-        amount: amount as u16,
+        amount,
     });
 
     reactions.0.push(action);

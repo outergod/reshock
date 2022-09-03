@@ -216,7 +216,7 @@ impl MeleeWeapon {
 
 #[derive(Bundle)]
 pub struct ProjectileGun {
-    pub gun: component::ProjectileGun,
+    pub weapon: component::RangedWeapon,
     pub item: component::Item,
     pub renderable: component::Renderable,
     pub description: component::Description,
@@ -225,14 +225,14 @@ pub struct ProjectileGun {
 impl ProjectileGun {
     pub fn assault_rifle() -> Self {
         Self {
-            gun: component::ProjectileGun {
+            weapon: component::RangedWeapon::Projectile(component::ProjectileGun {
                 kind: component::ProjectileGunKind::AssaultRifle,
                 operation: component::OperationKind::SemiAutomatic,
-            },
+            }),
             item: Default::default(),
             renderable: component::Renderable::ProjectileGun,
             description: component::Description {
-                name: "MARK III Assault Rifle".to_string(),
+                name: "Mark3 Assault Rifle".to_string(),
                 article: component::Article::A,
             },
         }
@@ -251,12 +251,15 @@ impl Magazine {
     pub fn magnesium_tips() -> Self {
         Self {
             magazine: component::Magazine {
-                kind: component::ProjectileGunKind::AssaultRifle,
-                damage: component::Damage {
-                    attack: component::AttackKind::Kinetic,
-                    amount: 75,
-                    penetration: 50,
-                    offense: 4,
+                gun: component::ProjectileGunKind::AssaultRifle,
+                projectile: component::Projectile {
+                    kind: component::ProjectileKind::Bullet,
+                    damage: component::Damage {
+                        attack: component::AttackKind::Kinetic,
+                        amount: 75,
+                        penetration: 50,
+                        offense: 4,
+                    },
                 },
                 amount: 10,
                 attached: None,
@@ -273,7 +276,7 @@ impl Magazine {
 
 #[derive(Bundle)]
 pub struct EnergyGun {
-    pub gun: component::EnergyGun,
+    pub weapon: component::RangedWeapon,
     pub item: component::Item,
     pub renderable: component::Renderable,
     pub description: component::Description,
@@ -282,7 +285,7 @@ pub struct EnergyGun {
 impl EnergyGun {
     pub fn ion_rifle() -> Self {
         Self {
-            gun: component::EnergyGun {
+            weapon: component::RangedWeapon::Energy(component::EnergyGun {
                 kind: component::EnergyGunKind::IonPulse,
                 operation: component::OperationKind::SemiAutomatic,
                 damage: component::Damage {
@@ -293,7 +296,7 @@ impl EnergyGun {
                 },
                 efficiency: 3.6,
                 max: 10,
-            },
+            }),
             item: Default::default(),
             renderable: component::Renderable::EnergyGun,
             description: component::Description {

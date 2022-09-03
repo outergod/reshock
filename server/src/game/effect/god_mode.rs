@@ -3,7 +3,12 @@ use bevy_ecs::prelude::*;
 use crate::game::component::*;
 use crate::game::*;
 
-pub fn effect(action: Res<ActiveAction>, mut commands: Commands, mut reactions: ResMut<Reactions>) {
+pub fn effect(
+    action: Res<ActiveAction>,
+    viewers: Query<&Sight>,
+    mut commands: Commands,
+    mut reactions: ResMut<Reactions>,
+) {
     let GodModeAction { actor, activate } = match action.0 {
         Some(Action::GodMode(Some(it))) => it,
         _ => return,
@@ -17,8 +22,9 @@ pub fn effect(action: Res<ActiveAction>, mut commands: Commands, mut reactions: 
         entity.remove::<God>();
     }
 
-    reactions.0.push(Action::View(Some(ViewAction {
-        actor,
-        sight: Default::default(),
-    })));
+    let sight = viewers.get(actor).unwrap().to_owned();
+
+    reactions
+        .0
+        .push(Action::View(Some(ViewAction { actor, sight })));
 }

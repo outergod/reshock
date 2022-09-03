@@ -57,6 +57,11 @@ message Dimensions {
   int32 y = 2;
 }
 
+message Position {
+  int32 x = 1;
+  int32 y = 2;
+}
+
 message Log {
   repeated string entries = 1;
 }
@@ -79,6 +84,7 @@ message ActionRequest {
     DOWN_LEFT = 6;
     LEFT = 7;
     CLOSE = 8;
+    SHOOT = 9;
   }
 
   message GodModeAction {}
@@ -138,10 +144,9 @@ message HitEvent {
     NONE = 8;
   }
 
-  int32 x = 1;
-  int32 y = 2;
-  HitKind kind = 3;
-  HitDirection direction = 4;
+  Position position = 1;
+  HitKind kind = 2;
+  HitDirection direction = 3;
 }
 
 message DeathEvent {
@@ -154,6 +159,21 @@ message DeathEvent {
   DeathSound sound = 2;
 }
 
+message ShootEvent {
+  enum ShootSound {
+    MARK3_ASSAULT_RIFLE = 0;
+  }
+
+  enum ShootKind {
+    PROJECTILE = 0;
+  }
+
+  Position source = 1;
+  Position target = 2;
+  ShootKind kind = 3;
+  ShootSound sound = 4;
+}
+
 message Event {
   oneof event {
     StateUpdateEvent state = 1;
@@ -163,6 +183,7 @@ message Event {
     LogEvent log = 5;
     HitEvent hit = 6;
     DeathEvent death = 7;
+    ShootEvent shoot = 8;
   }
 }
 

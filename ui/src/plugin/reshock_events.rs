@@ -16,6 +16,7 @@ impl Plugin for ReshockEventsPlugin {
             .add_event::<api::LogEvent>()
             .add_event::<api::HitEvent>()
             .add_event::<api::DeathEvent>()
+            .add_event::<api::ShootEvent>()
             .add_system(system);
     }
 }
@@ -29,6 +30,7 @@ pub fn system(
     mut log: EventWriter<api::LogEvent>,
     mut hit: EventWriter<api::HitEvent>,
     mut death: EventWriter<api::DeathEvent>,
+    mut shoot: EventWriter<api::ShootEvent>,
 ) {
     if events.state == TransitionState::Active {
         match events.queue.front() {
@@ -54,9 +56,8 @@ pub fn system(
     log::debug!("Processing event {}", event);
 
     match event {
-        api::event::Event::Move(event) => {
-            events.state = TransitionState::Active;
-            r#move.send(event);
+        api::event::Event::Move(_) => {
+            // Don't do anything, only leads to jank
         }
         api::event::Event::Door(event) => {
             events.state = TransitionState::Active;
@@ -79,6 +80,10 @@ pub fn system(
         }
         api::event::Event::Death(event) => {
             death.send(event);
+        }
+        api::event::Event::Shoot(event) => {
+            events.state = TransitionState::Active;
+            shoot.send(event);
         }
     }
 }

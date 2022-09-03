@@ -2,32 +2,38 @@ use bevy_ecs::prelude::*;
 
 use crate::game::{component::*, Status, *};
 
-pub fn behavior(
-    mut action: ResMut<ActiveAction>,
-    mut followups: ResMut<FollowUps>,
-    weapons: Query<(Entity, &Item), (With<MeleeWeapon>, With<Equipped>)>,
+pub fn intent(
+    action: Res<ActiveAction>,
+    weapons: Query<(Entity, &Item), (With<Equipped>, With<MeleeWeapon>)>,
     descriptions: Query<&Description>,
+    mut reactions: ResMut<Reactions>,
+    mut followups: ResMut<FollowUps>,
 ) -> Status {
-    let mut action = match action.0.as_mut() {
-        Some(Action::Melee(it)) => it,
+    let (actor, target) = match &action.0 {
+        Some(Action::Melee(MeleeAttackAction::Intent { actor, target })) => (actor, target),
         _ => return Status::Continue,
     };
 
     match weapons.iter().find_map(|(entity, item)| {
         item.owner
-            .is_some_and(|owner| owner == &action.actor)
+            .is_some_and(|owner| owner == actor)
             .then_some(entity)
     }) {
         Some(weapon) => {
-            action.weapon = Some(weapon);
+            let action = Action::Melee(MeleeAttackAction::Attack {
+                actor: *actor,
+                target: *target,
+                weapon,
+            });
+            reactions.0.push(action);
 
-            followups.0.push(Action::EndTurn(action.actor));
+            followups.0.push(Action::EndTurn(*actor));
 
             Status::Continue
         }
         None => {
             let action = descriptions
-                .get(action.actor)
+                .get(*actor)
                 .ok()
                 .map(|s| Action::Log(format!("{} has no melee weapon equipped", s)));
 
@@ -36,47 +42,31 @@ pub fn behavior(
     }
 }
 
-pub fn hit(
+pub fn attack(
     action: Res<ActiveAction>,
-    descriptions: Query<&Description>,
     weapons: Query<&MeleeWeapon>,
-    vulnerables: Query<(), With<Vulnerable>>,
     mut reactions: ResMut<Reactions>,
 ) -> Status {
     let (actor, target, weapon) = match &action.0 {
-        Some(Action::Melee(MeleeAttackAction {
+        Some(Action::Melee(MeleeAttackAction::Attack {
             actor,
             target,
-            weapon: Some(weapon),
+            weapon,
         })) => (actor, target, weapon),
         _ => return Status::Continue,
     };
 
-    if vulnerables.contains(*target) {
-        let damage = weapons.get(*weapon).unwrap().damage;
+    let damage = weapons.get(*weapon).unwrap().damage;
 
-        let action = Action::Damage(DamageAction {
-            actor: *actor,
-            target: *target,
-            weapon: *weapon,
-            damage,
-        });
+    // TODO hit chance, use position instead of target etc
 
-        reactions.0.push(action);
-    } else {
-        if let (Ok(actor), Ok(target), Ok(weapon)) = (
-            descriptions.get(*actor),
-            descriptions.get(*target),
-            descriptions.get(*weapon),
-        ) {
-            let action = Action::Log(format!(
-                "{} strikes {} with {}, but it doesn't leave a scratch",
-                actor, target, weapon
-            ));
-
-            reactions.0.push(action);
-        }
-    }
+    let action = Action::Hit(HitAction {
+        actor: *actor,
+        target: *target,
+        weapon: *weapon,
+        damage,
+    });
+    reactions.0.push(action);
 
     Status::Continue
 }

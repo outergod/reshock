@@ -80,6 +80,15 @@ impl From<&Position> for api::PositionComponent {
     }
 }
 
+impl From<&Position> for api::Position {
+    fn from(position: &Position) -> Self {
+        Self {
+            x: position.0.x,
+            y: position.0.y,
+        }
+    }
+}
+
 #[derive(Component, Clone, Copy, Debug)]
 pub struct Door {
     pub open: bool,
@@ -248,12 +257,44 @@ pub struct Projectile {
 }
 
 #[allow(dead_code)]
+#[derive(Debug, Clone, Copy)]
 pub enum OperationKind {
     SemiAutomatic,
-    Automatic,
+    Automatic(u16),
+}
+
+impl OperationKind {
+    pub fn amount(&self) -> u16 {
+        match self {
+            OperationKind::SemiAutomatic => 1,
+            OperationKind::Automatic(n) => *n,
+        }
+    }
 }
 
 #[derive(Component)]
+pub enum RangedWeapon {
+    Projectile(ProjectileGun),
+    Energy(EnergyGun),
+}
+
+impl RangedWeapon {
+    pub fn projectile(&self) -> Option<ProjectileGun> {
+        match self {
+            RangedWeapon::Projectile(it) => Some(*it),
+            RangedWeapon::Energy(_) => None,
+        }
+    }
+
+    pub fn energy(&self) -> Option<EnergyGun> {
+        match self {
+            RangedWeapon::Projectile(_) => None,
+            RangedWeapon::Energy(it) => Some(*it),
+        }
+    }
+}
+
+#[derive(Component, Debug, Clone, Copy)]
 pub struct ProjectileGun {
     pub kind: ProjectileGunKind,
     pub operation: OperationKind,
@@ -262,13 +303,14 @@ pub struct ProjectileGun {
 #[allow(dead_code)]
 #[derive(Component)]
 pub struct Magazine {
-    pub kind: ProjectileGunKind,
-    pub damage: Damage,
+    pub gun: ProjectileGunKind,
+    pub projectile: Projectile,
     pub amount: u16,
     pub attached: Option<Entity>,
 }
 
 #[allow(dead_code)]
+#[derive(Debug, Clone, Copy)]
 pub enum ProjectileGunKind {
     RiotGun,
     DartPistol,
@@ -281,6 +323,7 @@ pub enum ProjectileGunKind {
 }
 
 #[allow(dead_code)]
+#[derive(Debug, Clone, Copy)]
 pub enum EnergyGunKind {
     StunGun,
     Sparq,
@@ -304,7 +347,7 @@ pub struct Beam {
     pub damage: Damage,
 }
 
-#[derive(Component)]
+#[derive(Component, Debug, Clone, Copy)]
 pub struct EnergyGun {
     pub kind: EnergyGunKind,
     pub operation: OperationKind,
