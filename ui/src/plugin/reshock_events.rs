@@ -9,7 +9,6 @@ pub struct ReshockEventsPlugin;
 impl Plugin for ReshockEventsPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<ReshockEvents>()
-            .add_event::<api::MoveEvent>()
             .add_event::<api::DoorEvent>()
             .add_event::<api::StateUpdateEvent>()
             .add_event::<api::SpotEvent>()
@@ -23,7 +22,6 @@ impl Plugin for ReshockEventsPlugin {
 
 pub fn system(
     mut events: ResMut<ReshockEvents>,
-    mut r#move: EventWriter<api::MoveEvent>,
     mut door: EventWriter<api::DoorEvent>,
     mut state: EventWriter<api::StateUpdateEvent>,
     mut spot: EventWriter<api::SpotEvent>,
@@ -56,9 +54,6 @@ pub fn system(
     log::debug!("Processing event {}", event);
 
     match event {
-        api::event::Event::Move(_) => {
-            // Don't do anything, only leads to jank
-        }
         api::event::Event::Door(event) => {
             events.state = TransitionState::Active;
             door.send(event);

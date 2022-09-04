@@ -95,12 +95,6 @@ message ActionRequest {
   }
 }
 
-message MoveEvent {
-  uint32 actor = 1;
-  int32 x = 2;
-  int32 y = 3;
-}
-
 message DoorEvent {
   uint32 actor = 1;
   uint32 door = 2;
@@ -177,13 +171,12 @@ message ShootEvent {
 message Event {
   oneof event {
     StateUpdateEvent state = 1;
-    MoveEvent move = 2;
-    DoorEvent door = 3;
-    SpotEvent spot = 4;
-    LogEvent log = 5;
-    HitEvent hit = 6;
-    DeathEvent death = 7;
-    ShootEvent shoot = 8;
+    DoorEvent door = 2;
+    SpotEvent spot = 3;
+    LogEvent log = 4;
+    HitEvent hit = 5;
+    DeathEvent death = 6;
+    ShootEvent shoot = 7;
   }
 }
 
