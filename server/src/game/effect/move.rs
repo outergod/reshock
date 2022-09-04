@@ -1,14 +1,9 @@
 use bevy_ecs::prelude::*;
 
 use crate::game::component::*;
-use crate::game::{Events, *};
+use crate::game::*;
 
-pub fn effect(
-    action: Res<ActiveAction>,
-    sight: Query<&Sight, With<Player>>,
-    mut positions: Query<&mut Position>,
-    mut events: ResMut<Events>,
-) {
+pub fn effect(action: Res<ActiveAction>, mut positions: Query<&mut Position>) {
     let MoveAction {
         actor,
         position: target,
@@ -17,19 +12,5 @@ pub fn effect(
         _ => return,
     };
 
-    let mut position = positions.get_mut(*actor).unwrap();
-
-    position.0 = *target;
-
-    let sight = sight.single();
-
-    if sight.seeing.contains(actor) {
-        events.0.push(api::Event {
-            event: Some(api::event::Event::Move(api::MoveEvent {
-                actor: actor.id(),
-                x: target.x,
-                y: target.y,
-            })),
-        });
-    }
+    positions.get_mut(*actor).unwrap().0 = *target;
 }
