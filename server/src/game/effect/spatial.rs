@@ -32,7 +32,9 @@ pub fn effect(
         if opaque.is_some() {
             cell.opaque.insert(entity);
         }
-        cell.vulnerable = solid.and(vulnerable.map(|_| entity));
+        if cell.vulnerable.is_none() {
+            cell.vulnerable = solid.and(vulnerable.map(|_| entity));
+        }
     });
     spatial.cells = cells;
 
