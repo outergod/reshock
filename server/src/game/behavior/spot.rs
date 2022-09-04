@@ -8,7 +8,7 @@ pub fn behavior(
     action: Res<ActiveAction>,
     ai: Query<(&AI, &Memory, Option<&Description>)>,
     player: Query<Entity, With<Player>>,
-    mut reactions: ResMut<Reactions>,
+    mut followups: ResMut<FollowUps>,
 ) -> Status {
     let (actor, sight) = match &action.0 {
         Some(Action::View(ViewAction::Update { actor, sight })) => (actor, sight),
@@ -27,13 +27,13 @@ pub fn behavior(
             (AI::ServBot, desc) => {
                 let sound = SpotSound::ServBot;
 
-                reactions.0.push(Action::Spot(SpotAction {
+                followups.0.push(Action::Spot(SpotAction {
                     actor: *actor,
                     sound,
                 }));
 
                 if let Some(desc) = desc {
-                    reactions.0.push(Action::Log(format!(
+                    followups.0.push(Action::Log(format!(
                         "{} has spotted you!",
                         desc.to_capitalized_string()
                     )));
