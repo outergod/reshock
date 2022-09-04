@@ -6,16 +6,16 @@ use crate::game::component::*;
 use crate::game::*;
 
 pub fn behavior(
-    mut action: ResMut<ActiveAction>,
+    action: Res<ActiveAction>,
     player: Query<(&Sight, &Memory), With<Player>>,
     entities: Query<(&Position, &Renderable, Option<&Door>, Option<&Wall>)>,
     mut reactions: ResMut<Reactions>,
 ) -> Status {
-    let state = match action.0.as_mut() {
-        Some(Action::State(it)) => it,
-        Some(Action::View(Some(ViewAction { actor, .. }))) => {
-            if player.contains(*actor) {
-                reactions.0.push(Action::State(None));
+    match action.0 {
+        Some(Action::State(StateAction::Intent)) => {}
+        Some(Action::View(ViewAction::Update { actor, .. })) => {
+            if player.contains(actor) {
+                reactions.0.push(Action::State(StateAction::Intent));
             }
             return Status::Continue;
         }
@@ -51,7 +51,9 @@ pub fn behavior(
         .chain(view)
         .collect();
 
-    *state = Some(api::State { entities });
+    reactions.0.push(Action::State(StateAction::Update {
+        state: api::State { entities },
+    }));
 
     let duration = Instant::now() - now;
     log::debug!("Time taken: {}µs", duration.as_micros());

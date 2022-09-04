@@ -63,7 +63,7 @@ impl Reshock for ReshockService {
                 Some(DwimAction::Shoot) => game::Action::Dwim(game::DwimAction::Shoot),
                 None => return Err(Status::invalid_argument("Dwim index out of bounds")),
             },
-            Some(Action::God(_)) => game::Action::GodMode(None),
+            Some(Action::God(_)) => game::Action::GodMode(game::GodModeAction::Intent),
             None => return Err(Status::invalid_argument("Action not set")),
         };
 

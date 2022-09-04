@@ -102,7 +102,7 @@ impl Default for Game {
             effects,
         };
 
-        game.input(Action::View(None));
+        game.input(Action::View(ViewAction::All));
 
         game
     }
@@ -113,11 +113,11 @@ pub enum Action {
     Dwim(DwimAction),
     AI(Entity),
     EndTurn(Entity),
-    GodMode(Option<GodModeAction>),
+    GodMode(GodModeAction),
     Move(MoveAction),
     OpenDoor(OpenDoorAction),
     CloseDoor(CloseDoorAction),
-    View(Option<ViewAction>),
+    View(ViewAction),
     Memorize(MemorizeAction),
     Spot(SpotAction),
     Log(String),
@@ -127,7 +127,7 @@ pub enum Action {
     Damage(DamageAction),
     HealthLoss(HealthLossAction),
     Death(DeathAction),
-    State(Option<api::State>),
+    State(StateAction),
 }
 
 impl Display for Action {
@@ -158,9 +158,18 @@ impl Display for Action {
 }
 
 #[derive(Debug, Clone)]
-pub struct ViewAction {
-    actor: Entity,
-    sight: component::Sight,
+pub enum StateAction {
+    Intent,
+    Update { state: api::State },
+}
+
+#[derive(Debug, Clone)]
+pub enum ViewAction {
+    All,
+    Update {
+        actor: Entity,
+        sight: component::Sight,
+    },
 }
 
 #[derive(Debug, Clone)]
@@ -244,9 +253,9 @@ pub enum DwimAction {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct GodModeAction {
-    actor: Entity,
-    activate: bool,
+pub enum GodModeAction {
+    Intent,
+    Activate { actor: Entity, activate: bool },
 }
 
 #[derive(Debug, Clone)]

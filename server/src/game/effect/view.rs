@@ -4,8 +4,8 @@ use crate::game::component::*;
 use crate::game::*;
 
 pub fn effect(action: Res<ActiveAction>, mut viewers: Query<&mut Sight>) {
-    let ViewAction { actor, sight } = match &action.0 {
-        Some(Action::View(Some(it))) => it,
+    let (actor, sight) = match &action.0 {
+        Some(Action::View(ViewAction::Update { actor, sight })) => (actor, sight),
         _ => return,
     };
 

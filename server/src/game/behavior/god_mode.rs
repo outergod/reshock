@@ -4,20 +4,21 @@ use crate::game::{component::*, *};
 
 pub fn behavior(
     mut action: ResMut<ActiveAction>,
+    mut reactions: ResMut<Reactions>,
     player: Query<(Entity, Option<&God>), With<Player>>,
 ) -> Status {
     let (player, god) = player.single();
 
     match action.0.as_mut() {
-        Some(Action::GodMode(action)) => {
-            *action = Some(GodModeAction {
+        Some(Action::GodMode(GodModeAction::Intent)) => {
+            reactions.0.push(Action::GodMode(GodModeAction::Activate {
                 actor: player,
                 activate: god.is_none(),
-            });
+            }));
 
             Status::Continue
         }
-        Some(Action::View(Some(ViewAction { actor, sight }))) => {
+        Some(Action::View(ViewAction::Update { actor, sight })) => {
             if actor == &player && god.is_some() {
                 sight.kind = SightKind::Omniscience;
             }

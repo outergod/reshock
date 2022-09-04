@@ -10,8 +10,8 @@ pub fn behavior(
     player: Query<Entity, With<Player>>,
     mut reactions: ResMut<Reactions>,
 ) -> Status {
-    let ViewAction { sight, actor } = match &action.0 {
-        Some(Action::View(Some(it))) => it,
+    let (actor, sight) = match &action.0 {
+        Some(Action::View(ViewAction::Update { actor, sight })) => (actor, sight),
         _ => return Status::Continue,
     };
 

@@ -10,7 +10,7 @@ pub fn effect(
     mut events: ResMut<Events>,
 ) {
     let state = match &action.0 {
-        Some(Action::State(Some(it))) => it,
+        Some(Action::State(StateAction::Update { state })) => state,
         _ => return,
     };
 

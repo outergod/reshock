@@ -9,8 +9,8 @@ pub fn effect(
     mut commands: Commands,
     mut reactions: ResMut<Reactions>,
 ) {
-    let GodModeAction { actor, activate } = match action.0 {
-        Some(Action::GodMode(Some(it))) => it,
+    let (actor, activate) = match action.0 {
+        Some(Action::GodMode(GodModeAction::Activate { actor, activate })) => (actor, activate),
         _ => return,
     };
 
@@ -26,5 +26,5 @@ pub fn effect(
 
     reactions
         .0
-        .push(Action::View(Some(ViewAction { actor, sight })));
+        .push(Action::View(ViewAction::Update { actor, sight }));
 }

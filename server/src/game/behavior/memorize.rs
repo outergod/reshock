@@ -20,7 +20,7 @@ pub fn behavior(
 ) -> Status {
     let action = match action.0.as_mut() {
         Some(Action::Memorize(it)) => it,
-        Some(Action::View(Some(ViewAction { actor, .. }))) => {
+        Some(Action::View(ViewAction::Update { actor, .. })) => {
             reactions.0.push(Action::Memorize(MemorizeAction {
                 actor: *actor,
                 memory: Default::default(),

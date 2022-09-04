@@ -10,18 +10,18 @@ pub fn view_all(
     mut reactions: ResMut<Reactions>,
 ) -> Status {
     match action.0 {
-        Some(Action::View(None)) => {}
+        Some(Action::View(ViewAction::All)) => {}
         _ => return Status::Continue,
     };
 
     for (actor, sight) in viewers.iter() {
-        reactions.0.push(Action::View(Some(ViewAction {
+        reactions.0.push(Action::View(ViewAction::Update {
             actor,
             sight: Sight {
                 kind: sight.kind,
                 ..Default::default()
             },
-        })));
+        }));
     }
 
     Status::Continue
@@ -34,10 +34,10 @@ pub fn behavior(
     spatial: Res<SpatialHash>,
     mut reactions: ResMut<Reactions>,
 ) -> Status {
-    let ViewAction { sight, actor } = match action.0.as_mut() {
-        Some(Action::View(Some(it))) => it,
+    let (actor, sight) = match action.0.as_mut() {
+        Some(Action::View(ViewAction::Update { actor, sight })) => (actor, sight),
         Some(Action::EndTurn(_)) => {
-            reactions.0.push(Action::View(None));
+            reactions.0.push(Action::View(ViewAction::All));
             return Status::Continue;
         }
         _ => return Status::Continue,
@@ -72,12 +72,13 @@ pub fn behavior(
 
     mask.insert(position.0);
 
-    let view = mask
+    let seeing = mask
         .iter()
         .flat_map(|pos| spatial.entities_at(pos))
         .collect();
+
     sight.mask = mask;
-    sight.seeing = view;
+    sight.seeing = seeing;
 
     let duration = Instant::now() - now;
     log::debug!("Time taken: {}µs", duration.as_micros());
