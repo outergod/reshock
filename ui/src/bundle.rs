@@ -6,6 +6,7 @@ use crate::resource::ReshockFont;
 #[derive(Bundle)]
 pub struct Tile {
     position: component::Position,
+    tile: component::Tile,
 
     #[bundle]
     text: Text2dBundle,
@@ -15,6 +16,7 @@ impl Tile {
     pub fn new(position: component::Position, font: &ReshockFont) -> Self {
         Self {
             position,
+            tile: component::Tile,
             text: Text2dBundle {
                 text: Text::from_section(
                     " ".to_string(),

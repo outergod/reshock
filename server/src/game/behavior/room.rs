@@ -1,118 +1,48 @@
 use bevy_ecs::prelude::*;
 
-use crate::game::bundle::*;
-use crate::game::component;
-use crate::game::resource::Room;
+use crate::game::resource::*;
+use crate::game::room::{Room, *};
+use crate::game::{component::*, *};
 
-pub fn setup(world: &mut World, room: Room) {
-    for (pos, c) in room.0.iter() {
-        if *c != ' ' {
-            world.spawn().insert_bundle(Floor {
-                position: component::Position(*pos),
-                ..Default::default()
-            });
-        }
+pub fn behavior(
+    action: Res<Action>,
+    spawners: Query<(), With<RoomSpawner>>,
+    player: Query<(), With<Player>>,
+    positions: Query<&Position>,
+    spatial: Res<SpatialHash>,
+) -> Status {
+    let target = match action.as_ref() {
+        Action::OpenDoor(OpenDoorAction { target, .. }) if spawners.contains(*target) => target,
+        _ => return Status::Continue,
+    };
 
-        let position = component::Position(*pos);
+    let start = positions.get(*target).unwrap();
 
-        match c {
-            '@' => {
-                let player = world
-                    .spawn()
-                    .insert_bundle(Player {
-                        position,
-                        ..Default::default()
-                    })
-                    .id();
+    let direction = Deltas::cross()
+        .0
+        .into_iter()
+        .find_map(|delta| {
+            let pos = start.0 + delta;
+            spatial.entities_at(&pos).is_empty().then_some(pos)
+        })
+        .unwrap();
 
-                world
-                    .spawn()
-                    .insert_bundle(MeleeWeapon::laser_rapier())
-                    .insert(component::Item {
-                        owner: Some(player),
-                    })
-                    .insert(component::Equipped);
+    log::debug!("{:?} {:?}", start, direction);
 
-                let rifle = world
-                    .spawn()
-                    .insert_bundle(ProjectileGun::assault_rifle())
-                    .insert(component::Item {
-                        owner: Some(player),
-                    })
-                    .insert(component::Equipped)
-                    .id();
+    let mut rng = thread_rng();
+    let room: Room = rng.gen();
+    let find = FindSite::new(spatial.to_owned());
 
-                let mut magazine = Magazine::magnesium_tips();
-                magazine.magazine.attached = Some(rifle);
-                world.spawn().insert_bundle(magazine);
-            }
-            'b' => {
-                let npc = world
-                    .spawn()
-                    .insert_bundle(NPC {
-                        position,
-                        ai: component::AI::ServBot,
-                        renderable: component::Renderable::ServBot,
-                        sight: component::Sight {
-                            kind: component::SightKind::Eyes,
-                            ..Default::default()
-                        },
-                        description: component::Description {
-                            name: "Serv-Bot unit".into(),
-                            article: component::Article::A,
-                        },
-                        vulnerable: component::Vulnerable {
-                            kind: component::VulnerableKind::Robot,
-                            hp: 20,
-                            max: 20,
-                            defense: 2,
-                            armor: 20,
-                        },
-                        ..Default::default()
-                    })
-                    .insert(component::Alive::ServBot)
-                    .id();
+    let mut room = find.find_site(&room, (&start.0, &direction)).unwrap();
 
-                world
-                    .spawn()
-                    .insert_bundle(NaturalMeleeWeapon::appendages())
-                    .insert(component::Item { owner: Some(npc) })
-                    .insert(component::Equipped);
-            }
-            'X' => {
-                world.spawn().insert_bundle(Wall {
-                    position,
-                    ..Default::default()
-                });
-            }
-            'O' => {
-                world.spawn().insert_bundle(Door {
-                    position,
-                    door: component::Door {
-                        open: true,
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                });
-            }
-            'o' => {
-                world
-                    .spawn()
-                    .insert_bundle(Door {
-                        position,
-                        door: component::Door {
-                            open: false,
-                            ..Default::default()
-                        },
-                        ..Default::default()
-                    })
-                    .insert(component::Solid)
-                    .insert(component::Opaque);
-            }
-            '·' | ' ' => {}
-            _ => {
-                log::error!("Unknown room char {}", c);
-            }
-        }
+    if !player.is_empty() {
+        room.erase_player();
     }
+
+    let spawn = Action::SpawnRoom(RoomSpawnAction {
+        target: *target,
+        room,
+    });
+
+    Status::Reject(vec![spawn, action.to_owned()])
 }

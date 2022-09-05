@@ -3,14 +3,14 @@ use bevy_ecs::prelude::*;
 use crate::game::{component::*, Status, *};
 
 pub fn intent(
-    action: Res<ActiveAction>,
+    action: Res<Action>,
     weapons: Query<(Entity, &Item), (With<Equipped>, With<MeleeWeapon>)>,
     descriptions: Query<&Description>,
     mut reactions: ResMut<Reactions>,
     mut followups: ResMut<FollowUps>,
 ) -> Status {
-    let (actor, target) = match &action.0 {
-        Some(Action::Melee(MeleeAttackAction::Intent { actor, target })) => (actor, target),
+    let (actor, target) = match action.as_ref() {
+        Action::Melee(MeleeAttackAction::Intent { actor, target }) => (actor, target),
         _ => return Status::Continue,
     };
 
@@ -32,27 +32,28 @@ pub fn intent(
             Status::Continue
         }
         None => {
-            let action = descriptions
-                .get(*actor)
-                .ok()
-                .map(|s| Action::Log(format!("{} has no melee weapon equipped", s)));
+            let mut actions = Vec::new();
 
-            Status::Reject(action)
+            if let Ok(s) = descriptions.get(*actor) {
+                actions.push(Action::Log(format!("{} has no melee weapon equipped", s)));
+            };
+
+            Status::Reject(actions)
         }
     }
 }
 
 pub fn attack(
-    action: Res<ActiveAction>,
+    action: Res<Action>,
     weapons: Query<&MeleeWeapon>,
     mut reactions: ResMut<Reactions>,
 ) -> Status {
-    let (actor, target, weapon) = match &action.0 {
-        Some(Action::Melee(MeleeAttackAction::Attack {
+    let (actor, target, weapon) = match action.as_ref() {
+        Action::Melee(MeleeAttackAction::Attack {
             actor,
             target,
             weapon,
-        })) => (actor, target, weapon),
+        }) => (actor, target, weapon),
         _ => return Status::Continue,
     };
 

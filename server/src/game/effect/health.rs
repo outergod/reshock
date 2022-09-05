@@ -3,12 +3,12 @@ use bevy_ecs::prelude::*;
 use crate::game::{component::*, *};
 
 pub fn effect(
-    action: Res<ActiveAction>,
+    action: Res<Action>,
     mut vulnerables: Query<&mut Vulnerable>,
     mut reactions: ResMut<Reactions>,
 ) {
-    let HealthLossAction { actor, amount } = match &action.0 {
-        Some(Action::HealthLoss(it)) => it,
+    let HealthLossAction { actor, amount } = match action.as_ref() {
+        Action::HealthLoss(it) => it,
         _ => return,
     };
 

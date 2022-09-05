@@ -36,11 +36,27 @@ impl Ord for Node {
     }
 }
 
-fn euclidian_distance(a: &IVec2, b: &IVec2) -> f32 {
+pub fn euclidian_distance(a: &IVec2, b: &IVec2) -> f32 {
     let x = (b.x - a.x) as f32;
     let y = (b.y - a.y) as f32;
 
     (x.powf(2.0) + y.powf(2.0)).sqrt() as f32
+}
+
+pub fn moves() -> HashMap<IVec2, f32> {
+    (-1..=1)
+        .flat_map(|x: i32| {
+            (-1..=1).filter_map(move |y: i32| {
+                if x == 0 && y == 0 {
+                    None
+                } else {
+                    let cost = if x.abs() + y.abs() > 1 { 1.5 } else { 1.0 };
+
+                    Some((ivec2(x, y), cost))
+                }
+            })
+        })
+        .collect()
 }
 
 pub struct AStar {
@@ -52,24 +68,8 @@ impl AStar {
     pub fn new(obstacles: HashSet<IVec2>) -> Self {
         Self {
             obstacles,
-            moves: Self::moves(),
+            moves: moves(),
         }
-    }
-
-    fn moves() -> HashMap<IVec2, f32> {
-        (-1..=1)
-            .flat_map(|x: i32| {
-                (-1..=1).filter_map(move |y: i32| {
-                    if x == 0 && y == 0 {
-                        None
-                    } else {
-                        let cost = if x.abs() + y.abs() > 1 { 1.5 } else { 1.0 };
-
-                        Some((ivec2(x, y), cost))
-                    }
-                })
-            })
-            .collect()
     }
 
     fn h(a: &IVec2, b: &IVec2) -> f32 {
@@ -154,30 +154,30 @@ mod test {
 
     use glam::{ivec2, IVec2};
 
-    use crate::game::resource::Room;
-
     use super::{AStar, SEARCH_LIMIT};
 
     fn extract_room(room: String) -> (HashSet<IVec2>, IVec2, IVec2) {
-        let room: Room = room.into();
+        let mut obstacles = HashSet::new();
+        let mut start = ivec2(0, 0);
+        let mut goal = ivec2(0, 0);
 
-        let obstacles = room
-            .0
-            .iter()
-            .filter_map(|(pos, c)| (*c == '#').then_some(*pos))
-            .collect();
-
-        let start = room
-            .0
-            .iter()
-            .find_map(|(pos, c)| (*c == '@').then_some(*pos))
-            .unwrap();
-
-        let goal = room
-            .0
-            .iter()
-            .find_map(|(pos, c)| (*c == 'X').then_some(*pos))
-            .unwrap();
+        for (y, line) in room.lines().rev().enumerate() {
+            for (x, c) in line.chars().enumerate() {
+                let pos = ivec2(x as i32, y as i32);
+                match c {
+                    '#' => {
+                        obstacles.insert(pos);
+                    }
+                    '@' => {
+                        start = pos;
+                    }
+                    'X' => {
+                        goal = pos;
+                    }
+                    _ => {}
+                }
+            }
+        }
 
         (obstacles, start, goal)
     }

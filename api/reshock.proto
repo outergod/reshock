@@ -52,11 +52,6 @@ message State {
   map<uint32, Components> entities = 1;
 }
 
-message Dimensions {
-  int32 x = 1;
-  int32 y = 2;
-}
-
 message Position {
   int32 x = 1;
   int32 y = 2;
@@ -68,7 +63,6 @@ message Log {
 
 message StateDumpResponse {
   uint32 player = 1;
-  Dimensions dimensions = 2;
   State state = 3;
   Log log = 4;
 }

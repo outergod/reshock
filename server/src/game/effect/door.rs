@@ -4,13 +4,13 @@ use crate::game::Events;
 use crate::game::{component::*, *};
 
 pub fn open(
-    action: Res<ActiveAction>,
+    action: Res<Action>,
     mut doors: Query<&mut Door>,
     mut commands: Commands,
     mut events: ResMut<Events>,
 ) {
-    let OpenDoorAction { actor, target } = match &action.0 {
-        Some(Action::OpenDoor(it)) => it,
+    let OpenDoorAction { actor, target } = match action.as_ref() {
+        Action::OpenDoor(it) => it,
         _ => return,
     };
 
@@ -32,13 +32,13 @@ pub fn open(
 }
 
 pub fn close(
-    action: Res<ActiveAction>,
+    action: Res<Action>,
     mut doors: Query<&mut Door>,
     mut commands: Commands,
     mut events: ResMut<Events>,
 ) {
-    let CloseDoorAction { actor, target } = match &action.0 {
-        Some(Action::CloseDoor(it)) => it,
+    let CloseDoorAction { actor, target } = match action.as_ref() {
+        Action::CloseDoor(it) => it,
         _ => return,
     };
 

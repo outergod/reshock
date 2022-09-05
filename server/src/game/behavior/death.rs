@@ -3,13 +3,13 @@ use bevy_ecs::prelude::*;
 use crate::game::{component::*, Status, *};
 
 pub fn behavior(
-    mut action: ResMut<ActiveAction>,
+    mut action: ResMut<Action>,
     alives: Query<&Alive>,
     descriptions: Query<&Description>,
     mut reactions: ResMut<Reactions>,
 ) -> Status {
-    let mut action = match action.0.as_mut() {
-        Some(Action::Death(it)) => it,
+    let mut action = match action.as_mut() {
+        Action::Death(it) => it,
         _ => return Status::Continue,
     };
 
@@ -17,7 +17,7 @@ pub fn behavior(
         Ok(it) => Some(*it),
         Err(_) => {
             log::debug!("That is not dead which can eternal lie, / And with strange aeons even death may die.");
-            return Status::Reject(None);
+            return Status::Reject(vec![]);
         }
     };
 

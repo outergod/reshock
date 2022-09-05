@@ -4,16 +4,16 @@ use bevy_ecs::prelude::*;
 use crate::game::{component::*, Events, *};
 
 pub fn effect(
-    action: Res<ActiveAction>,
+    action: Res<Action>,
     sight: Query<&Sight, With<Player>>,
     mut events: ResMut<Events>,
     mut commands: Commands,
 ) {
-    let (actor, kind) = match &action.0 {
-        Some(Action::Death(DeathAction {
+    let (actor, kind) = match action.as_ref() {
+        Action::Death(DeathAction {
             actor,
             kind: Some(kind),
-        })) => (actor, kind),
+        }) => (actor, kind),
         _ => return,
     };
 

@@ -14,8 +14,8 @@ pub struct RadialLines(pub HashMap<IVec2, HashSet<Path>>);
 
 pub struct Deltas(pub HashSet<IVec2>);
 
-impl Default for Deltas {
-    fn default() -> Self {
+impl Deltas {
+    pub fn neighbors() -> Self {
         let deltas: HashSet<_> = (-1..=1)
             .flat_map(|x| {
                 (-1..=1).filter_map(move |y| {
@@ -30,18 +30,33 @@ impl Default for Deltas {
 
         Self(deltas)
     }
+
+    pub fn cross() -> Self {
+        let deltas = [ivec2(0, 1), ivec2(1, 0), ivec2(0, -1), ivec2(-1, 0)]
+            .into_iter()
+            .collect();
+
+        Self(deltas)
+    }
+}
+
+impl Default for Deltas {
+    fn default() -> Self {
+        Self::neighbors()
+    }
 }
 
 #[derive(Default, Clone, Debug)]
 pub struct Cell {
     pub visible: HashSet<Entity>,
     pub door: Option<Entity>,
+    pub wall: Option<Entity>,
     pub solid: Option<Entity>,
     pub opaque: HashSet<Entity>,
     pub vulnerable: Option<Entity>,
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct SpatialHash {
     pub cells: HashMap<IVec2, Cell>,
 }
@@ -61,27 +76,50 @@ impl SpatialHash {
         self.cells.get(pos).cloned().unwrap_or_default().door
     }
 
+    pub fn wall_at(&self, pos: &IVec2) -> Option<Entity> {
+        self.cells.get(pos).cloned().unwrap_or_default().wall
+    }
+
     pub fn vulnerable_at(&self, pos: &IVec2) -> Option<Entity> {
         self.cells.get(pos).cloned().unwrap_or_default().vulnerable
     }
 }
 
-pub struct Room(pub HashMap<IVec2, char>);
+impl Display for SpatialHash {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut s = String::new();
+        let (min_x, min_y, max_x, max_y) =
+            self.cells
+                .keys()
+                .fold((0, 0, 0, 0), |(min_x, min_y, max_x, max_y), item| {
+                    (
+                        min_x.min(item.x),
+                        min_y.min(item.y),
+                        max_x.max(item.x),
+                        max_y.max(item.y),
+                    )
+                });
 
-impl From<String> for Room {
-    fn from(s: String) -> Self {
-        let room = s
-            .lines()
-            .rev()
-            .enumerate()
-            .flat_map(|(y, line)| {
-                line.chars()
-                    .enumerate()
-                    .map(move |(x, c)| ((x as i32, y as i32).into(), c))
-            })
-            .collect();
+        let width = (max_x - min_x).abs() + 1;
+        let height = (max_y - min_y).abs() + 1;
 
-        Self(room)
+        for y in (0..height as i32).rev() {
+            for x in 0..width as i32 {
+                let pos = ivec2(x + min_x, y + min_y);
+                if self.door_at(&pos).is_some() {
+                    s.push('o');
+                } else if self.wall_at(&pos).is_some() {
+                    s.push('#');
+                } else if self.cells.contains_key(&pos) {
+                    s.push('·');
+                } else {
+                    s.push(' ');
+                }
+            }
+            s.push('\n');
+        }
+
+        write!(f, "{}", s)
     }
 }
 

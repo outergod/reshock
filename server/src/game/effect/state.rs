@@ -4,13 +4,13 @@ use crate::game::component::*;
 use crate::game::{Events, *};
 
 pub fn effect(
-    action: Res<ActiveAction>,
+    action: Res<Action>,
     player: Query<Entity, With<Player>>,
     mut state_res: ResMut<api::State>,
     mut events: ResMut<Events>,
 ) {
-    let state = match &action.0 {
-        Some(Action::State(StateAction::Update { state })) => state,
+    let state = match action.as_ref() {
+        Action::State(StateAction::Update { state }) => state,
         _ => return,
     };
 

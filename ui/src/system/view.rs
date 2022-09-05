@@ -1,17 +1,20 @@
 use api::renderable_component::Renderable as ApiRenderable;
 use api::*;
 use bevy::log;
+use bevy::math::ivec2;
 use bevy::prelude::*;
+use bevy::utils::HashSet;
 
-use crate::component::*;
-use crate::resource::ReshockEvents;
-use crate::resource::TransitionState;
+use crate::component::{Position, *};
+use crate::{bundle, resource::*};
 
 pub fn system(
     mut commands: Commands,
     entities: Query<Entity, With<ReshockEntity>>,
+    tiles: Query<&Position, With<Tile>>,
     mut reader: EventReader<api::StateUpdateEvent>,
     mut events: ResMut<ReshockEvents>,
+    font: Res<ReshockFont>,
 ) {
     for api::StateUpdateEvent { player, state } in reader.iter() {
         let state = match state {
@@ -26,6 +29,8 @@ pub fn system(
             commands.entity(entity).despawn();
         }
 
+        let tiles: HashSet<_> = tiles.iter().collect();
+
         for (entity, components) in state.entities.clone() {
             let Components {
                 position,
@@ -34,6 +39,14 @@ pub fn system(
                 memory,
                 wall,
             } = components;
+
+            if let Some(PositionComponent { x, y }) = position {
+                let pos = Position(ivec2(x, y));
+                if !tiles.contains(&pos) {
+                    commands.spawn_bundle(bundle::Tile::new(pos, &font));
+                }
+            }
+
             let mut e = commands.spawn();
 
             if entity == *player {
@@ -44,7 +57,7 @@ pub fn system(
             e.insert(ReshockEntity(entity));
 
             if let Some(PositionComponent { x, y }) = position {
-                e.insert(Position((x, y).into()));
+                e.insert(Position(ivec2(x, y)));
             }
 
             let memory = memory.is_some();

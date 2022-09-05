@@ -4,19 +4,19 @@ use bevy_ecs::prelude::*;
 use crate::game::{component::*, Events, *};
 
 pub fn effect(
-    action: Res<ActiveAction>,
+    action: Res<Action>,
     mut magazines: Query<&mut Magazine>,
     positions: Query<&Position>,
     weapons: Query<&RangedWeapon>,
     mut events: ResMut<Events>,
 ) {
-    let (actor, target, weapon, magazine) = match &action.0 {
-        Some(Action::Shoot(ShootAction::DispatchProjectile {
+    let (actor, target, weapon, magazine) = match action.as_ref() {
+        Action::Shoot(ShootAction::DispatchProjectile {
             actor,
             target,
             weapon,
             magazine,
-        })) => (actor, target, weapon, magazine),
+        }) => (actor, target, weapon, magazine),
         _ => return,
     };
 

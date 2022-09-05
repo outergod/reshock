@@ -5,8 +5,6 @@ use bevy::prelude::*;
 use tokio::runtime::Runtime;
 use tonic::transport::Channel;
 
-use crate::bundle::*;
-use crate::component::*;
 use crate::resource::*;
 
 pub struct RestartEvent;
@@ -66,33 +64,16 @@ pub fn restart(
 }
 
 pub fn load(
-    mut commands: Commands,
     mut log_res: ResMut<Log>,
     mut game_state: ResMut<GameState>,
-    font: Res<ReshockFont>,
     mut writer: EventWriter<api::StateUpdateEvent>,
 ) {
-    let StateDumpResponse {
-        player,
-        dimensions,
-        state,
-        log,
-    } = match game_state.0.to_owned() {
+    let StateDumpResponse { player, state, log } = match game_state.0.to_owned() {
         Some(it) => it,
         None => return,
     };
 
     writer.send(api::StateUpdateEvent { player, state });
-
-    if let Some(api::Dimensions { x, y }) = dimensions {
-        for y in 0..=y {
-            for x in 0..=x {
-                commands.spawn_bundle(Tile::new(Position((x, y).into()), &font));
-            }
-        }
-    } else {
-        log::error!("Received empty dimensions, fatal");
-    }
 
     if let Some(api::Log { entries }) = log {
         log_res.0 = entries;

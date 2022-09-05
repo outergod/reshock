@@ -3,7 +3,7 @@ use bevy_ecs::prelude::*;
 use crate::game::{component::*, resource::*, *};
 
 pub fn behavior(
-    action: Res<ActiveAction>,
+    action: Res<Action>,
     mut followups: ResMut<FollowUps>,
     positions: Query<&Position>,
     obstacles: Query<(&Position, Option<&Description>), With<Solid>>,
@@ -13,8 +13,8 @@ pub fn behavior(
     let MoveAction {
         actor,
         position: target,
-    } = match &action.0 {
-        Some(Action::Move(r#move)) => r#move,
+    } = match action.as_ref() {
+        Action::Move(r#move) => r#move,
         _ => return Status::Continue,
     };
 
@@ -25,30 +25,32 @@ pub fn behavior(
                 "Invalid move action, entity {:?} does not have Position component",
                 actor
             );
-            return Status::Reject(None);
+            return Status::Reject(vec![]);
         }
     };
 
     if !deltas.0.iter().any(|d| position + *d == *target) {
         log::info!("Invalid move action, {:?} is out of reach", target);
-        return Status::Reject(None);
+        return Status::Reject(vec![]);
     }
 
     if let Some(desc) = obstacles
         .iter()
         .find_map(|(p, d)| (p.0 == *target).then_some(d))
     {
-        let action = player.contains(*actor).then(|| {
+        let mut actions = Vec::new();
+
+        player.contains(*actor).then(|| {
             let object = match desc {
                 Some(it) => it.to_string(),
                 None => "something".to_string(),
             };
 
-            Action::Log(format!("You run into {}", object))
+            actions.push(Action::Log(format!("You run into {}", object)));
         });
 
         log::info!("Entity can't move to {:?}", target);
-        return Status::Reject(action);
+        return Status::Reject(actions);
     };
 
     followups.0.push(Action::EndTurn(*actor));

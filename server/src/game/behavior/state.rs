@@ -6,15 +6,15 @@ use crate::game::component::*;
 use crate::game::*;
 
 pub fn behavior(
-    action: Res<ActiveAction>,
+    action: Res<Action>,
     player: Query<(&Sight, &Memory), With<Player>>,
     entities: Query<(&Position, &Renderable, Option<&Door>, Option<&Wall>)>,
     mut reactions: ResMut<Reactions>,
 ) -> Status {
-    match action.0 {
-        Some(Action::State(StateAction::Intent)) => {}
-        Some(Action::View(ViewAction::Update { actor, .. })) => {
-            if player.contains(actor) {
+    match action.as_ref() {
+        Action::State(StateAction::Intent) => {}
+        Action::View(ViewAction::Update { actor, .. }) => {
+            if player.contains(*actor) {
                 reactions.0.push(Action::State(StateAction::Intent));
             }
             return Status::Continue;

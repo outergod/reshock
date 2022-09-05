@@ -5,13 +5,13 @@ use crate::game::component::*;
 use crate::game::*;
 
 pub fn behavior(
-    action: Res<ActiveAction>,
+    action: Res<Action>,
     ai: Query<(&AI, &Memory, Option<&Description>)>,
     player: Query<Entity, With<Player>>,
     mut followups: ResMut<FollowUps>,
 ) -> Status {
-    let (actor, sight) = match &action.0 {
-        Some(Action::View(ViewAction::Update { actor, sight })) => (actor, sight),
+    let (actor, sight) = match action.as_ref() {
+        Action::View(ViewAction::Update { actor, sight }) => (actor, sight),
         _ => return Status::Continue,
     };
 

@@ -6,21 +6,21 @@ use glam::ivec2;
 use crate::game::{component::*, resource::*, *};
 
 pub fn r#move(
-    action: Res<ActiveAction>,
+    action: Res<Action>,
     mut reactions: ResMut<Reactions>,
     player: Query<(Entity, &Position), With<Player>>,
     doors: Query<&Door>,
     spatial: Res<SpatialHash>,
 ) -> Status {
-    let direction = match &action.0 {
-        Some(Action::Dwim(DwimAction::UpLeft)) => ivec2(-1, 1),
-        Some(Action::Dwim(DwimAction::Up)) => ivec2(0, 1),
-        Some(Action::Dwim(DwimAction::UpRight)) => ivec2(1, 1),
-        Some(Action::Dwim(DwimAction::Right)) => ivec2(1, 0),
-        Some(Action::Dwim(DwimAction::DownRight)) => ivec2(1, -1),
-        Some(Action::Dwim(DwimAction::Down)) => ivec2(0, -1),
-        Some(Action::Dwim(DwimAction::DownLeft)) => ivec2(-1, -1),
-        Some(Action::Dwim(DwimAction::Left)) => ivec2(-1, 0),
+    let direction = match action.as_ref() {
+        Action::Dwim(DwimAction::UpLeft) => ivec2(-1, 1),
+        Action::Dwim(DwimAction::Up) => ivec2(0, 1),
+        Action::Dwim(DwimAction::UpRight) => ivec2(1, 1),
+        Action::Dwim(DwimAction::Right) => ivec2(1, 0),
+        Action::Dwim(DwimAction::DownRight) => ivec2(1, -1),
+        Action::Dwim(DwimAction::Down) => ivec2(0, -1),
+        Action::Dwim(DwimAction::DownLeft) => ivec2(-1, -1),
+        Action::Dwim(DwimAction::Left) => ivec2(-1, 0),
         _ => return Status::Continue,
     };
 
@@ -49,15 +49,15 @@ pub fn r#move(
 }
 
 pub fn close(
-    action: Res<ActiveAction>,
+    action: Res<Action>,
     mut reactions: ResMut<Reactions>,
     player: Query<(Entity, &Position), With<Player>>,
     doors: Query<&Door>,
     deltas: Res<Deltas>,
     spatial: Res<SpatialHash>,
 ) -> Status {
-    match &action.0 {
-        Some(Action::Dwim(DwimAction::Close)) => {}
+    match action.as_ref() {
+        Action::Dwim(DwimAction::Close) => {}
         _ => return Status::Continue,
     };
 
@@ -77,19 +77,19 @@ pub fn close(
         }
         None => {
             let action = Action::Log("There is no door to close nearby".to_string());
-            Status::Reject(Some(action))
+            Status::Reject(vec![action])
         }
     }
 }
 
 pub fn shoot(
-    action: Res<ActiveAction>,
+    action: Res<Action>,
     mut reactions: ResMut<Reactions>,
     player: Query<(Entity, &Sight), With<Player>>,
     npcs: Query<Entity, (With<Vulnerable>, Without<Player>)>,
 ) -> Status {
-    match &action.0 {
-        Some(Action::Dwim(DwimAction::Shoot)) => {}
+    match action.as_ref() {
+        Action::Dwim(DwimAction::Shoot) => {}
         _ => return Status::Continue,
     };
 
@@ -105,7 +105,7 @@ pub fn shoot(
         }
         None => {
             let action = Action::Log("No one to shoot at in sight".to_string());
-            Status::Reject(Some(action))
+            Status::Reject(vec![action])
         }
     }
 }

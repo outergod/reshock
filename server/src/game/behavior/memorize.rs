@@ -6,7 +6,7 @@ use itertools::Itertools;
 use crate::game::{component::*, *};
 
 pub fn behavior(
-    mut action: ResMut<ActiveAction>,
+    mut action: ResMut<Action>,
     viewers: Query<&Sight>,
     sights: Query<(
         &Position,
@@ -18,9 +18,9 @@ pub fn behavior(
     memories: Query<&Memory>,
     mut reactions: ResMut<Reactions>,
 ) -> Status {
-    let action = match action.0.as_mut() {
-        Some(Action::Memorize(it)) => it,
-        Some(Action::View(ViewAction::Update { actor, .. })) => {
+    let action = match action.as_mut() {
+        Action::Memorize(it) => it,
+        Action::View(ViewAction::Update { actor, .. }) => {
             reactions.0.push(Action::Memorize(MemorizeAction {
                 actor: *actor,
                 memory: Default::default(),

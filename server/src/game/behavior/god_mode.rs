@@ -3,14 +3,17 @@ use bevy_ecs::prelude::*;
 use crate::game::{component::*, *};
 
 pub fn behavior(
-    mut action: ResMut<ActiveAction>,
+    mut action: ResMut<Action>,
     mut reactions: ResMut<Reactions>,
     player: Query<(Entity, Option<&God>), With<Player>>,
 ) -> Status {
-    let (player, god) = player.single();
+    let (player, god) = match player.get_single() {
+        Ok(it) => it,
+        Err(_) => return Status::Continue,
+    };
 
-    match action.0.as_mut() {
-        Some(Action::GodMode(GodModeAction::Intent)) => {
+    match action.as_mut() {
+        Action::GodMode(GodModeAction::Intent) => {
             reactions.0.push(Action::GodMode(GodModeAction::Activate {
                 actor: player,
                 activate: god.is_none(),
@@ -18,23 +21,23 @@ pub fn behavior(
 
             Status::Continue
         }
-        Some(Action::View(ViewAction::Update { actor, sight })) => {
+        Action::View(ViewAction::Update { actor, sight }) => {
             if actor == &player && god.is_some() {
                 sight.kind = SightKind::Omniscience;
             }
 
             Status::Continue
         }
-        Some(Action::HealthLoss(HealthLossAction { actor, amount })) => {
+        Action::HealthLoss(HealthLossAction { actor, amount }) => {
             if actor == &player && god.is_some() {
                 *amount = 0;
             }
 
             Status::Continue
         }
-        Some(Action::Death(DeathAction { actor, .. })) => {
+        Action::Death(DeathAction { actor, .. }) => {
             if actor == &player && god.is_some() {
-                Status::Reject(None)
+                Status::Reject(vec![])
             } else {
                 Status::Continue
             }

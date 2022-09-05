@@ -5,7 +5,7 @@ use bevy_ecs::prelude::*;
 use crate::game::{component::*, pathfinding::AStar, resource::Deltas, *};
 
 pub fn behavior(
-    action: Res<ActiveAction>,
+    action: Res<Action>,
     mut reactions: ResMut<Reactions>,
     ai: Query<(
         Entity,
@@ -19,9 +19,9 @@ pub fn behavior(
     player: Query<(Entity, &Position), With<Player>>,
     mut followups: ResMut<FollowUps>,
 ) -> Status {
-    let actor = match &action.0 {
-        Some(Action::AI(it)) => it,
-        Some(Action::EndTurn(entity)) => {
+    let actor = match action.as_ref() {
+        Action::AI(it) => it,
+        Action::EndTurn(entity) => {
             if player.contains(*entity) {
                 for (entity, ..) in ai.iter() {
                     followups.0.push(Action::AI(entity));

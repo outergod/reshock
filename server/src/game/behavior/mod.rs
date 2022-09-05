@@ -27,6 +27,7 @@ pub use melee::attack as melee_attack;
 pub use melee::intent as melee_intent;
 pub use memorize::behavior as memorize;
 pub use r#move::behavior as r#move;
+pub use room::behavior as room;
 pub use shoot::dispatch_projectile;
 pub use shoot::intent as shoot_intent;
 pub use shoot::shoot_projectile;
@@ -36,4 +37,3 @@ pub use view::behavior as view;
 pub use view::view_all;
 
 pub use radial_lines::setup as radial_lines;
-pub use room::setup as room;

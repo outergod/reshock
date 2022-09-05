@@ -4,13 +4,13 @@ use crate::game::component::*;
 use crate::game::*;
 
 pub fn effect(
-    action: Res<ActiveAction>,
+    action: Res<Action>,
     viewers: Query<&Sight>,
     mut commands: Commands,
     mut reactions: ResMut<Reactions>,
 ) {
-    let (actor, activate) = match action.0 {
-        Some(Action::GodMode(GodModeAction::Activate { actor, activate })) => (actor, activate),
+    let (actor, activate) = match action.as_ref() {
+        Action::GodMode(GodModeAction::Activate { actor, activate }) => (*actor, *activate),
         _ => return,
     };
 

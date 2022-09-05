@@ -9,6 +9,7 @@ use glam::IVec2;
 #[derive(Component, Default, Clone, Debug)]
 pub struct Player;
 
+#[allow(dead_code)]
 pub enum Article {
     None,
     A,
@@ -65,6 +66,9 @@ impl From<&Wall> for api::WallComponent {
     }
 }
 
+#[derive(Component)]
+pub struct Floor;
+
 #[derive(Component, Default)]
 pub struct God;
 
@@ -89,14 +93,23 @@ impl From<&Position> for api::Position {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+pub enum DoorKind {
+    Door,
+}
+
 #[derive(Component, Clone, Copy, Debug)]
 pub struct Door {
+    pub kind: DoorKind,
     pub open: bool,
 }
 
 impl Default for Door {
     fn default() -> Self {
-        Self { open: false }
+        Self {
+            kind: DoorKind::Door,
+            open: false,
+        }
     }
 }
 
@@ -272,12 +285,14 @@ impl OperationKind {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Component)]
 pub enum RangedWeapon {
     Projectile(ProjectileGun),
     Energy(EnergyGun),
 }
 
+#[allow(dead_code)]
 impl RangedWeapon {
     pub fn projectile(&self) -> Option<ProjectileGun> {
         match self {
@@ -407,3 +422,6 @@ pub enum Alive {
     Human,
     ServBot,
 }
+
+#[derive(Component)]
+pub struct RoomSpawner;

@@ -1,14 +1,16 @@
+use std::collections::VecDeque;
 use std::fmt::Display;
 use std::time::Instant;
-use std::{collections::VecDeque, fs, path::Path};
 
 use anyhow::Result;
 use bevy_ecs::prelude::*;
 use bevy_ecs::system::BoxedSystem;
-use glam::IVec2;
+use glam::{ivec2, IVec2};
 use itertools::Itertools;
 use rand::prelude::*;
 use thiserror::Error;
+
+use self::room::{Room, RoomAsset};
 
 mod behavior;
 mod bundle;
@@ -16,8 +18,7 @@ mod component;
 mod effect;
 mod pathfinding;
 mod resource;
-
-const LEVEL01_PATH: &'static str = "rooms/level01.room";
+mod room;
 
 type BoxedBehavior = BoxedSystem<(), Status>;
 
@@ -31,14 +32,9 @@ impl Default for Game {
     fn default() -> Self {
         let mut world = World::new();
 
-        let room: resource::Room = fs::read_to_string(Path::new("assets").join(LEVEL01_PATH))
-            .unwrap()
-            .into();
-
-        behavior::room(&mut world, room);
         behavior::radial_lines(&mut world);
 
-        world.init_resource::<ActiveAction>();
+        world.init_resource::<Action>();
         world.init_resource::<Reactions>();
         world.init_resource::<FollowUps>();
         world.init_resource::<Events>();
@@ -55,6 +51,7 @@ impl Default for Game {
             Box::new(IntoSystem::into_system(behavior::god_mode)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::r#move)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::door)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::room)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::view)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::view_all)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::spot)) as BoxedBehavior,
@@ -76,6 +73,7 @@ impl Default for Game {
         let mut effects = vec![
             Box::new(IntoSystem::into_system(effect::r#move)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::god_mode)) as BoxedSystem,
+            Box::new(IntoSystem::into_system(effect::room)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::door_open)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::door_close)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::melee)) as BoxedSystem,
@@ -96,12 +94,23 @@ impl Default for Game {
             (*effect).apply_buffers(&mut world);
         }
 
+        let spawner = world
+            .spawn()
+            .insert(component::Position(ivec2(0, 0)))
+            .insert(component::RoomSpawner)
+            .id();
+        let room = RoomAsset::Hibernation.load();
+
         let mut game = Self {
             world,
             behaviors,
             effects,
         };
 
+        game.input(Action::SpawnRoom(RoomSpawnAction {
+            target: spawner,
+            room,
+        }));
         game.input(Action::View(ViewAction::All));
 
         game
@@ -110,6 +119,7 @@ impl Default for Game {
 
 #[derive(Debug, Clone)]
 pub enum Action {
+    None,
     Dwim(DwimAction),
     AI(Entity),
     EndTurn(Entity),
@@ -128,11 +138,19 @@ pub enum Action {
     HealthLoss(HealthLossAction),
     Death(DeathAction),
     State(StateAction),
+    SpawnRoom(RoomSpawnAction),
+}
+
+impl Default for Action {
+    fn default() -> Self {
+        Self::None
+    }
 }
 
 impl Display for Action {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let s = match self {
+            Action::None => "None",
             Action::Dwim(_) => "Dwim",
             Action::AI(_) => "AI",
             Action::EndTurn(_) => "EndTurn",
@@ -151,6 +169,7 @@ impl Display for Action {
             Action::HealthLoss(_) => "HealthLoss",
             Action::Death(_) => "Death",
             Action::State(_) => "State",
+            Action::SpawnRoom(_) => "SpawnRoom",
         };
 
         write!(f, "{}", s)
@@ -265,6 +284,12 @@ pub struct MoveAction {
 }
 
 #[derive(Debug, Clone)]
+pub struct RoomSpawnAction {
+    target: Entity,
+    room: Room,
+}
+
+#[derive(Debug, Clone)]
 pub struct OpenDoorAction {
     actor: Entity,
     target: Entity,
@@ -283,8 +308,6 @@ pub struct SpotAction {
 }
 
 #[derive(Default)]
-pub struct ActiveAction(pub Option<Action>);
-#[derive(Default)]
 pub struct Reactions(pub Vec<Action>);
 #[derive(Default)]
 pub struct FollowUps(pub Vec<Action>);
@@ -293,7 +316,7 @@ pub struct Events(pub Vec<api::Event>);
 
 pub enum Status {
     Continue,
-    Reject(Option<Action>),
+    Reject(Vec<Action>),
 }
 
 #[derive(Debug, Error)]
@@ -318,31 +341,27 @@ impl Game {
                 None => break,
             };
 
-            self.world.resource_mut::<ActiveAction>().0 = Some(action.clone());
+            *self.world.resource_mut::<Action>() = action;
 
             let mut accepted = true;
 
             for behavior in &mut self.behaviors {
                 match behavior.run((), &mut self.world) {
                     Status::Continue => {}
-                    Status::Reject(action) => {
+                    Status::Reject(acts) => {
                         accepted = false;
 
-                        if let Some(action) = action {
+                        for action in acts {
                             log::debug!("Queueing reject followup {:?}", action);
                             actions.push_back(action);
                         }
+
                         break;
                     }
                 }
             }
 
-            let action = self
-                .world
-                .resource::<ActiveAction>()
-                .0
-                .as_ref()
-                .expect("Action is not None");
+            let action = self.world.resource::<Action>();
 
             if !accepted {
                 log::debug!("Action {} rejected", action);
@@ -400,19 +419,6 @@ impl Game {
             .get_single(&self.world)
             .unwrap();
 
-        let (x, y) = self
-            .world
-            .query_filtered::<&component::Position, With<component::Renderable>>()
-            .iter(&self.world)
-            .fold(
-                (0, 0),
-                |(max_x, max_y), component::Position(IVec2 { x, y })| {
-                    (max_x.max(*x), max_y.max(*y))
-                },
-            );
-
-        let dimensions = api::Dimensions { x, y };
-
         let log = self
             .world
             .resource::<resource::Log>()
@@ -422,7 +428,6 @@ impl Game {
 
         Ok(api::StateDumpResponse {
             player: player.id(),
-            dimensions: Some(dimensions),
             state: Some(state),
             log: Some(api::Log { entries: log }),
         })

@@ -69,6 +69,7 @@ pub struct Floor {
     pub renderable: component::Renderable,
     pub position: component::Position,
     pub description: component::Description,
+    pub floor: component::Floor,
 }
 
 impl Default for Floor {
@@ -80,6 +81,7 @@ impl Default for Floor {
                 name: "flooring".to_string(),
                 article: component::Article::None,
             },
+            floor: component::Floor,
         }
     }
 }
@@ -172,6 +174,7 @@ pub struct MeleeWeapon {
     pub description: component::Description,
 }
 
+#[allow(dead_code)]
 impl MeleeWeapon {
     pub fn lead_pipe() -> Self {
         Self {
@@ -282,6 +285,7 @@ pub struct EnergyGun {
     pub description: component::Description,
 }
 
+#[allow(dead_code)]
 impl EnergyGun {
     pub fn ion_rifle() -> Self {
         Self {

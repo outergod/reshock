@@ -5,19 +5,19 @@ use crate::game::Events;
 use crate::game::{component::*, *};
 
 pub fn effect(
-    action: Res<ActiveAction>,
+    action: Res<Action>,
     sight: Query<&Sight, With<Player>>,
     weapons: Query<&MeleeWeapon>,
     positions: Query<&Position>,
     mut events: ResMut<Events>,
 ) {
-    let (actor, target, weapon) = match &action.0 {
-        Some(Action::Hit(HitAction {
+    let (actor, target, weapon) = match action.as_ref() {
+        Action::Hit(HitAction {
             actor,
             target,
             weapon,
             ..
-        })) => (actor, target, weapon),
+        }) => (actor, target, weapon),
         _ => return,
     };
 

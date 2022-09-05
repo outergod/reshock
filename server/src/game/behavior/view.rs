@@ -5,12 +5,12 @@ use bevy_ecs::prelude::*;
 use crate::game::{component::*, resource::*, *};
 
 pub fn view_all(
-    action: Res<ActiveAction>,
+    action: Res<Action>,
     viewers: Query<(Entity, &Sight)>,
     mut reactions: ResMut<Reactions>,
 ) -> Status {
-    match action.0 {
-        Some(Action::View(ViewAction::All)) => {}
+    match action.as_ref() {
+        Action::View(ViewAction::All) => {}
         _ => return Status::Continue,
     };
 
@@ -28,15 +28,15 @@ pub fn view_all(
 }
 
 pub fn behavior(
-    mut action: ResMut<ActiveAction>,
+    mut action: ResMut<Action>,
     positions: Query<&Position>,
     lines: Res<RadialLines>,
     spatial: Res<SpatialHash>,
     mut reactions: ResMut<Reactions>,
 ) -> Status {
-    let (actor, sight) = match action.0.as_mut() {
-        Some(Action::View(ViewAction::Update { actor, sight })) => (actor, sight),
-        Some(Action::EndTurn(_)) => {
+    let (actor, sight) = match action.as_mut() {
+        Action::View(ViewAction::Update { actor, sight }) => (actor, sight),
+        Action::EndTurn(_) => {
             reactions.0.push(Action::View(ViewAction::All));
             return Status::Continue;
         }

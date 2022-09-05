@@ -50,18 +50,18 @@ fn multiplier(attack: &AttackKind, vulnerable: &VulnerableKind) -> u8 {
 }
 
 pub fn hit(
-    action: Res<ActiveAction>,
+    action: Res<Action>,
     descriptions: Query<&Description>,
     vulnerables: Query<(), With<Vulnerable>>,
     mut reactions: ResMut<Reactions>,
 ) -> Status {
-    let (actor, target, weapon, damage) = match &action.0 {
-        Some(Action::Hit(HitAction {
+    let (actor, target, weapon, damage) = match action.as_ref() {
+        Action::Hit(HitAction {
             actor,
             target,
             weapon,
             damage,
-        })) => (actor, target, weapon, damage),
+        }) => (actor, target, weapon, damage),
         _ => return Status::Continue,
     };
 
@@ -93,7 +93,7 @@ pub fn hit(
 }
 
 pub fn damage(
-    action: Res<ActiveAction>,
+    action: Res<Action>,
     vulnerables: Query<&Vulnerable>,
     descriptions: Query<&Description>,
     mut reactions: ResMut<Reactions>,
@@ -103,8 +103,8 @@ pub fn damage(
         target,
         weapon,
         damage,
-    } = match &action.0 {
-        Some(Action::Damage(it)) => it,
+    } = match action.as_ref() {
+        Action::Damage(it) => it,
         _ => return Status::Continue,
     };
 

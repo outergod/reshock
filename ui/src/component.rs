@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 use bevy_tweening::Lens;
 
+#[derive(Component)]
+pub struct Tile;
+
 #[derive(Component, Clone, Hash, Debug, PartialEq, Eq)]
 pub struct ReshockEntity(pub u32);
 

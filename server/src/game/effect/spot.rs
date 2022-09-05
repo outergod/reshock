@@ -2,9 +2,9 @@ use bevy_ecs::prelude::*;
 
 use crate::game::{Events, *};
 
-pub fn effect(action: Res<ActiveAction>, mut events: ResMut<Events>) {
-    let SpotAction { actor, sound } = match &action.0 {
-        Some(Action::Spot(it)) => it,
+pub fn effect(action: Res<Action>, mut events: ResMut<Events>) {
+    let SpotAction { actor, sound } = match action.as_ref() {
+        Action::Spot(it) => it,
         _ => return,
     };
 
