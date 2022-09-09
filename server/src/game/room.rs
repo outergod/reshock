@@ -433,6 +433,7 @@ impl Room {
         spatial: &SpatialHash,
         path: &Vec<IVec2>,
         deltas: &Deltas,
+        straight_deltas: &Deltas,
     ) -> Option<Self> {
         let (position, path): (&IVec2, HashSet<_>) = match path.split_last() {
             Some((position, path)) => (position, path.iter().collect()),
@@ -484,7 +485,7 @@ impl Room {
                             None => {
                                 // Never build a wall next to an existing door (should only
                                 // affect existing spawners)
-                                if deltas
+                                if straight_deltas
                                     .0
                                     .iter()
                                     .any(|d| spatial.door_at(&(pos + *d)).is_some())
@@ -509,7 +510,7 @@ impl Room {
                             }
                             None => {
                                 // Absolutely no straight neighbors next to spawners
-                                if deltas
+                                if straight_deltas
                                     .0
                                     .iter()
                                     .any(|d| spatial.cells.contains_key(&(pos + *d)))
@@ -570,6 +571,15 @@ impl Room {
                             None
                         }
                     }) {
+                        // Building a wall next to a spawner? Abort!
+                        if straight_deltas
+                            .0
+                            .iter()
+                            .any(|d| spatial.door_at(&(pos + *d)).is_some())
+                        {
+                            return None;
+                        }
+
                         index += 1;
                         positions.insert(index, pos);
                         tiles.insert(index, Tile::Wall);
@@ -646,7 +656,8 @@ impl FindSite {
         let mut fringe: BinaryHeap<Node> = BinaryHeap::new();
         let mut closed: HashSet<IVec2> = HashSet::new();
         let mut parents: HashMap<IVec2, Node> = HashMap::new();
-        let deltas = Deltas::cross();
+        let straight_deltas = Deltas::cross();
+        let deltas = Deltas::neighbors();
         let rooms = room.mutations();
 
         fringe.push(Node {
@@ -668,7 +679,7 @@ impl FindSite {
 
             for room in &rooms {
                 let path = Self::recreate_path(&parents, &node.index);
-                if let Some(room) = room.attempt_build(&self.spatial, &path, &deltas) {
+                if let Some(room) = room.attempt_build(&self.spatial, &path, &deltas, &straight_deltas) {
                     return Some(room);
                 }
             }
