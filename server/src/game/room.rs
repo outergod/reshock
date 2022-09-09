@@ -8,6 +8,8 @@ use std::path::Path;
 
 use bevy_ecs::prelude::*;
 use glam::{ivec2, IVec2};
+use log::log_enabled;
+use log::STATIC_MAX_LEVEL;
 use rand::distributions::Standard;
 use rand::prelude::*;
 
@@ -443,21 +445,17 @@ impl Room {
             .filter_map(|id| self.positions.get(&id).map(|pos| (id, pos)))
             .find_map(move |(spawner, spawner_pos_room)| {
                 let offset = *position - *spawner_pos_room;
-                log::trace!(
-                    "checking spawner {} at {:?} / {:?}",
-                    spawner,
-                    spawner_pos_room,
-                    offset
-                );
 
-                let mut debug_room = self.clone();
-                let mut debug_spatial = spatial.clone();
-                debug_room
-                    .positions
-                    .iter_mut()
-                    .for_each(|(_, pos)| *pos += offset);
-                debug_room.spatial_merge(&mut debug_spatial);
-                println!("resulting map\n{}", debug_spatial);
+                if log_enabled!(log::Level::Debug) {
+                    let mut debug_room = self.clone();
+                    let mut debug_spatial = spatial.clone();
+                    debug_room
+                        .positions
+                        .iter_mut()
+                        .for_each(|(_, pos)| *pos += offset);
+                    debug_room.spatial_merge(&mut debug_spatial);
+                    log::debug!("resulting map\n{}", debug_spatial);
+                }
 
                 let mut positions = HashMap::new();
                 let mut tiles = HashMap::new();
@@ -470,7 +468,7 @@ impl Room {
 
                     // No matter what it is, it must not block our path here and back
                     if path.contains(&pos) {
-                        println!("{} failing because path back is blocked", pos);
+                        log::debug!("{} failing because path back is blocked", pos);
                         return None;
                     }
 
@@ -479,7 +477,7 @@ impl Room {
                             // Wall on wall is allowed, preserving the existing wall
                             Some(cell) => {
                                 if !cell.wall.is_some() {
-                                    println!("{} failing because of wall to not wall", pos);
+                                    log::debug!("{} failing because of wall to not wall", pos);
                                     return None;
                                 }
                             }
@@ -491,7 +489,7 @@ impl Room {
                                     .iter()
                                     .any(|d| spatial.door_at(&(pos + *d)).is_some())
                                 {
-                                    println!("{} failing because of door neighbor", pos);
+                                    log::debug!("{} failing because of door neighbor", pos);
                                     return None;
                                 }
 
@@ -505,7 +503,7 @@ impl Room {
                             // Spawners can only be placed on the spawner being opened right now, or free space
                             Some(cell) => {
                                 if cell.door.is_none() || *id != spawner {
-                                    println!("{} failing because of spawner blocked", pos);
+                                    log::debug!("{} failing because of spawner blocked", pos);
                                     return None;
                                 }
                             }
@@ -516,7 +514,7 @@ impl Room {
                                     .iter()
                                     .any(|d| spatial.cells.contains_key(&(pos + *d)))
                                 {
-                                    println!("{} failing because of spawner neighbor", pos);
+                                    log::debug!("{} failing because of spawner neighbor", pos);
                                     return None;
                                 } else if *id == spawner {
                                     // Currently checked spawner? Become a regular closed door
@@ -533,7 +531,7 @@ impl Room {
 
                         Tile::Player => match spatial.cells.get(&pos) {
                             Some(_) => {
-                                println!("{} failing because of player blocked", pos);
+                                log::debug!("{} failing because of player blocked", pos);
                                 return None;
                             }
                             None => {
@@ -546,7 +544,7 @@ impl Room {
 
                         tile => match spatial.cells.get(&pos) {
                             Some(_) => {
-                                println!("{} failing because of {:?} blocked", pos, tile);
+                                log::debug!("{} failing because of {:?} blocked", pos, tile);
                                 return None;
                             }
                             None => {
@@ -666,7 +664,7 @@ impl FindSite {
 
         while steps < SEARCH_LIMIT && let Some(node) = fringe.pop() {
             steps += 1;
-            println!("checking {:?}", node.index);
+            log::debug!("checking {:?}", node.index);
 
             for room in &rooms {
                 let path = Self::recreate_path(&parents, &node.index);
