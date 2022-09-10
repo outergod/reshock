@@ -7,9 +7,9 @@ use std::fs;
 use std::path::Path;
 
 use bevy_ecs::prelude::*;
+use bevy_hierarchy::BuildChildren;
 use glam::{ivec2, IVec2};
 use log::log_enabled;
-use log::STATIC_MAX_LEVEL;
 use rand::distributions::Standard;
 use rand::prelude::*;
 
@@ -33,10 +33,10 @@ pub enum RoomAsset {
 impl Distribution<Room> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Room {
         match rng.gen_range(0..=3) {
-            0 => RoomAsset::Hibernation,
-            1 => RoomAsset::MedicalBay,
+            0 => RoomAsset::Floor,
+            1 => RoomAsset::Floor,
             2 => RoomAsset::Floor,
-            3 => RoomAsset::Storage,
+            3 => RoomAsset::Floor,
             _ => panic!("Impossible"),
         }
         .load()
@@ -102,6 +102,7 @@ pub struct Room {
     player: Option<RoomEntity>,
     spawners: HashSet<RoomEntity>,
     walls: HashSet<RoomEntity>,
+    bulkhead_doors: HashMap<RoomEntity, RoomEntity>,
     width: u32,
     height: u32,
 }
@@ -114,6 +115,8 @@ impl From<String> for Room {
         let mut player = None;
         let mut spawners = HashSet::new();
         let mut walls = HashSet::new();
+        let mut doors = HashMap::new();
+        let mut bulkhead_doors = HashMap::new();
         let mut width = 0;
         let mut height = 0;
 
@@ -126,14 +129,19 @@ impl From<String> for Room {
                     }
                 };
 
-                positions.insert(index, ivec2(x as i32, y as i32));
+                let pos = ivec2(x as i32, y as i32);
+                positions.insert(index, pos);
 
                 match tile {
                     Tile::Wall => {
                         walls.insert(index);
                     }
                     Tile::Door(Door::Spawner) => {
+                        doors.insert(pos, index);
                         spawners.insert(index);
+                    }
+                    Tile::Door(_) => {
+                        doors.insert(pos, index);
                     }
                     Tile::Player => {
                         player = Some(index);
@@ -149,6 +157,14 @@ impl From<String> for Room {
             }
         }
 
+        let deltas = Deltas::cross();
+
+        for (pos, id) in doors.clone() {
+            if let Some(other_id) = deltas.0.iter().find_map(|d| doors.get(&(pos + *d))) {
+                bulkhead_doors.insert(id, *other_id);
+            }
+        }
+
         Self {
             index,
             positions,
@@ -156,6 +172,7 @@ impl From<String> for Room {
             player,
             spawners,
             walls,
+            bulkhead_doors,
             width: width as u32,
             height: height as u32,
         }
@@ -227,6 +244,22 @@ impl Room {
     }
 
     pub fn spawn(&self, commands: &mut Commands) {
+        let bulkhead_doors =
+            self.bulkhead_doors
+                .iter()
+                .fold(HashMap::new(), |mut map, (left, right)| {
+                    let door = commands
+                        .spawn()
+                        .insert(component::Description {
+                            name: "bulkhead door".to_string(),
+                            article: component::Article::A,
+                        })
+                        .id();
+                    map.insert(*left, door);
+                    map.insert(*right, door);
+                    map
+                });
+
         for (id, pos) in self.positions.iter() {
             let position = component::Position(*pos);
 
@@ -237,51 +270,55 @@ impl Room {
 
             match self.tiles.get(id).unwrap() {
                 Tile::Floor => {}
+
                 Tile::Wall => {
                     commands.spawn().insert_bundle(bundle::Wall {
                         position,
                         ..Default::default()
                     });
                 }
-                Tile::Door(Door::Open) => {
-                    commands.spawn().insert_bundle(bundle::Door {
-                        position,
-                        door: component::Door {
-                            open: true,
-                            ..Default::default()
-                        },
-                        ..Default::default()
-                    });
-                }
-                Tile::Door(Door::Closed) => {
-                    commands
+
+                Tile::Door(kind) => {
+                    let door = commands
                         .spawn()
                         .insert_bundle(bundle::Door {
                             position,
-                            door: component::Door {
-                                open: false,
-                                ..Default::default()
-                            },
                             ..Default::default()
                         })
-                        .insert(component::Solid)
-                        .insert(component::Opaque);
+                        .id();
+
+                    let mut door = match bulkhead_doors.get(id) {
+                        Some(entity) => {
+                            let mut entity = commands.entity(*entity);
+                            entity.insert(component::DoorKind::Bulkhead);
+                            entity.add_child(door);
+                            entity
+                        }
+                        None => {
+                            let mut entity = commands.entity(door);
+                            entity.insert(component::DoorKind::Heavy);
+                            entity
+                        }
+                    };
+
+                    match kind {
+                        Door::Open => {
+                            door.insert(component::Door { open: true });
+                        }
+                        Door::Closed => {
+                            door.insert(component::Door { open: false })
+                                .insert(component::Solid)
+                                .insert(component::Opaque);
+                        }
+                        Door::Spawner => {
+                            door.insert(component::Door { open: false })
+                                .insert(component::Solid)
+                                .insert(component::Opaque)
+                                .insert(component::RoomSpawner);
+                        }
+                    }
                 }
-                Tile::Door(Door::Spawner) => {
-                    commands
-                        .spawn()
-                        .insert_bundle(bundle::Door {
-                            position,
-                            door: component::Door {
-                                open: false,
-                                ..Default::default()
-                            },
-                            ..Default::default()
-                        })
-                        .insert(component::Solid)
-                        .insert(component::Opaque)
-                        .insert(component::RoomSpawner);
-                }
+
                 Tile::Player => {
                     let player = commands
                         .spawn()
@@ -403,6 +440,7 @@ impl Room {
             player: self.player.clone(),
             spawners: self.spawners.clone(),
             walls: self.walls.clone(),
+            bulkhead_doors: self.bulkhead_doors.clone(),
             width,
             height,
         }
@@ -443,6 +481,7 @@ impl Room {
         self.spawners
             .clone()
             .into_iter()
+            .filter(|id| self.bulkhead_doors.get(&id).is_none())
             .filter_map(|id| self.positions.get(&id).map(|pos| (id, pos)))
             .find_map(move |(spawner, spawner_pos_room)| {
                 let offset = *position - *spawner_pos_room;
@@ -468,8 +507,8 @@ impl Room {
                     let pos = *pos + offset;
 
                     // No matter what it is, it must not block our path here and back
-                    if path.contains(&pos) {
-                        log::debug!("{} failing because path back is blocked", pos);
+                    if &pos != position && path.contains(&pos) {
+                        log::debug!("{} {} failing because path back is blocked", pos, position);
                         return None;
                     }
 
@@ -517,7 +556,7 @@ impl Room {
                                 {
                                     log::debug!("{} failing because of spawner neighbor", pos);
                                     return None;
-                                } else if *id == spawner {
+                                } else if id == &spawner {
                                     // Currently checked spawner? Become a regular closed door
                                     positions.insert(*id, pos);
                                     tiles.insert(*id, Tile::Door(Door::Closed));
@@ -597,6 +636,7 @@ impl Room {
                     player,
                     spawners,
                     walls,
+                    bulkhead_doors: self.bulkhead_doors.clone(),
                     width: self.width,
                     height: self.height,
                 })
@@ -723,6 +763,8 @@ impl Ord for Node {
 
 #[cfg(test)]
 mod test {
+    use test_log::test;
+
     use super::*;
 
     #[test]
@@ -938,11 +980,11 @@ o··#·##·######
 #·###·#
 #··#··#
 #····##
-|b·#·###
-#··#···#
+|b·#·##
+#··#··##
 #####··#
    #####
-    "
+"
         .to_string()
         .into();
 
@@ -962,9 +1004,9 @@ o··#·##·######
         .to_string()
         .into();
 
-        let room = find
-            .find_site(&room, (&ivec2(0, 4), &ivec2(-1, 4)))
-            .unwrap();
+        // let room = find
+        //     .find_site(&room, (&ivec2(0, 3), &ivec2(-1, 3)))
+        //     .unwrap();
 
         // let doors = [ivec2(-1, 8)].into_iter().collect();
         // assert_eq!(room.doors, doors);
@@ -981,8 +1023,8 @@ o··#·##·######
 #·###·#
 #··#··#
 #····##
-|b·#·###
-#··#···#
+|b·#·##
+#··#··##
 #####··#
    #####
 "
@@ -992,6 +1034,8 @@ o··#·##·######
         let mut spatial: SpatialHash = Default::default();
         base.spatial_merge(&mut spatial);
         let find = FindSite::new(spatial.clone());
+
+        // println!("{:?}", spatial.cells.get(&ivec2(-1, 3)));
 
         let room: Room = "
   ######
@@ -1007,7 +1051,7 @@ o··#·##·######
         .into();
 
         let room = find
-            .find_site(&room, (&ivec2(0, 4), &ivec2(-1, 4)))
+            .find_site(&room, (&ivec2(0, 3), &ivec2(-1, 3)))
             .unwrap();
 
         // let doors = [ivec2(-1, 8)].into_iter().collect();

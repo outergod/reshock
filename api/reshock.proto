@@ -90,9 +90,15 @@ message ActionRequest {
 }
 
 message DoorEvent {
+  enum DoorSound {
+    HEAVY = 0;
+    BULKHEAD = 1;
+  }
+
   uint32 actor = 1;
-  uint32 door = 2;
+  repeated uint32 doors = 2;
   bool open = 3;
+  DoorSound sound = 4;
 }
 
 message StateUpdateEvent {

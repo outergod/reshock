@@ -18,6 +18,7 @@ pub use self::log::effect as log;
 pub use death::effect as death;
 pub use door::close as door_close;
 pub use door::open as door_open;
+pub use door::propagate as door_propagate;
 pub use god_mode::effect as god_mode;
 pub use health::effect as health;
 pub use melee::effect as melee;

@@ -46,6 +46,7 @@ impl Default for Renderable {
     }
 }
 
+#[derive(Clone)]
 pub struct ColorLens {
     pub start: Color,
     pub end: Color,

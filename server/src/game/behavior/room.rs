@@ -1,7 +1,8 @@
 use bevy_ecs::prelude::*;
+use bevy_hierarchy::Children;
 
 use crate::game::resource::*;
-use crate::game::room::{Room, *};
+use crate::game::room::{FindSite, Room};
 use crate::game::{component::*, *};
 
 pub fn behavior(
@@ -10,13 +11,17 @@ pub fn behavior(
     player: Query<(), With<Player>>,
     positions: Query<&Position>,
     spatial: Res<SpatialHash>,
+    bulkhead_doors: Query<&Children, With<Door>>,
 ) -> Status {
     let target = match action.as_ref() {
         Action::OpenDoor(OpenDoorAction { target, .. }) if spawners.contains(*target) => target,
         _ => return Status::Continue,
     };
 
-    let start = positions.get(*target).unwrap();
+    let start = match bulkhead_doors.get(*target) {
+        Ok(children) => positions.get(children[0]).unwrap(),
+        Err(_) => positions.get(*target).unwrap(),
+    };
 
     let direction = Deltas::cross()
         .0

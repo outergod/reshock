@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use api::door_event::DoorSound;
 use bevy::{math::ivec2, prelude::*, utils::HashSet};
 use bevy_kira_audio::Audio;
 use bevy_tweening::*;
@@ -12,7 +13,8 @@ const HDOOR: char = '═';
 // const HDOOR: char = '╌';
 const EMPTY: char = ' ';
 
-const DOOR_SOUND: &'static str = "sshock/sounds/00206.wav";
+const HEAVY_DOOR_SOUND: &'static str = "sshock/sounds/00206.wav";
+const BULKHEAD_DOOR_SOUND: &'static str = "sshock/sounds/00268.wav";
 
 pub struct DoorPlugin;
 
@@ -31,33 +33,54 @@ pub fn event(
 ) {
     for api::DoorEvent {
         actor: _,
-        door: entity,
+        doors: entities,
         open,
+        sound,
     } in reader.iter()
     {
-        if let Some((e, _, door)) = doors.iter().find(|(_, id, _)| entity == &id.0) {
-            let color = if *open {
-                ColorLens {
-                    start: door.close_color,
-                    end: door.open_color,
-                }
-            } else {
-                ColorLens {
-                    start: door.open_color,
-                    end: door.close_color,
-                }
-            };
+        let doors: Vec<_> = doors
+            .iter()
+            .filter(|(_, id, _)| entities.contains(&id.0))
+            .collect();
 
+        let door = match doors.first() {
+            Some((_, _, door)) => *door,
+            None => continue,
+        };
+
+        let color = if *open {
+            ColorLens {
+                start: door.close_color,
+                end: door.open_color,
+            }
+        } else {
+            ColorLens {
+                start: door.open_color,
+                end: door.close_color,
+            }
+        };
+
+        for (i, (e, _, _)) in doors.into_iter().enumerate() {
             let mut tween = Tween::new(
                 EaseMethod::Linear,
                 TweeningType::Once,
                 Duration::from_secs_f32(1.5),
-                color,
+                color.clone(),
             );
 
-            tween.set_completed_event(0);
+            if i == 0 {
+                tween.set_completed_event(0);
+            }
+
             commands.entity(e).insert(Animator::new(tween));
-            audio.play(asset_server.load(DOOR_SOUND));
+        }
+
+        if let Some(sound) = match DoorSound::from_i32(*sound) {
+            Some(DoorSound::Heavy) => Some(HEAVY_DOOR_SOUND),
+            Some(DoorSound::Bulkhead) => Some(BULKHEAD_DOOR_SOUND),
+            _ => None,
+        } {
+            audio.play(asset_server.load(sound));
         }
     }
 }

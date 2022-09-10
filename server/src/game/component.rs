@@ -93,29 +93,26 @@ impl From<&Position> for api::Position {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Component, Clone, Copy, Debug)]
 pub enum DoorKind {
-    Door,
+    Heavy,
+    Bulkhead,
 }
 
 #[derive(Component, Clone, Copy, Debug)]
 pub struct Door {
-    pub kind: DoorKind,
     pub open: bool,
-}
-
-impl Default for Door {
-    fn default() -> Self {
-        Self {
-            kind: DoorKind::Door,
-            open: false,
-        }
-    }
 }
 
 impl From<&Door> for api::DoorComponent {
     fn from(door: &Door) -> Self {
         Self { open: door.open }
+    }
+}
+
+impl Default for Door {
+    fn default() -> Self {
+        Self { open: false }
     }
 }
 

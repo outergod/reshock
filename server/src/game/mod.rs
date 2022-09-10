@@ -76,6 +76,7 @@ impl Default for Game {
             Box::new(IntoSystem::into_system(effect::room)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::door_open)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::door_close)) as BoxedSystem,
+            Box::new(IntoSystem::into_system(effect::door_propagate)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::melee)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::shoot)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::health)) as BoxedSystem,
