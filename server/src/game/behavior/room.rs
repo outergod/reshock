@@ -2,15 +2,16 @@ use bevy_ecs::prelude::*;
 use bevy_hierarchy::Children;
 
 use crate::game::resource::*;
-use crate::game::room::{FindSite, Room};
+use crate::game::room::{FindSite, Room, Rooms};
 use crate::game::{component::*, *};
 
 pub fn behavior(
     action: Res<Action>,
+    spatial: Res<SpatialHash>,
+    rooms: Res<Rooms>,
     spawners: Query<(), With<RoomSpawner>>,
     player: Query<(), With<Player>>,
     positions: Query<&Position>,
-    spatial: Res<SpatialHash>,
     bulkhead_doors: Query<&Children, With<Door>>,
 ) -> Status {
     let target = match action.as_ref() {
@@ -34,8 +35,22 @@ pub fn behavior(
 
     log::debug!("{:?} {:?}", start, direction);
 
+    // Prevent the map turning into a dead end
+    let predicate = if spawners.iter().len() > 1 {
+        None
+    } else {
+        Some(|room: &Room| !room.is_dead_end())
+    };
+
     let mut rng = thread_rng();
-    let room: Room = rng.gen();
+    let room = match rooms.random(&mut rng, predicate) {
+        Some(it) => it,
+        None => {
+            log::error!("Could not find a room fulfilling the predicate");
+            return Status::Reject(vec![]);
+        }
+    };
+
     let find = FindSite::new(spatial.to_owned());
 
     let mut room = find.find_site(&room, (&start.0, &direction)).unwrap();

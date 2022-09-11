@@ -10,7 +10,7 @@ use itertools::Itertools;
 use rand::prelude::*;
 use thiserror::Error;
 
-use self::room::{Room, RoomAsset};
+use self::room::{Room, RoomAsset, Rooms};
 
 mod behavior;
 mod bundle;
@@ -41,6 +41,7 @@ impl Default for Game {
         world.init_resource::<resource::Deltas>();
         world.init_resource::<resource::SpatialHash>();
         world.init_resource::<resource::Log>();
+        world.init_resource::<Rooms>();
         world.init_resource::<api::State>();
 
         let mut behaviors = vec![

@@ -10,8 +10,8 @@ use bevy_ecs::prelude::*;
 use bevy_hierarchy::BuildChildren;
 use glam::{ivec2, IVec2};
 use log::log_enabled;
-use rand::distributions::Standard;
 use rand::prelude::*;
+use strum::{EnumIter, IntoEnumIterator};
 
 use crate::game::bundle;
 use crate::game::component;
@@ -19,28 +19,46 @@ use crate::game::component;
 use super::resource::Deltas;
 use super::resource::SpatialHash;
 
-const SEARCH_LIMIT: u16 = u16::MAX;
+const SEARCH_LIMIT: u8 = u8::MAX;
 
 const ROOM_ASSET_PREFIX: &'static str = "assets/rooms/";
 
+pub struct Rooms(HashMap<RoomAsset, Room>);
+
+impl Default for Rooms {
+    fn default() -> Self {
+        let assets = RoomAsset::iter()
+            .map(|asset| (asset, asset.load()))
+            .collect();
+
+        Self(assets)
+    }
+}
+
+impl Rooms {
+    pub fn get<'a>(&'a self, asset: &RoomAsset) -> &'a Room {
+        self.0.get(asset).unwrap()
+    }
+
+    pub fn random<P, R>(&self, rng: &mut R, predicate: Option<P>) -> Option<Room>
+    where
+        P: Fn(&Room) -> bool,
+        R: Rng + ?Sized,
+    {
+        match predicate {
+            Some(p) => self.0.values().filter(|room| p(*room)).choose(rng),
+            None => self.0.values().choose(rng),
+        }
+        .cloned()
+    }
+}
+
+#[derive(Hash, PartialEq, Eq, Clone, Copy, EnumIter)]
 pub enum RoomAsset {
     Hibernation,
     MedicalBay,
     Floor,
     Storage,
-}
-
-impl Distribution<Room> for Standard {
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Room {
-        match rng.gen_range(0..=3) {
-            0 => RoomAsset::Floor,
-            1 => RoomAsset::Floor,
-            2 => RoomAsset::Floor,
-            3 => RoomAsset::Floor,
-            _ => panic!("Impossible"),
-        }
-        .load()
-    }
 }
 
 impl RoomAsset {
@@ -53,7 +71,9 @@ impl RoomAsset {
         };
 
         let path = Path::new(ROOM_ASSET_PREFIX).join(file);
-        Room::from_asset(path.to_str().unwrap())
+        fs::read_to_string(path)
+            .expect("asset can be loaded as string")
+            .into()
     }
 }
 
@@ -213,12 +233,6 @@ impl Display for Room {
 pub struct Unfit;
 
 impl Room {
-    pub fn from_asset(asset: &str) -> Self {
-        fs::read_to_string(asset)
-            .expect("asset can be loaded as string")
-            .into()
-    }
-
     fn char_tile(c: char) -> Option<Tile> {
         match c {
             '@' => Some(Tile::Player),
@@ -234,6 +248,10 @@ impl Room {
                 None
             }
         }
+    }
+
+    pub fn is_dead_end(&self) -> bool {
+        self.spawners.len() <= 1
     }
 
     pub fn erase_player(&mut self) {
@@ -540,9 +558,9 @@ impl Room {
                         },
 
                         Tile::Door(Door::Spawner) => match spatial.cells.get(&pos) {
-                            // Spawners can only be placed on the spawner being opened right now, or free space
+                            // Spawners can only be placed on the spawner being opened right now
                             Some(cell) => {
-                                if cell.door.is_none() || *id != spawner {
+                                if cell.door.is_none() || id != &spawner {
                                     log::debug!("{} failing because of spawner blocked", pos);
                                     return None;
                                 }
@@ -557,9 +575,9 @@ impl Room {
                                     log::debug!("{} failing because of spawner neighbor", pos);
                                     return None;
                                 } else if id == &spawner {
-                                    // Currently checked spawner? Become a regular closed door
+                                    // Currently checked spawner? Become a piece of floor
                                     positions.insert(*id, pos);
-                                    tiles.insert(*id, Tile::Door(Door::Closed));
+                                    tiles.insert(*id, Tile::Floor);
                                 } else {
                                     // Other spawner? Stays
                                     positions.insert(*id, pos);
@@ -616,6 +634,10 @@ impl Room {
                             .iter()
                             .any(|d| spatial.door_at(&(pos + *d)).is_some())
                         {
+                            log::debug!(
+                                "failing because wall {} would be built next to spawner",
+                                pos
+                            );
                             return None;
                         }
 
