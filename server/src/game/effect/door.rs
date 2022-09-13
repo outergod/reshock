@@ -33,6 +33,7 @@ pub fn open(
     let sound = match kind {
         DoorKind::Heavy => api::door_event::DoorSound::Heavy,
         DoorKind::Bulkhead => api::door_event::DoorSound::Bulkhead,
+        DoorKind::Storage => api::door_event::DoorSound::Storage,
     } as i32;
 
     events.0.push(api::Event {
@@ -71,6 +72,7 @@ pub fn close(
     let sound = match kind {
         DoorKind::Heavy => api::door_event::DoorSound::Heavy,
         DoorKind::Bulkhead => api::door_event::DoorSound::Bulkhead,
+        DoorKind::Storage => api::door_event::DoorSound::Storage,
     } as i32;
 
     events.0.push(api::Event {

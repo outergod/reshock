@@ -17,6 +17,7 @@ pub fn effect(
             Option<&Solid>,
             Option<&Opaque>,
             Option<&Vulnerable>,
+            Option<&Switch>,
         ),
         With<Renderable>,
     >,
@@ -26,7 +27,7 @@ pub fn effect(
 
     let mut cells: HashMap<IVec2, Cell> = HashMap::new();
     entities.for_each(
-        |(entity, position, door, wall, solid, opaque, vulnerable)| {
+        |(entity, position, door, wall, solid, opaque, vulnerable, switch)| {
             let mut cell = cells.entry(position.0).or_default();
             cell.visible.insert(entity);
             cell.door = door.map(|_| entity);
@@ -38,6 +39,7 @@ pub fn effect(
             if cell.vulnerable.is_none() {
                 cell.vulnerable = solid.and(vulnerable.map(|_| entity));
             }
+            cell.switch = switch.map(|_| entity);
         },
     );
     spatial.cells = cells;

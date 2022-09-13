@@ -49,6 +49,7 @@ impl Default for Rooms {
 }
 
 impl Rooms {
+    #[allow(dead_code)]
     pub fn get<'a>(&'a self, asset: &RoomAsset) -> &'a Room {
         self.0.get(asset).unwrap()
     }

@@ -66,6 +66,9 @@ impl Default for Game {
             Box::new(IntoSystem::into_system(behavior::combat_hit)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::death)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::state)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::switch)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::lock_door)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::lock_close)) as BoxedBehavior,
         ];
         for behavior in behaviors.iter_mut() {
             (*behavior).initialize(&mut world);
@@ -89,6 +92,8 @@ impl Default for Game {
             Box::new(IntoSystem::into_system(effect::memorize)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::state)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::log)) as BoxedSystem,
+            Box::new(IntoSystem::into_system(effect::lock_activate)) as BoxedSystem,
+            Box::new(IntoSystem::into_system(effect::lock_deactivate)) as BoxedSystem,
         ];
         for effect in effects.iter_mut() {
             (*effect).initialize(&mut world);
@@ -141,6 +146,9 @@ pub enum Action {
     Death(DeathAction),
     State(StateAction),
     SpawnRoom(RoomSpawnAction),
+    ToggleSwitch(ToggleSwitchAction),
+    ActivateLock(ActivateLockAction),
+    DeactivateLock(DeactivateLockAction),
 }
 
 impl Default for Action {
@@ -172,10 +180,31 @@ impl Display for Action {
             Action::Death(_) => "Death",
             Action::State(_) => "State",
             Action::SpawnRoom(_) => "SpawnRoom",
+            Action::ToggleSwitch(_) => "ToggleSwitch",
+            Action::ActivateLock(_) => "ActivateLock",
+            Action::DeactivateLock(_) => "DeactivateLock",
         };
 
         write!(f, "{}", s)
     }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct ActivateLockAction {
+    actor: Entity,
+    target: Entity,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct DeactivateLockAction {
+    actor: Entity,
+    target: Entity,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct ToggleSwitchAction {
+    actor: Entity,
+    target: Entity,
 }
 
 #[derive(Debug, Clone)]
@@ -291,7 +320,7 @@ pub struct RoomSpawnAction {
     room: Room,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct OpenDoorAction {
     actor: Entity,
     target: Entity,

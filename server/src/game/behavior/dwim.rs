@@ -38,6 +38,10 @@ pub fn r#move(
         reactions
             .0
             .push(Action::Melee(MeleeAttackAction::Intent { target, actor }));
+    } else if let Some(target) = spatial.switch_at(&target) {
+        reactions
+            .0
+            .push(Action::ToggleSwitch(ToggleSwitchAction { target, actor }));
     } else {
         reactions.0.push(Action::Move(MoveAction {
             actor,

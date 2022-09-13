@@ -15,6 +15,7 @@ const EMPTY: char = ' ';
 
 const HEAVY_DOOR_SOUND: &'static str = "sshock/sounds/00206.wav";
 const BULKHEAD_DOOR_SOUND: &'static str = "sshock/sounds/00268.wav";
+const STORAGE_DOOR_SOUND: &'static str = "sshock/sounds/00204.wav";
 
 pub struct DoorPlugin;
 
@@ -78,6 +79,7 @@ pub fn event(
         if let Some(sound) = match DoorSound::from_i32(*sound) {
             Some(DoorSound::Heavy) => Some(HEAVY_DOOR_SOUND),
             Some(DoorSound::Bulkhead) => Some(BULKHEAD_DOOR_SOUND),
+            Some(DoorSound::Storage) => Some(STORAGE_DOOR_SOUND),
             _ => None,
         } {
             audio.play(asset_server.load(sound));

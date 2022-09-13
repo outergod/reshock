@@ -93,6 +93,7 @@ message DoorEvent {
   enum DoorSound {
     HEAVY = 0;
     BULKHEAD = 1;
+    STORAGE = 2;
   }
 
   uint32 actor = 1;

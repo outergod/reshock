@@ -24,9 +24,12 @@ impl RoomLoader for CyberspaceCacheRoom {
     }
 
     fn spawn(room: &Room, commands: &mut Commands) {
-        let mut locked = Vec::new();
+        let mut locked = HashSet::new();
 
         let lock = commands.spawn().id();
+        let switch = commands.spawn().id();
+
+        let mut targets = vec![lock];
 
         for (id, pos) in room.positions.iter() {
             let position = component::Position(*pos);
@@ -43,17 +46,19 @@ impl RoomLoader for CyberspaceCacheRoom {
                         ..Default::default()
                     });
 
-                    commands.spawn().insert_bundle(bundle::Switch {
-                        position,
-                        renderable: component::Renderable::WallSwitch,
-                        switch: component::Switch {
-                            targets: vec![lock],
-                        },
-                        description: component::Description {
-                            name: "wall switch".to_string(),
-                            article: component::Article::A,
-                        },
-                    });
+                    if room.chars.get(id) == Some(&'x') {
+                        commands.entity(switch).insert_bundle(bundle::Switch {
+                            position,
+                            renderable: component::Renderable::WallSwitch,
+                            switch: component::Switch {
+                                targets: Vec::new(),
+                            },
+                            description: component::Description {
+                                name: "wall switch".to_string(),
+                                article: component::Article::A,
+                            },
+                        });
+                    }
                 }
 
                 Tile::Door(kind) => {
@@ -63,7 +68,7 @@ impl RoomLoader for CyberspaceCacheRoom {
                         position,
                         ..Default::default()
                     })
-                    .insert(component::DoorKind::Heavy);
+                    .insert(component::DoorKind::Storage);
 
                     match kind {
                         Door::Open => {
@@ -82,14 +87,19 @@ impl RoomLoader for CyberspaceCacheRoom {
                         }
                     }
 
-                    if room.chars.get(id).unwrap() == &'1' {
-                        locked.push(door.id());
+                    if room.chars.get(id) == Some(&'1') {
+                        locked.insert(door.id());
+                        targets.push(door.id());
                     }
                 }
 
                 _ => {}
             }
         }
+
+        commands
+            .entity(switch)
+            .insert(component::Switch { targets });
 
         commands.entity(lock).insert(component::Lock {
             active: true,

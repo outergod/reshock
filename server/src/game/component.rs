@@ -97,6 +97,7 @@ impl From<&Position> for api::Position {
 pub enum DoorKind {
     Heavy,
     Bulkhead,
+    Storage,
 }
 
 #[derive(Component, Clone, Copy, Debug)]
@@ -427,7 +428,7 @@ pub struct RoomSpawner;
 #[derive(Component)]
 pub struct Lock {
     pub active: bool,
-    pub locked: Vec<Entity>,
+    pub locked: HashSet<Entity>,
 }
 
 #[derive(Component, Default)]

@@ -43,7 +43,7 @@ pub fn behavior(
                 };
 
                 if blockers.iter().any(|pos| positions.contains(pos)) {
-                    let actions = if player.get(*actor).is_ok() {
+                    let actions = if player.contains(*actor) {
                         vec![Action::Log("Door is blocked, can't close it".to_string())]
                     } else {
                         Vec::new()

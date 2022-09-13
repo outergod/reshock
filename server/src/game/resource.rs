@@ -54,6 +54,7 @@ pub struct Cell {
     pub solid: Option<Entity>,
     pub opaque: HashSet<Entity>,
     pub vulnerable: Option<Entity>,
+    pub switch: Option<Entity>,
 }
 
 #[derive(Default, Clone)]
@@ -82,6 +83,10 @@ impl SpatialHash {
 
     pub fn vulnerable_at(&self, pos: &IVec2) -> Option<Entity> {
         self.cells.get(pos).cloned().unwrap_or_default().vulnerable
+    }
+
+    pub fn switch_at(&self, pos: &IVec2) -> Option<Entity> {
+        self.cells.get(pos).cloned().unwrap_or_default().switch
     }
 }
 
