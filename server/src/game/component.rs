@@ -129,6 +129,7 @@ pub enum Renderable {
     EnergyGun,
     Magazine,
     Corpse,
+    WallSwitch,
 }
 
 impl Default for Renderable {
@@ -422,3 +423,14 @@ pub enum Alive {
 
 #[derive(Component)]
 pub struct RoomSpawner;
+
+#[derive(Component)]
+pub struct Lock {
+    pub active: bool,
+    pub locked: Vec<Entity>,
+}
+
+#[derive(Component, Default)]
+pub struct Switch {
+    pub targets: Vec<Entity>,
+}

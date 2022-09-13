@@ -5,6 +5,7 @@ use std::collections::HashSet;
 use std::fmt::Display;
 use std::fs;
 use std::path::Path;
+use std::sync::Arc;
 
 use bevy_ecs::prelude::*;
 use bevy_hierarchy::BuildChildren;
@@ -16,12 +17,24 @@ use strum::{EnumIter, IntoEnumIterator};
 use crate::game::bundle;
 use crate::game::component;
 
+use self::cyberspace_cache::CyberspaceCacheRoom;
+use self::floor_one::FloorOneRoom;
+use self::hibernation::HibernationRoom;
+use self::loader::RoomLoader;
+use self::medical_bay::MedicalBayRoom;
+use self::storage::StorageRoom;
+
 use super::resource::Deltas;
 use super::resource::SpatialHash;
 
-const SEARCH_LIMIT: u8 = u8::MAX;
+mod cyberspace_cache;
+mod floor_one;
+mod hibernation;
+mod loader;
+mod medical_bay;
+mod storage;
 
-const ROOM_ASSET_PREFIX: &'static str = "assets/rooms/";
+const SEARCH_LIMIT: u8 = u8::MAX;
 
 pub struct Rooms(HashMap<RoomAsset, Room>);
 
@@ -59,21 +72,18 @@ pub enum RoomAsset {
     MedicalBay,
     Floor,
     Storage,
+    CyberspaceCache,
 }
 
 impl RoomAsset {
     pub fn load(&self) -> Room {
-        let file = match self {
-            RoomAsset::Hibernation => "hibernation.room",
-            RoomAsset::MedicalBay => "medical-bay.room",
-            RoomAsset::Floor => "floor-1.room",
-            RoomAsset::Storage => "storage.room",
-        };
-
-        let path = Path::new(ROOM_ASSET_PREFIX).join(file);
-        fs::read_to_string(path)
-            .expect("asset can be loaded as string")
-            .into()
+        match self {
+            RoomAsset::Hibernation => HibernationRoom::load(),
+            RoomAsset::MedicalBay => MedicalBayRoom::load(),
+            RoomAsset::Floor => FloorOneRoom::load(),
+            RoomAsset::Storage => StorageRoom::load(),
+            RoomAsset::CyberspaceCache => CyberspaceCacheRoom::load(),
+        }
     }
 }
 
@@ -114,88 +124,35 @@ pub enum NPC {
     ServBot,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Room {
     index: RoomEntity,
     positions: HashMap<RoomEntity, IVec2>,
     tiles: HashMap<RoomEntity, Tile>,
+    chars: HashMap<RoomEntity, char>,
     player: Option<RoomEntity>,
     spawners: HashSet<RoomEntity>,
     walls: HashSet<RoomEntity>,
     bulkhead_doors: HashMap<RoomEntity, RoomEntity>,
     width: u32,
     height: u32,
+    loader: Arc<dyn Fn(&Room, &mut Commands) -> () + Send + Sync>,
 }
 
-impl From<String> for Room {
-    fn from(s: String) -> Self {
-        let mut index = 0;
-        let mut positions = HashMap::new();
-        let mut tiles = HashMap::new();
-        let mut player = None;
-        let mut spawners = HashSet::new();
-        let mut walls = HashSet::new();
-        let mut doors = HashMap::new();
-        let mut bulkhead_doors = HashMap::new();
-        let mut width = 0;
-        let mut height = 0;
-
-        for (y, line) in s.lines().rev().enumerate() {
-            for (x, c) in line.chars().enumerate() {
-                let tile = match Self::char_tile(c) {
-                    Some(tile) => tile,
-                    None => {
-                        continue;
-                    }
-                };
-
-                let pos = ivec2(x as i32, y as i32);
-                positions.insert(index, pos);
-
-                match tile {
-                    Tile::Wall => {
-                        walls.insert(index);
-                    }
-                    Tile::Door(Door::Spawner) => {
-                        doors.insert(pos, index);
-                        spawners.insert(index);
-                    }
-                    Tile::Door(_) => {
-                        doors.insert(pos, index);
-                    }
-                    Tile::Player => {
-                        player = Some(index);
-                    }
-                    _ => {}
-                }
-
-                tiles.insert(index, tile);
-
-                width = width.max(x + 1);
-                height = height.max(y + 1);
-                index += 1;
-            }
-        }
-
-        let deltas = Deltas::cross();
-
-        for (pos, id) in doors.clone() {
-            if let Some(other_id) = deltas.0.iter().find_map(|d| doors.get(&(pos + *d))) {
-                bulkhead_doors.insert(id, *other_id);
-            }
-        }
-
-        Self {
-            index,
-            positions,
-            tiles,
-            player,
-            spawners,
-            walls,
-            bulkhead_doors,
-            width: width as u32,
-            height: height as u32,
-        }
+impl core::fmt::Debug for Room {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Room")
+            .field("index", &self.index)
+            .field("positions", &self.positions)
+            .field("tiles", &self.tiles)
+            .field("chars", &self.chars)
+            .field("player", &self.player)
+            .field("spawners", &self.spawners)
+            .field("walls", &self.walls)
+            .field("bulkhead_doors", &self.bulkhead_doors)
+            .field("width", &self.width)
+            .field("height", &self.height)
+            .finish()
     }
 }
 
@@ -233,23 +190,6 @@ impl Display for Room {
 pub struct Unfit;
 
 impl Room {
-    fn char_tile(c: char) -> Option<Tile> {
-        match c {
-            '@' => Some(Tile::Player),
-            'b' => Some(Tile::NPC(NPC::ServBot)),
-            '#' => Some(Tile::Wall),
-            'O' => Some(Tile::Door(Door::Open)),
-            'o' => Some(Tile::Door(Door::Closed)),
-            '-' | '|' => Some(Tile::Door(Door::Spawner)),
-            '·' => Some(Tile::Floor),
-            ' ' => None,
-            _ => {
-                log::error!("Unknown room char {}", c);
-                None
-            }
-        }
-    }
-
     pub fn is_dead_end(&self) -> bool {
         self.spawners.len() <= 1
     }
@@ -262,146 +202,7 @@ impl Room {
     }
 
     pub fn spawn(&self, commands: &mut Commands) {
-        let bulkhead_doors =
-            self.bulkhead_doors
-                .iter()
-                .fold(HashMap::new(), |mut map, (left, right)| {
-                    let door = commands
-                        .spawn()
-                        .insert(component::Description {
-                            name: "bulkhead door".to_string(),
-                            article: component::Article::A,
-                        })
-                        .id();
-                    map.insert(*left, door);
-                    map.insert(*right, door);
-                    map
-                });
-
-        for (id, pos) in self.positions.iter() {
-            let position = component::Position(*pos);
-
-            commands.spawn().insert_bundle(bundle::Floor {
-                position: position.clone(),
-                ..Default::default()
-            });
-
-            match self.tiles.get(id).unwrap() {
-                Tile::Floor => {}
-
-                Tile::Wall => {
-                    commands.spawn().insert_bundle(bundle::Wall {
-                        position,
-                        ..Default::default()
-                    });
-                }
-
-                Tile::Door(kind) => {
-                    let door = commands
-                        .spawn()
-                        .insert_bundle(bundle::Door {
-                            position,
-                            ..Default::default()
-                        })
-                        .id();
-
-                    let mut door = match bulkhead_doors.get(id) {
-                        Some(entity) => {
-                            let mut entity = commands.entity(*entity);
-                            entity.insert(component::DoorKind::Bulkhead);
-                            entity.add_child(door);
-                            entity
-                        }
-                        None => {
-                            let mut entity = commands.entity(door);
-                            entity.insert(component::DoorKind::Heavy);
-                            entity
-                        }
-                    };
-
-                    match kind {
-                        Door::Open => {
-                            door.insert(component::Door { open: true });
-                        }
-                        Door::Closed => {
-                            door.insert(component::Door { open: false })
-                                .insert(component::Solid)
-                                .insert(component::Opaque);
-                        }
-                        Door::Spawner => {
-                            door.insert(component::Door { open: false })
-                                .insert(component::Solid)
-                                .insert(component::Opaque)
-                                .insert(component::RoomSpawner);
-                        }
-                    }
-                }
-
-                Tile::Player => {
-                    let player = commands
-                        .spawn()
-                        .insert_bundle(bundle::Player {
-                            position,
-                            ..Default::default()
-                        })
-                        .id();
-
-                    commands
-                        .spawn()
-                        .insert_bundle(bundle::MeleeWeapon::laser_rapier())
-                        .insert(component::Item {
-                            owner: Some(player),
-                        })
-                        .insert(component::Equipped);
-
-                    let rifle = commands
-                        .spawn()
-                        .insert_bundle(bundle::ProjectileGun::assault_rifle())
-                        .insert(component::Item {
-                            owner: Some(player),
-                        })
-                        .insert(component::Equipped)
-                        .id();
-
-                    let mut magazine = bundle::Magazine::magnesium_tips();
-                    magazine.magazine.attached = Some(rifle);
-                    commands.spawn().insert_bundle(magazine);
-                }
-                Tile::NPC(NPC::ServBot) => {
-                    let npc = commands
-                        .spawn()
-                        .insert_bundle(bundle::NPC {
-                            position,
-                            ai: component::AI::ServBot,
-                            renderable: component::Renderable::ServBot,
-                            sight: component::Sight {
-                                kind: component::SightKind::Eyes,
-                                ..Default::default()
-                            },
-                            description: component::Description {
-                                name: "Serv-Bot unit".into(),
-                                article: component::Article::A,
-                            },
-                            vulnerable: component::Vulnerable {
-                                kind: component::VulnerableKind::Robot,
-                                hp: 20,
-                                max: 20,
-                                defense: 2,
-                                armor: 20,
-                            },
-                            ..Default::default()
-                        })
-                        .insert(component::Alive::ServBot)
-                        .id();
-
-                    commands
-                        .spawn()
-                        .insert_bundle(bundle::NaturalMeleeWeapon::appendages())
-                        .insert(component::Item { owner: Some(npc) })
-                        .insert(component::Equipped);
-                }
-            }
-        }
+        (self.loader)(self, commands)
     }
 
     fn mutations(&self) -> Vec<Self> {
@@ -455,12 +256,14 @@ impl Room {
             index: self.index,
             positions,
             tiles: self.tiles.clone(),
+            chars: self.chars.clone(),
             player: self.player.clone(),
             spawners: self.spawners.clone(),
             walls: self.walls.clone(),
             bulkhead_doors: self.bulkhead_doors.clone(),
             width,
             height,
+            loader: self.loader.clone(),
         }
     }
 
@@ -655,12 +458,14 @@ impl Room {
                     index,
                     positions,
                     tiles,
+                    chars: self.chars.clone(),
                     player,
                     spawners,
                     walls,
                     bulkhead_doors: self.bulkhead_doors.clone(),
                     width: self.width,
                     height: self.height,
+                    loader: self.loader.clone(),
                 })
             })
     }

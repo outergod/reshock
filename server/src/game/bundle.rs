@@ -310,3 +310,11 @@ impl EnergyGun {
         }
     }
 }
+
+#[derive(Bundle)]
+pub struct Switch {
+    pub switch: component::Switch,
+    pub renderable: component::Renderable,
+    pub position: component::Position,
+    pub description: component::Description,
+}
