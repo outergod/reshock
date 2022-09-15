@@ -18,7 +18,7 @@ use crate::game::bundle;
 use crate::game::component;
 
 use self::cyberspace_cache::CyberspaceCacheRoom;
-use self::floor_one::FloorOneRoom;
+use self::floor_medical::FloorMedicalRoom;
 use self::hibernation::HibernationRoom;
 use self::loader::RoomLoader;
 use self::medical_bay::MedicalBayRoom;
@@ -28,7 +28,7 @@ use super::resource::Deltas;
 use super::resource::SpatialHash;
 
 mod cyberspace_cache;
-mod floor_one;
+mod floor_medical;
 mod hibernation;
 mod loader;
 mod medical_bay;
@@ -71,7 +71,7 @@ impl Rooms {
 pub enum RoomAsset {
     Hibernation,
     MedicalBay,
-    Floor,
+    FloorMedical,
     Storage,
     CyberspaceCache,
 }
@@ -81,7 +81,7 @@ impl RoomAsset {
         match self {
             RoomAsset::Hibernation => HibernationRoom::load(),
             RoomAsset::MedicalBay => MedicalBayRoom::load(),
-            RoomAsset::Floor => FloorOneRoom::load(),
+            RoomAsset::FloorMedical => FloorMedicalRoom::load(),
             RoomAsset::Storage => StorageRoom::load(),
             RoomAsset::CyberspaceCache => CyberspaceCacheRoom::load(),
         }

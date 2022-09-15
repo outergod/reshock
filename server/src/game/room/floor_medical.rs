@@ -2,11 +2,11 @@ use crate::game::{bundle, component};
 
 use super::{loader::*, *};
 
-pub struct FloorOneRoom;
+pub struct FloorMedicalRoom;
 
-impl RoomLoader for FloorOneRoom {
+impl RoomLoader for FloorMedicalRoom {
     fn source() -> String {
-        load_asset("floor-1.room")
+        load_asset("floor-medical.room")
     }
 
     fn spawn(room: &Room, commands: &mut Commands) {
