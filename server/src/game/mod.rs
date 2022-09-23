@@ -3,6 +3,7 @@ use std::fmt::Display;
 use std::time::Instant;
 
 use anyhow::Result;
+use api::hit_event::HitDirection;
 use bevy_ecs::prelude::*;
 use bevy_ecs::system::BoxedSystem;
 use glam::{ivec2, IVec2};
@@ -10,7 +11,7 @@ use itertools::Itertools;
 use rand::prelude::*;
 use thiserror::Error;
 
-use self::room::{Room, RoomAsset, Rooms};
+use self::room::{Room, RoomAsset, RoomId, Rooms};
 
 mod behavior;
 mod bundle;
@@ -39,9 +40,9 @@ impl Default for Game {
         world.init_resource::<FollowUps>();
         world.init_resource::<Events>();
         world.init_resource::<resource::Deltas>();
-        world.init_resource::<resource::SpatialHash>();
         world.init_resource::<resource::Log>();
         world.init_resource::<Rooms>();
+        world.init_resource::<RoomId>();
         world.init_resource::<api::State>();
 
         let mut behaviors = vec![
@@ -69,6 +70,7 @@ impl Default for Game {
             Box::new(IntoSystem::into_system(behavior::switch)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::lock_door)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::lock_close)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::gateway)) as BoxedBehavior,
         ];
         for behavior in behaviors.iter_mut() {
             (*behavior).initialize(&mut world);
@@ -86,7 +88,6 @@ impl Default for Game {
             Box::new(IntoSystem::into_system(effect::health)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::death)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::render)) as BoxedSystem,
-            Box::new(IntoSystem::into_system(effect::spatial)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::view)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::spot)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::memorize)) as BoxedSystem,
@@ -94,6 +95,7 @@ impl Default for Game {
             Box::new(IntoSystem::into_system(effect::log)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::lock_activate)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::lock_deactivate)) as BoxedSystem,
+            Box::new(IntoSystem::into_system(effect::gateway)) as BoxedSystem,
         ];
         for effect in effects.iter_mut() {
             (*effect).initialize(&mut world);
@@ -101,9 +103,14 @@ impl Default for Game {
             (*effect).apply_buffers(&mut world);
         }
 
+        let room_id = RoomId(0);
+
         let spawner = world
             .spawn()
-            .insert(component::Position(ivec2(0, 0)))
+            .insert(component::Position {
+                coordinates: ivec2(0, 0),
+                room: room_id,
+            })
             .insert(component::RoomSpawner)
             .id();
         let room = RoomAsset::Hibernation.load();
@@ -117,6 +124,7 @@ impl Default for Game {
         game.input(Action::SpawnRoom(RoomSpawnAction {
             target: spawner,
             room,
+            id: room_id,
         }));
         game.input(Action::View(ViewAction::All));
 
@@ -146,6 +154,7 @@ pub enum Action {
     Death(DeathAction),
     State(StateAction),
     SpawnRoom(RoomSpawnAction),
+    SpawnGateway(GatewaySpawnAction),
     ToggleSwitch(ToggleSwitchAction),
     ActivateLock(ActivateLockAction),
     DeactivateLock(DeactivateLockAction),
@@ -180,6 +189,7 @@ impl Display for Action {
             Action::Death(_) => "Death",
             Action::State(_) => "State",
             Action::SpawnRoom(_) => "SpawnRoom",
+            Action::SpawnGateway(_) => "SpawnGateway",
             Action::ToggleSwitch(_) => "ToggleSwitch",
             Action::ActivateLock(_) => "ActivateLock",
             Action::DeactivateLock(_) => "DeactivateLock",
@@ -216,6 +226,9 @@ pub enum StateAction {
 #[derive(Debug, Clone)]
 pub enum ViewAction {
     All,
+    Intent {
+        actor: Entity,
+    },
     Update {
         actor: Entity,
         sight: component::Sight,
@@ -223,9 +236,14 @@ pub enum ViewAction {
 }
 
 #[derive(Debug, Clone)]
-pub struct MemorizeAction {
-    actor: Entity,
-    memory: component::Memory,
+pub enum MemorizeAction {
+    Intent {
+        actor: Entity,
+    },
+    Update {
+        actor: Entity,
+        memory: component::Memory,
+    },
 }
 
 #[derive(Debug, Clone)]
@@ -244,6 +262,7 @@ pub struct HealthLossAction {
 pub struct HitAction {
     actor: Entity,
     target: Entity,
+    direction: HitDirection,
     weapon: Entity,
     damage: component::Damage,
 }
@@ -261,10 +280,12 @@ pub enum MeleeAttackAction {
     Intent {
         actor: Entity,
         target: Entity,
+        direction: HitDirection,
     },
     Attack {
         actor: Entity,
         target: Entity,
+        direction: HitDirection,
         weapon: Entity,
     },
 }
@@ -309,15 +330,30 @@ pub enum GodModeAction {
 }
 
 #[derive(Debug, Clone)]
-pub struct MoveAction {
-    actor: Entity,
-    position: IVec2,
+pub enum MoveAction {
+    Intent {
+        actor: Entity,
+        delta: IVec2,
+    },
+    Update {
+        actor: Entity,
+        delta: IVec2,
+        position: component::Position,
+    },
 }
 
 #[derive(Debug, Clone)]
 pub struct RoomSpawnAction {
     target: Entity,
+    id: RoomId,
     room: Room,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct GatewaySpawnAction {
+    lhs: component::Position,
+    rhs: component::Position,
+    direction: component::Direction,
 }
 
 #[derive(Debug, Clone, Copy)]

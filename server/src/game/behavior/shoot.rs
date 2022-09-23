@@ -131,6 +131,7 @@ pub fn dispatch_projectile(
     let action = Action::Hit(HitAction {
         actor: *actor,
         target: *target,
+        direction: HitDirection::None,
         weapon: *weapon,
         damage: magazine.projectile.damage,
     });

@@ -22,7 +22,7 @@ pub fn behavior(
 
     let player = player.single();
 
-    if sight.seeing.contains(&player) && !memory.0.contains_key(&player) {
+    if sight.seeing.contains_key(&player) && !memory.0.contains_key(&player) {
         match (ai, description) {
             (AI::ServBot, desc) => {
                 let sound = SpotSound::ServBot;

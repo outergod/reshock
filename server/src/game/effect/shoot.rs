@@ -5,10 +5,10 @@ use crate::game::{component::*, Events, *};
 
 pub fn effect(
     action: Res<Action>,
-    mut magazines: Query<&mut Magazine>,
-    positions: Query<&Position>,
-    weapons: Query<&RangedWeapon>,
     mut events: ResMut<Events>,
+    mut magazines: Query<&mut Magazine>,
+    sight: Query<&Sight, With<Player>>,
+    weapons: Query<&RangedWeapon>,
 ) {
     let (actor, target, weapon, magazine) = match action.as_ref() {
         Action::Shoot(ShootAction::DispatchProjectile {
@@ -22,8 +22,18 @@ pub fn effect(
 
     magazines.get_mut(*magazine).unwrap().amount -= 1;
 
-    let source = positions.get(*actor).unwrap().into();
-    let target = positions.get(*target).unwrap().into();
+    let sight = sight.single();
+
+    let source = match sight.seeing.get(actor) {
+        Some(it) => it.iter().next().unwrap().to_owned().into(),
+        None => return,
+    };
+
+    let target = match sight.seeing.get(target) {
+        Some(it) => it.iter().next().unwrap().to_owned().into(),
+        None => return,
+    };
+
     let weapon = weapons.get(*weapon).unwrap();
 
     let (kind, sound) = match weapon {

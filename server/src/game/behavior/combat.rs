@@ -61,6 +61,7 @@ pub fn hit(
             target,
             weapon,
             damage,
+            ..
         }) => (actor, target, weapon, damage),
         _ => return Status::Continue,
     };

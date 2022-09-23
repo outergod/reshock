@@ -21,13 +21,6 @@ pub fn behavior(
 
             Status::Continue
         }
-        Action::View(ViewAction::Update { actor, sight }) => {
-            if actor == &player && god.is_some() {
-                sight.kind = SightKind::Omniscience;
-            }
-
-            Status::Continue
-        }
         Action::HealthLoss(HealthLossAction { actor, amount }) => {
             if actor == &player && god.is_some() {
                 *amount = 0;

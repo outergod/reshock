@@ -9,9 +9,12 @@ impl RoomLoader for HibernationRoom {
         load_asset("hibernation.room")
     }
 
-    fn spawn(room: &Room, commands: &mut Commands) {
+    fn spawn(room: &Room, room_id: RoomId, commands: &mut Commands) {
         for (id, pos) in room.positions.iter() {
-            let position = component::Position(*pos);
+            let position = component::Position {
+                coordinates: *pos,
+                room: room_id,
+            };
 
             commands.spawn().insert_bundle(bundle::Floor {
                 position: position.clone(),

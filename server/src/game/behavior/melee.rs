@@ -9,8 +9,12 @@ pub fn intent(
     mut reactions: ResMut<Reactions>,
     mut followups: ResMut<FollowUps>,
 ) -> Status {
-    let (actor, target) = match action.as_ref() {
-        Action::Melee(MeleeAttackAction::Intent { actor, target }) => (actor, target),
+    let (actor, target, direction) = match action.as_ref() {
+        Action::Melee(MeleeAttackAction::Intent {
+            actor,
+            target,
+            direction,
+        }) => (actor, target, direction),
         _ => return Status::Continue,
     };
 
@@ -23,6 +27,7 @@ pub fn intent(
             let action = Action::Melee(MeleeAttackAction::Attack {
                 actor: *actor,
                 target: *target,
+                direction: *direction,
                 weapon,
             });
             reactions.0.push(action);
@@ -48,23 +53,25 @@ pub fn attack(
     weapons: Query<&MeleeWeapon>,
     mut reactions: ResMut<Reactions>,
 ) -> Status {
-    let (actor, target, weapon) = match action.as_ref() {
+    let (actor, target, direction, weapon) = match action.as_ref() {
         Action::Melee(MeleeAttackAction::Attack {
             actor,
             target,
+            direction,
             weapon,
-        }) => (actor, target, weapon),
+        }) => (*actor, *target, *direction, *weapon),
         _ => return Status::Continue,
     };
 
-    let damage = weapons.get(*weapon).unwrap().damage;
+    let damage = weapons.get(weapon).unwrap().damage;
 
     // TODO hit chance, use position instead of target etc
 
     let action = Action::Hit(HitAction {
-        actor: *actor,
-        target: *target,
-        weapon: *weapon,
+        actor,
+        target,
+        direction,
+        weapon,
         damage,
     });
     reactions.0.push(action);

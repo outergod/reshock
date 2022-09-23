@@ -4,13 +4,12 @@ use crate::game::component::*;
 use crate::game::*;
 
 pub fn effect(action: Res<Action>, mut positions: Query<&mut Position>) {
-    let MoveAction {
-        actor,
-        position: target,
-    } = match action.as_ref() {
-        Action::Move(r#move) => r#move,
-        _ => return,
+    match action.as_ref() {
+        Action::Move(MoveAction::Update {
+            actor, position, ..
+        }) => {
+            *positions.get_mut(*actor).unwrap() = *position;
+        }
+        _ => {}
     };
-
-    positions.get_mut(*actor).unwrap().0 = *target;
 }

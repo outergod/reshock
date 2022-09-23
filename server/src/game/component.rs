@@ -1,10 +1,14 @@
 use std::{
     collections::{HashMap, HashSet},
+    convert::TryFrom,
     fmt::Display,
+    ops::{Add, Sub},
 };
 
 use bevy_ecs::prelude::*;
 use glam::IVec2;
+
+use super::room::RoomId;
 
 #[derive(Component, Default, Clone, Debug)]
 pub struct Player;
@@ -73,22 +77,29 @@ pub struct Floor;
 pub struct God;
 
 #[derive(Component, Default, Clone, Copy, Hash, PartialEq, Eq, Debug)]
-pub struct Position(pub IVec2);
+pub struct Position {
+    pub coordinates: IVec2,
+    pub room: RoomId,
+}
 
-impl From<&Position> for api::PositionComponent {
-    fn from(position: &Position) -> Self {
-        Self {
-            x: position.0.x,
-            y: position.0.y,
+impl Sub<IVec2> for Position {
+    type Output = Self;
+
+    fn sub(self, rhs: IVec2) -> Self::Output {
+        Position {
+            coordinates: self.coordinates - rhs,
+            room: self.room,
         }
     }
 }
 
-impl From<&Position> for api::Position {
-    fn from(position: &Position) -> Self {
-        Self {
-            x: position.0.x,
-            y: position.0.y,
+impl Add<IVec2> for Position {
+    type Output = Self;
+
+    fn add(self, rhs: IVec2) -> Self::Output {
+        Position {
+            coordinates: self.coordinates + rhs,
+            room: self.room,
         }
     }
 }
@@ -150,7 +161,6 @@ impl From<&Renderable> for api::RenderableComponent {
 #[derive(Debug, Clone, Copy)]
 pub enum SightKind {
     Blind,
-    Omniscience,
     Eyes,
 }
 
@@ -163,7 +173,7 @@ impl Default for SightKind {
 #[derive(Component, Default, Debug, Clone)]
 pub struct Sight {
     pub kind: SightKind,
-    pub seeing: HashSet<Entity>,
+    pub seeing: HashMap<Entity, HashSet<IVec2>>,
     pub mask: HashSet<IVec2>,
 }
 
@@ -174,18 +184,6 @@ pub struct MemoryComponents {
     pub door: Option<Door>,
     pub wall: Option<Wall>,
     pub player: Option<Player>,
-}
-
-impl From<&MemoryComponents> for api::Components {
-    fn from(memory: &MemoryComponents) -> Self {
-        Self {
-            position: Some((&memory.position).into()),
-            renderable: Some((&memory.renderable).into()),
-            door: memory.door.map(|it| (&it).into()),
-            wall: memory.wall.map(|it| (&it).into()),
-            memory: Some(api::MemoryComponent {}),
-        }
-    }
 }
 
 #[derive(Component, Default, Debug, Clone)]
@@ -208,9 +206,6 @@ pub struct Opaque;
 
 #[derive(Default, Component)]
 pub struct Solid;
-
-#[derive(Default, Component)]
-pub struct Room;
 
 #[derive(Default, Component)]
 pub struct Item {
@@ -424,6 +419,79 @@ pub enum Alive {
 
 #[derive(Component)]
 pub struct RoomSpawner;
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Direction {
+    North,
+    East,
+    South,
+    West,
+}
+
+impl Direction {
+    pub fn reverse(&self) -> Self {
+        match self {
+            Self::North => Self::South,
+            Self::East => Self::West,
+            Self::South => Self::North,
+            Self::West => Self::East,
+        }
+    }
+}
+
+impl TryFrom<(i32, i32)> for Direction {
+    type Error = ();
+
+    fn try_from(value: (i32, i32)) -> Result<Self, Self::Error> {
+        match value {
+            (1, 0) => Ok(Self::East),
+            (0, -1) => Ok(Self::South),
+            (-1, 0) => Ok(Self::West),
+            (0, 1) => Ok(Self::North),
+            _ => Err(()),
+        }
+    }
+}
+
+impl From<Direction> for (i32, i32) {
+    fn from(direction: Direction) -> Self {
+        match direction {
+            Direction::North => (0, 1),
+            Direction::East => (1, 0),
+            Direction::South => (0, -1),
+            Direction::West => (-1, 0),
+        }
+    }
+}
+
+#[derive(Component, Debug)]
+pub struct Gateway {
+    pub twin: Entity,
+    pub direction: Direction,
+}
+
+impl Gateway {
+    pub fn passthrough(&self, delta: &IVec2) -> bool {
+        let x = if delta.x == 0 {
+            0
+        } else {
+            delta.x / delta.x.abs()
+        };
+        let y = if delta.y == 0 {
+            0
+        } else {
+            delta.y / delta.y.abs()
+        };
+
+        match (x, y, self.direction) {
+            (1, _, Direction::East) => true,
+            (-1, _, Direction::West) => true,
+            (_, 1, Direction::North) => true,
+            (_, -1, Direction::South) => true,
+            _ => false,
+        }
+    }
+}
 
 #[derive(Component)]
 pub struct Lock {

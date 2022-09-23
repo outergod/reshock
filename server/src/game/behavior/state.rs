@@ -7,8 +7,8 @@ use crate::game::*;
 
 pub fn behavior(
     action: Res<Action>,
-    player: Query<(&Sight, &Memory), With<Player>>,
-    entities: Query<(&Position, &Renderable, Option<&Door>, Option<&Wall>)>,
+    player: Query<(&Position, &Sight, &Memory), With<Player>>,
+    entities: Query<(&Renderable, Option<&Door>, Option<&Wall>)>,
     mut reactions: ResMut<Reactions>,
 ) -> Status {
     match action.as_ref() {
@@ -24,30 +24,40 @@ pub fn behavior(
 
     let now = Instant::now();
 
-    let (sight, memory) = player.single();
+    let (position, sight, memory) = player.single();
 
-    let view = sight.seeing.iter().filter_map(|e| {
-        entities
-            .get(*e)
-            .ok()
-            .map(|(position, renderable, door, wall)| {
-                (
-                    e.id(),
-                    api::Components {
-                        position: Some(position.into()),
-                        renderable: Some(renderable.into()),
-                        door: door.map(|it| it.into()),
-                        wall: wall.map(|it| it.into()),
-                        memory: None,
-                    },
-                )
-            })
+    let view = sight.seeing.iter().filter_map(|(e, pos)| {
+        entities.get(*e).ok().map(|(renderable, door, wall)| {
+            (
+                e.id(),
+                api::Components {
+                    positions: pos.iter().cloned().map_into().collect(),
+                    renderable: Some(renderable.into()),
+                    door: door.map(|it| it.into()),
+                    wall: wall.map(|it| it.into()),
+                    memory: None,
+                },
+            )
+        })
     });
 
     let entities = memory
         .0
         .iter()
-        .map(|(e, cs)| (e.id(), cs.into()))
+        .filter(|(_, cs)| cs.position.room == position.room)
+        .map(|(e, cs)| {
+            let pos = cs.position.coordinates - position.coordinates;
+            (
+                e.id(),
+                api::Components {
+                    positions: vec![api::PositionComponent { x: pos.x, y: pos.y }],
+                    renderable: Some((&cs.renderable).into()),
+                    door: cs.door.as_ref().map(|it| it.into()),
+                    wall: cs.wall.as_ref().map(|it| it.into()),
+                    memory: Some(api::MemoryComponent {}),
+                },
+            )
+        })
         .chain(view)
         .collect();
 

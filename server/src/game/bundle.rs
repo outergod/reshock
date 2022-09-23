@@ -88,7 +88,6 @@ impl Default for Floor {
 
 #[derive(Bundle)]
 pub struct Wall {
-    pub room: component::Room,
     pub renderable: component::Renderable,
     pub position: component::Position,
     pub solid: component::Solid,
@@ -100,7 +99,6 @@ pub struct Wall {
 impl Default for Wall {
     fn default() -> Self {
         Self {
-            room: component::Room,
             renderable: component::Renderable::Wall,
             position: Default::default(),
             solid: Default::default(),
@@ -117,7 +115,6 @@ impl Default for Wall {
 #[derive(Bundle)]
 pub struct Door {
     pub door: component::Door,
-    pub room: component::Room,
     pub renderable: component::Renderable,
     pub position: component::Position,
     pub description: component::Description,
@@ -127,7 +124,6 @@ impl Default for Door {
     fn default() -> Self {
         Self {
             door: Default::default(),
-            room: component::Room,
             renderable: component::Renderable::Door,
             position: Default::default(),
             description: component::Description {

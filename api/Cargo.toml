@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 tonic = "0.8"
 prost = "0.11"
+glam = "0.21"
 
 [build-dependencies.tonic-build]
 version = "0.8"

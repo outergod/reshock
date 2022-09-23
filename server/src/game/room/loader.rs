@@ -4,6 +4,7 @@ use std::collections::HashSet;
 use bevy_ecs::prelude::*;
 use glam::ivec2;
 
+use crate::game::component::Direction;
 use crate::game::resource::Deltas;
 
 use super::*;
@@ -90,6 +91,31 @@ pub trait RoomLoader: 'static {
 
         let deltas = Deltas::cross();
 
+        let spawners: HashMap<RoomEntity, Direction> = {
+            let occupied: HashSet<_> = positions.values().collect();
+
+            spawners
+                .into_iter()
+                .filter_map(|id| {
+                    let pos = positions.get(&id).unwrap();
+                    deltas
+                        .0
+                        .iter()
+                        .find(|d| occupied.get(&(*pos + **d)).is_none())
+                        .and_then(|d| match (d.x, d.y) {
+                            (0, 1) => Some((id, Direction::North)),
+                            (1, 0) => Some((id, Direction::East)),
+                            (0, -1) => Some((id, Direction::South)),
+                            (-1, 0) => Some((id, Direction::West)),
+                            _ => {
+                                log::warn!("Spawner door without empty adjacent space");
+                                None
+                            }
+                        })
+                })
+                .collect()
+        };
+
         for (pos, id) in doors.clone() {
             if let Some(other_id) = deltas.0.iter().find_map(|d| doors.get(&(pos + *d))) {
                 bulkhead_doors.insert(id, *other_id);
@@ -111,5 +137,5 @@ pub trait RoomLoader: 'static {
         }
     }
 
-    fn spawn(room: &Room, commands: &mut Commands);
+    fn spawn(room: &Room, room_id: RoomId, commands: &mut Commands);
 }

@@ -23,7 +23,7 @@ pub fn effect(
 
     let sight = sight.single();
 
-    if !sight.seeing.contains(actor) {
+    if !sight.seeing.contains_key(actor) {
         return;
     }
 

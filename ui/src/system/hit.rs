@@ -19,11 +19,11 @@ pub fn system(
     for api::HitEvent {
         kind,
         direction,
-        position,
+        positions,
         ..
     } in reader.iter()
     {
-        let (x, y) = match position {
+        let (x, y) = match positions.first() {
             Some(pos) => (pos.x, pos.y),
             None => continue,
         };

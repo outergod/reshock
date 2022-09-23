@@ -130,6 +130,7 @@ checksum = "c91f1f46651137be86f3a2b9a8359f9ab421d04d941c62b5982e1ca21113adf9"
 name = "api"
 version = "0.1.0"
 dependencies = [
+ "glam",
  "prost",
  "tonic",
  "tonic-build",

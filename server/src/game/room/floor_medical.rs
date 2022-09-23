@@ -9,7 +9,7 @@ impl RoomLoader for FloorMedicalRoom {
         load_asset("floor-medical.room")
     }
 
-    fn spawn(room: &Room, commands: &mut Commands) {
+    fn spawn(room: &Room, room_id: RoomId, commands: &mut Commands) {
         let bulkhead_doors =
             room.bulkhead_doors
                 .iter()
@@ -27,7 +27,10 @@ impl RoomLoader for FloorMedicalRoom {
                 });
 
         for (id, pos) in room.positions.iter() {
-            let position = component::Position(*pos);
+            let position = component::Position {
+                coordinates: *pos,
+                room: room_id,
+            };
 
             commands.spawn().insert_bundle(bundle::Floor {
                 position: position.clone(),

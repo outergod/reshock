@@ -41,7 +41,7 @@ message MemoryComponent {}
 message WallComponent {}
 
 message Components {
-  PositionComponent position = 1;
+  repeated PositionComponent positions = 1;
   RenderableComponent renderable = 2;
   optional DoorComponent door = 4;
   optional MemoryComponent memory = 5;
@@ -139,7 +139,7 @@ message HitEvent {
     NONE = 8;
   }
 
-  Position position = 1;
+  repeated Position positions = 1;
   HitKind kind = 2;
   HitDirection direction = 3;
 }

@@ -33,112 +33,109 @@ pub fn system(
 
         for (entity, components) in state.entities.clone() {
             let Components {
-                position,
+                positions,
                 renderable,
                 door,
                 memory,
                 wall,
             } = components;
 
-            if let Some(PositionComponent { x, y }) = position {
+            for PositionComponent { x, y } in positions {
                 let pos = Position(ivec2(x, y));
                 if !tiles.contains(&pos) {
                     commands.spawn_bundle(bundle::Tile::new(pos, &font));
                 }
-            }
 
-            let mut e = commands.spawn();
+                let mut e = commands.spawn();
 
-            if entity == *player {
-                e.insert(Player);
-                e.insert(Focus);
-            }
-
-            e.insert(ReshockEntity(entity));
-
-            if let Some(PositionComponent { x, y }) = position {
-                e.insert(Position(ivec2(x, y)));
-            }
-
-            let memory = memory.is_some();
-
-            if let Some(RenderableComponent { renderable }) = renderable {
-                if let Some(renderable) = match ApiRenderable::from_i32(renderable) {
-                    Some(ApiRenderable::None) => Some(Renderable::default()),
-                    Some(ApiRenderable::Wall) => Some(Renderable {
-                        char: ' ',
-                        color: if memory {
-                            Color::DARK_GRAY
-                        } else {
-                            Color::rgb(0.169, 0.173, 0.29)
-                        },
-                        ordering: Ordering::Wall,
-                    }),
-                    Some(ApiRenderable::Door) => Some(Renderable {
-                        char: ' ',
-                        color: if memory {
-                            Color::DARK_GRAY
-                        } else {
-                            Color::WHITE
-                        },
-                        ordering: Ordering::Door,
-                    }),
-                    Some(ApiRenderable::Human) => Some(Renderable {
-                        char: '@',
-                        color: if memory {
-                            Color::DARK_GRAY
-                        } else {
-                            Color::WHITE
-                        },
-                        ordering: Ordering::Actor,
-                    }),
-                    Some(ApiRenderable::ServBot) => Some(Renderable {
-                        char: 'b',
-                        color: if memory {
-                            Color::DARK_GRAY
-                        } else {
-                            Color::ORANGE_RED
-                        },
-                        ordering: Ordering::Actor,
-                    }),
-                    Some(ApiRenderable::Floor) => Some(Renderable {
-                        char: '·',
-                        color: if memory {
-                            Color::DARK_GRAY
-                        } else {
-                            Color::rgb(0.169, 0.173, 0.29)
-                        },
-                        ordering: Ordering::Floor,
-                    }),
-                    Some(ApiRenderable::Corpse) => Some(Renderable {
-                        char: '%',
-                        color: if memory {
-                            Color::DARK_GRAY
-                        } else {
-                            Color::WHITE
-                        },
-                        ordering: Ordering::Item,
-                    }),
-                    _ => None,
-                } {
-                    e.insert(renderable);
+                if entity == *player {
+                    e.insert(Player);
+                    e.insert(Focus);
                 }
-            }
 
-            if let Some(DoorComponent { open }) = door {
-                e.insert(Door {
-                    open,
-                    open_color: Color::DARK_GRAY,
-                    close_color: Color::WHITE,
-                });
-            }
+                e.insert(ReshockEntity(entity));
+                e.insert(Position(ivec2(x, y)));
 
-            if let Some(WallComponent {}) = wall {
-                e.insert(Wall);
-            }
+                let memory = memory.is_some();
 
-            if memory {
-                e.insert(Memory);
+                if let Some(RenderableComponent { renderable }) = renderable {
+                    if let Some(renderable) = match ApiRenderable::from_i32(renderable) {
+                        Some(ApiRenderable::None) => Some(Renderable::default()),
+                        Some(ApiRenderable::Wall) => Some(Renderable {
+                            char: ' ',
+                            color: if memory {
+                                Color::DARK_GRAY
+                            } else {
+                                Color::rgb(0.169, 0.173, 0.29)
+                            },
+                            ordering: Ordering::Wall,
+                        }),
+                        Some(ApiRenderable::Door) => Some(Renderable {
+                            char: ' ',
+                            color: if memory {
+                                Color::DARK_GRAY
+                            } else {
+                                Color::WHITE
+                            },
+                            ordering: Ordering::Door,
+                        }),
+                        Some(ApiRenderable::Human) => Some(Renderable {
+                            char: '@',
+                            color: if memory {
+                                Color::DARK_GRAY
+                            } else {
+                                Color::WHITE
+                            },
+                            ordering: Ordering::Actor,
+                        }),
+                        Some(ApiRenderable::ServBot) => Some(Renderable {
+                            char: 'b',
+                            color: if memory {
+                                Color::DARK_GRAY
+                            } else {
+                                Color::ORANGE_RED
+                            },
+                            ordering: Ordering::Actor,
+                        }),
+                        Some(ApiRenderable::Floor) => Some(Renderable {
+                            char: '·',
+                            color: if memory {
+                                Color::DARK_GRAY
+                            } else {
+                                Color::rgb(0.169, 0.173, 0.29)
+                            },
+                            ordering: Ordering::Floor,
+                        }),
+                        Some(ApiRenderable::Corpse) => Some(Renderable {
+                            char: '%',
+                            color: if memory {
+                                Color::DARK_GRAY
+                            } else {
+                                Color::WHITE
+                            },
+                            ordering: Ordering::Item,
+                        }),
+                        _ => None,
+                    } {
+                        e.insert(renderable);
+                    }
+                }
+
+                if let Some(DoorComponent { open }) = door {
+                    e.insert(Door {
+                        open,
+                        open_color: Color::DARK_GRAY,
+                        close_color: Color::WHITE,
+                    });
+                }
+
+                if let Some(WallComponent {}) = wall {
+                    e.insert(Wall);
+                }
+
+                if memory {
+                    e.insert(Memory);
+                }
             }
         }
 
