@@ -70,6 +70,15 @@ pub fn system(
                             },
                             ordering: Ordering::Wall,
                         }),
+                        Some(ApiRenderable::WallSwitch) => Some(Renderable {
+                            char: '⌖',
+                            color: if memory {
+                                Color::DARK_GRAY
+                            } else {
+                                Color::rgb(0.169, 0.173, 0.29)
+                            },
+                            ordering: Ordering::Actor,
+                        }),
                         Some(ApiRenderable::Door) => Some(Renderable {
                             char: ' ',
                             color: if memory {

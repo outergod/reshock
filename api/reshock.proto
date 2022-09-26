@@ -26,6 +26,7 @@ message RenderableComponent {
     ENERGY_GUN = 8;
     MAGAZINE = 9;
     CORPSE = 10;
+    WALL_SWITCH = 11;
   }
 
   Renderable renderable = 1;

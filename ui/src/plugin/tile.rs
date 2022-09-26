@@ -8,6 +8,7 @@ use crate::{component::*, resource::TileDimensions};
 // const FONT_PATH: &'static str = "fonts/Hack-Regular.ttf";
 // const FONT_PATH: &'static str = "fonts/DejaVuSansMono.ttf";
 const FONT_PATH: &'static str = "fonts/FiraCode-Regular.otf";
+const SYMBOL_FONT_PATH: &'static str = "fonts/Symbola.ttf";
 const FONT_SIZE: f32 = 30.0;
 const FONT_BOUNDING_GLYPH: char = '@';
 
@@ -25,10 +26,12 @@ impl Plugin for TilePlugin {
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let asset = asset_server.load(FONT_PATH);
+    let font_asset = asset_server.load(FONT_PATH);
+    let symbol_font_asset = asset_server.load(SYMBOL_FONT_PATH);
 
     let font = ReshockFont {
-        handle: asset,
+        handle: font_asset,
+        symbol_handle: symbol_font_asset,
         size: FONT_SIZE,
         bounding_glyph: FONT_BOUNDING_GLYPH,
     };
@@ -79,10 +82,10 @@ fn render(
     for (position, mut text, mut transform) in tiles.iter_mut() {
         if let Some(mut section) = text.sections.get_mut(0) {
             section.style.font_size = font_resource.size;
-            section.style.font = font_resource.handle.clone_weak();
 
             if let Some(renderable) = view.get(position) {
                 section.value = renderable.char.to_string();
+                section.style.font = font_resource.handle_for(renderable.char);
                 section.style.color = renderable.color;
                 transform.translation.z = renderable.ordering as u8 as f32;
             } else {
@@ -102,5 +105,22 @@ fn position(
             transform.translation.x = pos.x as f32 * width;
             transform.translation.y = pos.y as f32 * height;
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use ab_glyph::{Font, FontArc, FontVec};
+
+    #[test]
+    fn test_glyph_ids() {
+        // let font_data = include_bytes!("../../assets/fonts/FiraCode-Regular.otf").to_vec();
+        let font_data = include_bytes!("../../assets/fonts/Symbola.ttf").to_vec();
+        let font_vec = FontVec::try_from_vec(font_data).unwrap();
+        let font_arc = FontArc::new(font_vec);
+        // let scaled = Font::as_scaled(&font_arc, font_resource.size);
+        let glyph = Font::glyph_id(&font_arc, '⏻');
+
+        println!("{:?}", glyph);
     }
 }

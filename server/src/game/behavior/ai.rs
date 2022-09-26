@@ -69,6 +69,7 @@ pub fn behavior(
             }
         }
         (AI::ServBot, Some(enemy)) => {
+            // TODO get through rooms
             let astar = AStar::new(obstacles);
             match astar.search(viewer.coordinates, enemy.coordinates) {
                 Some(path) => {
