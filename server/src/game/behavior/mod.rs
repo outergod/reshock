@@ -31,6 +31,7 @@ pub use lock::close as lock_close;
 pub use lock::door as lock_door;
 pub use melee::attack as melee_attack;
 pub use melee::intent as melee_intent;
+pub use memorize::ai as ai_memorize;
 pub use memorize::behavior as memorize;
 pub use r#move::behavior as r#move;
 pub use room::behavior as room;

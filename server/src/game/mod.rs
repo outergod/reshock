@@ -58,6 +58,7 @@ impl Default for Game {
             Box::new(IntoSystem::into_system(behavior::view_all)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::spot)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::memorize)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::ai_memorize)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::melee_intent)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::melee_attack)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::shoot_intent)) as BoxedBehavior,
@@ -91,6 +92,7 @@ impl Default for Game {
             Box::new(IntoSystem::into_system(effect::view)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::spot)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::memorize)) as BoxedSystem,
+            Box::new(IntoSystem::into_system(effect::ai_memorize)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::state)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::log)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::lock_activate)) as BoxedSystem,
@@ -144,6 +146,7 @@ pub enum Action {
     CloseDoor(CloseDoorAction),
     View(ViewAction),
     Memorize(MemorizeAction),
+    AIMemorize(AIMemorizeAction),
     Spot(SpotAction),
     Log(String),
     Melee(MeleeAttackAction),
@@ -179,6 +182,7 @@ impl Display for Action {
             Action::CloseDoor(_) => "CloseDoor",
             Action::View(_) => "View",
             Action::Memorize(_) => "Memorize",
+            Action::AIMemorize(_) => "AIMemorize",
             Action::Spot(_) => "Spot",
             Action::Log(_) => "Log",
             Action::Melee(_) => "Melee",
@@ -236,14 +240,15 @@ pub enum ViewAction {
 }
 
 #[derive(Debug, Clone)]
-pub enum MemorizeAction {
-    Intent {
-        actor: Entity,
-    },
-    Update {
-        actor: Entity,
-        memory: component::Memory,
-    },
+pub struct MemorizeAction {
+    actor: Entity,
+    memory: component::Memory,
+}
+
+#[derive(Debug, Clone)]
+pub struct AIMemorizeAction {
+    actor: Entity,
+    memory: component::AIMemory,
 }
 
 #[derive(Debug, Clone)]
@@ -279,12 +284,10 @@ pub struct DamageAction {
 pub enum MeleeAttackAction {
     Intent {
         actor: Entity,
-        target: Entity,
         direction: HitDirection,
     },
     Attack {
         actor: Entity,
-        target: Entity,
         direction: HitDirection,
         weapon: Entity,
     },

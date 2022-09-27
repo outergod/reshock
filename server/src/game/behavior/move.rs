@@ -9,6 +9,7 @@ pub fn behavior(
     positions: Query<&Position>,
     gateways: Query<(&Position, &Gateway)>,
     obstacles: Query<(&Position, Option<&Description>), With<Solid>>,
+    descriptions: Query<&Description>,
     player: Query<(), With<Player>>,
 ) -> Status {
     let (actor, delta) = match action.as_ref() {
@@ -31,6 +32,13 @@ pub fn behavior(
         .iter()
         .find_map(|(p, d)| (p == &target).then_some(d))
     {
+        match (descriptions.get(actor), desc) {
+            (Ok(actor), Some(object)) => {
+                log::debug!("{} runs into {}", actor, object);
+            }
+            _ => {}
+        }
+
         let mut actions = Vec::new();
 
         player.contains(actor).then(|| {

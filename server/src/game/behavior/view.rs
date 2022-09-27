@@ -126,7 +126,7 @@ pub fn behavior(
                                     .entry(*entity)
                                     .or_insert_with(HashSet::new)
                                     .insert(cell);
-                                mask.insert(cell);
+                                mask.insert(positions.get(*entity).unwrap().clone());
                             }
                         }
 

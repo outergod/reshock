@@ -6,7 +6,7 @@ use crate::game::*;
 
 pub fn behavior(
     action: Res<Action>,
-    ai: Query<(&AI, &Memory, Option<&Description>)>,
+    ai: Query<(&AI, &AIMemory, Option<&Description>)>,
     player: Query<Entity, With<Player>>,
     mut followups: ResMut<FollowUps>,
 ) -> Status {
@@ -22,7 +22,7 @@ pub fn behavior(
 
     let player = player.single();
 
-    if sight.seeing.contains_key(&player) && !memory.0.contains_key(&player) {
+    if sight.seeing.contains_key(&player) && memory.enemy.is_none() {
         match (ai, description) {
             (AI::ServBot, desc) => {
                 let sound = SpotSound::ServBot;

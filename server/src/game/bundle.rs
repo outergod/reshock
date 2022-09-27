@@ -60,6 +60,7 @@ pub struct NPC {
     pub sight: component::Sight,
     pub memory: component::Memory,
     pub ai: component::AI,
+    pub ai_memory: component::AIMemory,
     pub description: component::Description,
     pub vulnerable: component::Vulnerable,
 }

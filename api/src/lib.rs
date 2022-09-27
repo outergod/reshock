@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use glam::IVec2;
+use glam::{ivec2, IVec2};
 use hit_event::HitDirection;
 
 tonic::include_proto!("reshock");
@@ -57,6 +57,22 @@ impl From<IVec2> for HitDirection {
             (-1, 0) => HitDirection::Left,
             (-1, 1) => HitDirection::TopLeft,
             _ => HitDirection::None,
+        }
+    }
+}
+
+impl From<HitDirection> for IVec2 {
+    fn from(direction: HitDirection) -> Self {
+        match direction {
+            HitDirection::Top => ivec2(0, 1),
+            HitDirection::TopRight => ivec2(1, 1),
+            HitDirection::Right => ivec2(1, 0),
+            HitDirection::BottomRight => ivec2(1, -1),
+            HitDirection::Bottom => ivec2(0, -1),
+            HitDirection::BottomLeft => ivec2(-1, -1),
+            HitDirection::Left => ivec2(-1, 0),
+            HitDirection::TopLeft => ivec2(-1, 1),
+            HitDirection::None => ivec2(0, 0),
         }
     }
 }

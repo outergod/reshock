@@ -11,7 +11,7 @@ pub fn r#move(
     player: Query<(Entity, &Position), With<Player>>,
     doors: Query<(Entity, &Position, &Door)>,
     gateways: Query<(&Position, &Gateway)>,
-    vulnerables: Query<(Entity, &Position), With<Vulnerable>>,
+    vulnerables: Query<&Position, With<Vulnerable>>,
     switches: Query<(Entity, &Position), With<Switch>>,
 ) -> Status {
     let delta = match action.as_ref() {
@@ -28,16 +28,15 @@ pub fn r#move(
 
     let (actor, position) = player.single();
 
-    // If passing through a gateway, get the future position from the gateway's twin
-    let position = match gateways
-        .iter()
-        .find(|(pos, gateway)| *pos == position && gateway.passthrough(&delta))
-    {
-        Some((_, gateway)) => gateways.get(gateway.twin).unwrap().0,
-        None => position,
-    };
-
     let target = *position + delta;
+
+    let targets: HashSet<_> = match gateways.iter().find(|(pos, _)| *pos == &target) {
+        Some((_, gateway)) => {
+            let twin = gateways.get(gateway.twin).unwrap().0;
+            [target, *twin].into()
+        }
+        None => [target].into(),
+    };
 
     if let Some(target) = doors
         .iter()
@@ -46,18 +45,14 @@ pub fn r#move(
         reactions
             .0
             .push(Action::OpenDoor(OpenDoorAction { target, actor }));
-    } else if let Some(target) = vulnerables
-        .iter()
-        .find_map(|(entity, pos)| (pos == &target).then_some(entity))
-    {
+    } else if vulnerables.iter().any(|pos| targets.contains(pos)) {
         reactions.0.push(Action::Melee(MeleeAttackAction::Intent {
-            target,
             actor,
             direction: delta.into(),
         }));
     } else if let Some(target) = switches
         .iter()
-        .find_map(|(entity, pos)| (pos == &target).then_some(entity))
+        .find_map(|(entity, pos)| targets.contains(pos).then_some(entity))
     {
         reactions
             .0

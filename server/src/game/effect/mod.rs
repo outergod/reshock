@@ -26,6 +26,7 @@ pub use health::effect as health;
 pub use lock::activate as lock_activate;
 pub use lock::deactivate as lock_deactivate;
 pub use melee::effect as melee;
+pub use memorize::ai as ai_memorize;
 pub use memorize::effect as memorize;
 pub use r#move::effect as r#move;
 pub use render::effect as render;

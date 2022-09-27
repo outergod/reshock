@@ -174,7 +174,7 @@ impl Default for SightKind {
 pub struct Sight {
     pub kind: SightKind,
     pub seeing: HashMap<Entity, HashSet<IVec2>>,
-    pub mask: HashSet<IVec2>,
+    pub mask: HashSet<Position>,
 }
 
 #[derive(Debug, Clone)]
@@ -188,6 +188,11 @@ pub struct MemoryComponents {
 
 #[derive(Component, Default, Debug, Clone)]
 pub struct Memory(pub HashMap<Entity, MemoryComponents>);
+
+#[derive(Component, Default, Debug, Clone)]
+pub struct AIMemory {
+    pub enemy: Option<Position>,
+}
 
 #[derive(Component)]
 pub enum AI {

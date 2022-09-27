@@ -7,7 +7,7 @@ use crate::game::{component::*, *};
 pub fn behavior(
     action: Res<Action>,
     mut reactions: ResMut<Reactions>,
-    viewers: Query<(&Position, &Sight, &Memory)>,
+    memories: Query<&Memory>,
     sights: Query<(
         &Position,
         &Renderable,
@@ -16,29 +16,24 @@ pub fn behavior(
         Option<&Player>,
     )>,
 ) -> Status {
-    let actor = match action.as_ref() {
-        Action::Memorize(MemorizeAction::Intent { actor }) => *actor,
-        Action::View(ViewAction::Update { actor, .. }) => {
-            reactions
-                .0
-                .push(Action::Memorize(MemorizeAction::Intent { actor: *actor }));
-            return Status::Continue;
-        }
+    let (actor, sight) = match action.as_ref() {
+        Action::View(ViewAction::Update { actor, sight }) => (*actor, sight),
         _ => return Status::Continue,
+    };
+
+    let memory = match memories.get(actor) {
+        Ok(it) => it,
+        Err(_) => return Status::Continue,
     };
 
     let now = Instant::now();
 
-    let (position, sight, memory) = viewers.get(actor).unwrap();
     let mut memory = memory.clone();
 
-    let index: HashMap<IVec2, HashSet<Entity>> = memory
+    let index: HashMap<Position, HashSet<Entity>> = memory
         .0
         .iter()
-        .filter_map(|(e, cs)| {
-            (cs.position.room == position.room)
-                .then_some((cs.position.coordinates - position.coordinates, e))
-        })
+        .map(|(e, cs)| (cs.position, e))
         .into_grouping_map()
         .collect();
 
@@ -74,13 +69,41 @@ pub fn behavior(
 
     memory.0.extend(view);
 
-    reactions.0.push(Action::Memorize(MemorizeAction::Update {
-        actor,
-        memory: memory.clone(),
-    }));
+    reactions
+        .0
+        .push(Action::Memorize(MemorizeAction { actor, memory }));
 
     let duration = Instant::now() - now;
     log::debug!("Time taken: {}µs", duration.as_micros());
+
+    Status::Continue
+}
+
+pub fn ai(
+    action: Res<Action>,
+    mut reactions: ResMut<Reactions>,
+    ai: Query<&AIMemory>,
+    player: Query<Entity, With<Player>>,
+) -> Status {
+    let (actor, memory) = match action.as_ref() {
+        Action::Memorize(MemorizeAction { actor, memory }) => (*actor, memory),
+        _ => return Status::Continue,
+    };
+
+    if !ai.contains(actor) {
+        return Status::Continue;
+    }
+
+    let player = player.single();
+
+    if let Some(position) = memory.0.get(&player).map(|cs| cs.position) {
+        reactions.0.push(Action::AIMemorize(AIMemorizeAction {
+            actor,
+            memory: AIMemory {
+                enemy: Some(position),
+            },
+        }));
+    }
 
     Status::Continue
 }
