@@ -61,6 +61,7 @@ fn main() -> Result<()> {
         .add_system(system::effect)
         .add_system(system::death)
         .add_system(system::shoot)
+        .add_system(system::projectile)
         .add_system(bevy::window::close_on_esc)
         .add_system(component_animator_system::<Renderable>)
         .run();

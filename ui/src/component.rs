@@ -92,3 +92,13 @@ pub struct Effect {
     pub lifetime: Timer,
     pub remove: bool,
 }
+
+#[derive(Component, Default)]
+pub struct Projectile {
+    pub start: Vec2,
+    pub end: Vec2,
+    pub size: f32,
+}
+
+#[derive(Component, Default, Debug)]
+pub struct Velocity(pub Vec2);

@@ -72,7 +72,6 @@ pub fn event(
         };
 
         for (i, (e, _, _)) in doors.into_iter().enumerate() {
-            bevy::log::debug!("Door {}", i);
             let tween = Tween::new(
                 EaseMethod::Linear,
                 TweeningType::Once,

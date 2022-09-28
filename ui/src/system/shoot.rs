@@ -1,13 +1,12 @@
-use std::time::Duration;
-
 use api::shoot_event::*;
 use bevy::{math::vec2, prelude::*};
 use bevy_kira_audio::Audio;
-use bevy_prototype_lyon::prelude::*;
 
-use crate::{component::*, resource::*};
+use crate::{bundle, resource::*};
 
 const ASSAULT_RIFLE_SOUND: &'static str = "sshock/sounds/00218.wav";
+const BULLET_SPEED: f32 = 2000.0;
+const BULLET_SIZE: f32 = 10.0;
 
 pub fn system(
     mut commands: Commands,
@@ -29,13 +28,13 @@ pub fn system(
         sound,
     } in reader.iter()
     {
-        let (x1, y1) = match source {
-            Some(pos) => ((pos.x as f32 + 0.5) * width, (pos.y as f32 - 0.5) * height),
+        let start = match source {
+            Some(pos) => vec2((pos.x as f32 + 0.5) * width, (pos.y as f32 - 0.5) * height),
             None => continue,
         };
 
-        let (x2, y2) = match target {
-            Some(pos) => ((pos.x as f32 + 0.5) * width, (pos.y as f32 - 0.5) * height),
+        let end = match target {
+            Some(pos) => vec2((pos.x as f32 + 0.5) * width, (pos.y as f32 - 0.5) * height),
             None => continue,
         };
 
@@ -48,17 +47,12 @@ pub fn system(
 
         match ShootKind::from_i32(*kind) {
             Some(ShootKind::Projectile) => {
-                let shape = shapes::Line(vec2(x1, y1), vec2(x2, y2));
-                commands
-                    .spawn_bundle(GeometryBuilder::build_as(
-                        &shape,
-                        DrawMode::Stroke(StrokeMode::new(Color::GRAY, 1.0)),
-                        Transform::default(),
-                    ))
-                    .insert(Effect {
-                        lifetime: Timer::new(Duration::from_secs_f32(0.05), false),
-                        remove: true,
-                    });
+                commands.spawn_bundle(bundle::Projectile::new(
+                    start,
+                    end,
+                    BULLET_SPEED,
+                    BULLET_SIZE,
+                ));
             }
             _ => {
                 events.transitions -= 1;
