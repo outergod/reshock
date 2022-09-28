@@ -57,10 +57,11 @@ pub fn system(
                     ))
                     .insert(Effect {
                         lifetime: Timer::new(Duration::from_secs_f32(0.05), false),
+                        remove: true,
                     });
             }
             _ => {
-                events.state = TransitionState::Inactive;
+                events.transitions -= 1;
             }
         }
     }

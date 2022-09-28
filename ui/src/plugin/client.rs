@@ -67,12 +67,14 @@ pub fn load(
     mut log_res: ResMut<Log>,
     mut game_state: ResMut<GameState>,
     mut writer: EventWriter<api::StateUpdateEvent>,
+    mut events: ResMut<ReshockEvents>,
 ) {
     let StateDumpResponse { player, state, log } = match game_state.0.to_owned() {
         Some(it) => it,
         None => return,
     };
 
+    events.transitions += 1;
     writer.send(api::StateUpdateEvent { player, state });
 
     if let Some(api::Log { entries }) = log {

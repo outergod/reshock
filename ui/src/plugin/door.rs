@@ -5,7 +5,10 @@ use bevy::{math::ivec2, prelude::*, utils::HashSet};
 use bevy_kira_audio::Audio;
 use bevy_tweening::*;
 
-use crate::{component::*, resource::Deltas};
+use crate::{
+    component::*,
+    resource::{Deltas, ReshockEvents},
+};
 
 const VDOOR: char = '║';
 const HDOOR: char = '═';
@@ -31,6 +34,7 @@ pub fn event(
     asset_server: Res<AssetServer>,
     audio: Res<Audio>,
     mut commands: Commands,
+    mut events: ResMut<ReshockEvents>,
 ) {
     for api::DoorEvent {
         actor: _,
@@ -43,6 +47,12 @@ pub fn event(
             .iter()
             .filter(|(_, id, _)| entities.contains(&id.0))
             .collect();
+
+        // This is the case for gateway doors, UI only loads one
+        if doors.len() == 0 {
+            events.transitions -= 1;
+            continue;
+        }
 
         let door = match doors.first() {
             Some((_, _, door)) => *door,
@@ -62,18 +72,22 @@ pub fn event(
         };
 
         for (i, (e, _, _)) in doors.into_iter().enumerate() {
-            let mut tween = Tween::new(
+            bevy::log::debug!("Door {}", i);
+            let tween = Tween::new(
                 EaseMethod::Linear,
                 TweeningType::Once,
                 Duration::from_secs_f32(1.5),
                 color.clone(),
             );
 
-            if i == 0 {
-                tween.set_completed_event(0);
-            }
-
             commands.entity(e).insert(Animator::new(tween));
+
+            if i == 0 {
+                commands.entity(e).insert(Effect {
+                    lifetime: Timer::new(Duration::from_secs_f32(1.5), false),
+                    remove: false,
+                });
+            }
         }
 
         if let Some(sound) = match DoorSound::from_i32(*sound) {

@@ -1,9 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{
-    component::*,
-    resource::{ReshockEvents, TransitionState},
-};
+use crate::{component::*, resource::ReshockEvents};
 
 pub fn system(
     mut commands: Commands,
@@ -15,8 +12,12 @@ pub fn system(
         effect.lifetime.tick(time.delta());
 
         if effect.lifetime.finished() {
-            commands.entity(entity).despawn();
-            events.state = TransitionState::Inactive;
+            if effect.remove {
+                commands.entity(entity).despawn();
+            } else {
+                commands.entity(entity).remove::<Effect>();
+            }
+            events.transitions -= 1;
         }
     }
 }

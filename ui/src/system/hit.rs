@@ -54,6 +54,7 @@ pub fn system(
             },
             effect: Effect {
                 lifetime: Timer::new(Duration::from_secs_f32(0.3), false),
+                remove: true,
             },
         });
     }

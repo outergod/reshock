@@ -90,4 +90,5 @@ impl Default for Door {
 #[derive(Component, Default)]
 pub struct Effect {
     pub lifetime: Timer,
+    pub remove: bool,
 }

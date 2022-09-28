@@ -2,7 +2,6 @@ use bevy::log;
 use bevy::prelude::*;
 
 use crate::resource::ReshockEvents;
-use crate::resource::TransitionState;
 
 pub struct ReshockEventsPlugin;
 
@@ -30,7 +29,7 @@ pub fn system(
     mut death: EventWriter<api::DeathEvent>,
     mut shoot: EventWriter<api::ShootEvent>,
 ) {
-    if events.state == TransitionState::Active {
+    if events.transitions > 0 {
         match events.queue.front() {
             Some(api::Event {
                 event: Some(api::event::Event::Log(_)),
@@ -55,29 +54,29 @@ pub fn system(
 
     match event {
         api::event::Event::Door(event) => {
-            events.state = TransitionState::Active;
+            events.transitions += 1;
             door.send(event);
         }
         api::event::Event::State(event) => {
-            events.state = TransitionState::Active;
+            events.transitions += 1;
             state.send(event);
         }
         api::event::Event::Spot(event) => {
-            events.state = TransitionState::Active;
+            events.transitions += 1;
             spot.send(event);
         }
         api::event::Event::Log(event) => {
             log.send(event);
         }
         api::event::Event::Hit(event) => {
-            events.state = TransitionState::Active;
+            events.transitions += 1;
             hit.send(event);
         }
         api::event::Event::Death(event) => {
             death.send(event);
         }
         api::event::Event::Shoot(event) => {
-            events.state = TransitionState::Active;
+            events.transitions += 1;
             shoot.send(event);
         }
     }

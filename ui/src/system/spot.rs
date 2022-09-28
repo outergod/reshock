@@ -6,7 +6,6 @@ use bevy_kira_audio::Audio;
 
 use crate::component::Effect;
 use crate::resource::ReshockEvents;
-use crate::resource::TransitionState;
 
 const SERV_BOT_SPOT_SOUND: &'static str = "sshock/sounds/00275.wav";
 const SERV_BOT_SPOT_LENGTH: f32 = 0.845;
@@ -24,10 +23,11 @@ pub fn system(
                 audio.play(asset_server.load(SERV_BOT_SPOT_SOUND));
                 commands.spawn().insert(Effect {
                     lifetime: Timer::new(Duration::from_secs_f32(SERV_BOT_SPOT_LENGTH), false),
+                    remove: true,
                 });
             }
             _ => {
-                events.state = TransitionState::Inactive;
+                events.transitions -= 1;
             }
         };
     }

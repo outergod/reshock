@@ -148,6 +148,6 @@ pub fn system(
             }
         }
 
-        events.state = TransitionState::Inactive;
+        events.transitions -= 1;
     }
 }
