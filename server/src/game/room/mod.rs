@@ -19,6 +19,7 @@ use self::floor_medical::FloorMedicalRoom;
 use self::hibernation::HibernationRoom;
 use self::loader::RoomLoader;
 use self::medical_bay::MedicalBayRoom;
+use self::server::ServerRoom;
 use self::storage::StorageRoom;
 
 use super::component::Direction;
@@ -28,6 +29,7 @@ mod floor_medical;
 mod hibernation;
 mod loader;
 mod medical_bay;
+mod server;
 mod storage;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
@@ -77,6 +79,7 @@ pub enum RoomAsset {
     FloorMedical,
     Storage,
     CyberspaceCache,
+    Server,
 }
 
 impl RoomAsset {
@@ -87,6 +90,7 @@ impl RoomAsset {
             RoomAsset::FloorMedical => FloorMedicalRoom::load(),
             RoomAsset::Storage => StorageRoom::load(),
             RoomAsset::CyberspaceCache => CyberspaceCacheRoom::load(),
+            RoomAsset::Server => ServerRoom::load(),
         }
     }
 }
@@ -112,6 +116,7 @@ pub enum Tile {
     Door(Door),
     Player,
     NPC(NPC),
+    Object(Object),
 }
 
 type RoomEntity = u16;
@@ -126,6 +131,11 @@ pub enum Door {
 #[derive(Debug, Clone, Copy)]
 pub enum NPC {
     ServBot,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum Object {
+    Server,
 }
 
 #[derive(Clone)]
@@ -183,6 +193,7 @@ impl Display for Room {
                     }
                     Some((&Tile::Player, _)) => '@',
                     Some((&Tile::NPC(NPC::ServBot), _)) => 'b',
+                    Some((&Tile::Object(Object::Server), _)) => 'c',
                     None => ' ',
                 };
 

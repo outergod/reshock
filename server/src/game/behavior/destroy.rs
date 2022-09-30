@@ -4,19 +4,19 @@ use crate::game::{component::*, Status, *};
 
 pub fn behavior(
     action: Res<Action>,
-    alives: Query<&Alive>,
+    destructibles: Query<&Destructible>,
     vulnerables: Query<&Vulnerable>,
     descriptions: Query<&Description>,
     mut reactions: ResMut<Reactions>,
 ) -> Status {
     let actor = match action.as_ref() {
-        Action::Death(it) => it.actor,
+        Action::Destroy(it) => it.actor,
         Action::HealthLoss(HealthLossAction { actor, amount }) => {
             let vulnerable = vulnerables.get(*actor).unwrap();
-            if let Ok(alive) = alives.get(*actor) && vulnerable.hp.saturating_sub(*amount) == 0 {
-                reactions.0.push(Action::Death(DeathAction {
+            if let Ok(destructible) = destructibles.get(*actor) && vulnerable.hp.saturating_sub(*amount) == 0 {
+                reactions.0.push(Action::Destroy(DestroyAction {
                     actor: *actor,
-                    kind: *alive,
+                    kind: *destructible,
                 }));
             }
             return Status::Continue;
@@ -25,7 +25,10 @@ pub fn behavior(
     };
 
     if let Ok(description) = descriptions.get(actor) {
-        let log = Action::Log(format!("{} dies", description.to_capitalized_string()));
+        let log = Action::Log(format!(
+            "{} is destroyed",
+            description.to_capitalized_string()
+        ));
         reactions.0.push(log);
     }
 

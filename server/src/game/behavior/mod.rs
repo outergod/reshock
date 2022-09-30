@@ -1,6 +1,7 @@
 mod ai;
 mod combat;
 mod death;
+mod destroy;
 mod door;
 mod dwim;
 mod gateway;
@@ -21,6 +22,7 @@ pub use ai::behavior as ai;
 pub use combat::damage as combat_damage;
 pub use combat::hit as combat_hit;
 pub use death::behavior as death;
+pub use destroy::behavior as destroy;
 pub use door::behavior as door;
 pub use dwim::close as dwim_close;
 pub use dwim::r#move as dwim_move;

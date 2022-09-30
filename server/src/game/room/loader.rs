@@ -25,6 +25,7 @@ pub trait RoomLoader: 'static {
         match c {
             '@' => Some(Tile::Player),
             'b' => Some(Tile::NPC(NPC::ServBot)),
+            'c' => Some(Tile::Object(Object::Server)),
             '#' => Some(Tile::Wall),
             'O' => Some(Tile::Door(Door::Open)),
             'o' => Some(Tile::Door(Door::Closed)),

@@ -65,6 +65,13 @@ pub struct NPC {
     pub vulnerable: component::Vulnerable,
 }
 
+#[derive(Bundle, Default)]
+pub struct Object {
+    pub renderable: component::Renderable,
+    pub position: component::Position,
+    pub description: component::Description,
+}
+
 #[derive(Bundle)]
 pub struct Floor {
     pub renderable: component::Renderable,

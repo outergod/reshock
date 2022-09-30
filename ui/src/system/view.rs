@@ -124,6 +124,15 @@ pub fn system(
                             },
                             ordering: Ordering::Item,
                         }),
+                        Some(ApiRenderable::Server) => Some(Renderable {
+                            char: 'c',
+                            color: if memory {
+                                Color::DARK_GRAY
+                            } else {
+                                Color::WHITE
+                            },
+                            ordering: Ordering::Actor,
+                        }),
                         _ => None,
                     } {
                         e.insert(renderable);

@@ -67,6 +67,7 @@ impl Default for Game {
             Box::new(IntoSystem::into_system(behavior::combat_damage)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::combat_hit)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::death)) as BoxedBehavior,
+            Box::new(IntoSystem::into_system(behavior::destroy)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::state)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::switch)) as BoxedBehavior,
             Box::new(IntoSystem::into_system(behavior::lock_door)) as BoxedBehavior,
@@ -88,6 +89,7 @@ impl Default for Game {
             Box::new(IntoSystem::into_system(effect::shoot)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::health)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::death)) as BoxedSystem,
+            Box::new(IntoSystem::into_system(effect::destroy)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::render)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::view)) as BoxedSystem,
             Box::new(IntoSystem::into_system(effect::spot)) as BoxedSystem,
@@ -155,6 +157,7 @@ pub enum Action {
     Damage(DamageAction),
     HealthLoss(HealthLossAction),
     Death(DeathAction),
+    Destroy(DestroyAction),
     State(StateAction),
     SpawnRoom(RoomSpawnAction),
     SpawnGateway(GatewaySpawnAction),
@@ -191,6 +194,7 @@ impl Display for Action {
             Action::Damage(_) => "Damage",
             Action::HealthLoss(_) => "HealthLoss",
             Action::Death(_) => "Death",
+            Action::Destroy(_) => "Destroy",
             Action::State(_) => "State",
             Action::SpawnRoom(_) => "SpawnRoom",
             Action::SpawnGateway(_) => "SpawnGateway",
@@ -254,7 +258,13 @@ pub struct AIMemorizeAction {
 #[derive(Debug, Clone)]
 pub struct DeathAction {
     actor: Entity,
-    kind: Option<component::Alive>,
+    kind: component::Alive,
+}
+
+#[derive(Debug, Clone)]
+pub struct DestroyAction {
+    actor: Entity,
+    kind: component::Destructible,
 }
 
 #[derive(Debug, Clone, Copy)]

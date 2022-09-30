@@ -1,4 +1,3 @@
-use api::death_event::DeathSound;
 use bevy_ecs::prelude::*;
 
 use crate::game::{component::*, Events, *};
@@ -10,13 +9,11 @@ pub fn effect(
     mut commands: Commands,
 ) {
     let (actor, kind) = match action.as_ref() {
-        Action::Death(DeathAction { actor, kind }) => (actor, kind),
+        Action::Destroy(DestroyAction { actor, kind }) => (actor, kind),
         _ => return,
     };
 
-    commands
-        .entity(*actor)
-        .remove_bundle::<(Alive, Solid, Opaque, Vulnerable, Sight, Memory, AI)>();
+    commands.entity(*actor).despawn();
 
     let sight = sight.single();
 
@@ -24,15 +21,9 @@ pub fn effect(
         return;
     }
 
-    let sound = match kind {
-        Alive::Human => DeathSound::Human,
-        Alive::ServBot => DeathSound::ServBot,
-    };
-
     events.0.push(api::Event {
-        event: Some(api::event::Event::Death(api::DeathEvent {
+        event: Some(api::event::Event::Destruction(api::DestructionEvent {
             actor: actor.id(),
-            sound: sound as i32,
         })),
     });
 }

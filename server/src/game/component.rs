@@ -142,6 +142,7 @@ pub enum Renderable {
     Magazine,
     Corpse,
     WallSwitch,
+    Server,
 }
 
 impl Default for Renderable {
@@ -420,6 +421,11 @@ pub struct Vulnerable {
 pub enum Alive {
     Human,
     ServBot,
+}
+
+#[derive(Component, Debug, Clone, Copy)]
+pub enum Destructible {
+    Server,
 }
 
 #[derive(Component)]

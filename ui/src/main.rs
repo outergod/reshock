@@ -35,6 +35,10 @@ fn main() -> Result<()> {
         .context("Couldn't connect to Reshock server")?;
 
     App::new()
+        .insert_resource(WindowDescriptor {
+            title: "Reshock".to_string(),
+            ..default()
+        })
         .add_plugins(DefaultPlugins)
         .add_plugin(AudioPlugin)
         .add_plugin(TweeningPlugin)

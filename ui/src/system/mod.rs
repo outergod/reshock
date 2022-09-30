@@ -1,4 +1,5 @@
 mod death;
+mod destroy;
 mod effect;
 mod hit;
 mod input;
@@ -10,6 +11,7 @@ mod view;
 mod wall;
 
 pub use death::system as death;
+pub use destroy::system as destroy;
 pub use effect::system as effect;
 pub use hit::system as hit;
 pub use input::system as input;

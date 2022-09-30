@@ -1,4 +1,5 @@
 mod death;
+mod destroy;
 mod door;
 mod gateway;
 mod god_mode;
@@ -17,6 +18,7 @@ mod view;
 
 pub use self::log::effect as log;
 pub use death::effect as death;
+pub use destroy::effect as destroy;
 pub use door::close as door_close;
 pub use door::open as door_open;
 pub use door::propagate as door_propagate;

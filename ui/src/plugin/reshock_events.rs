@@ -15,6 +15,7 @@ impl Plugin for ReshockEventsPlugin {
             .add_event::<api::HitEvent>()
             .add_event::<api::DeathEvent>()
             .add_event::<api::ShootEvent>()
+            .add_event::<api::DestructionEvent>()
             .add_system(system);
     }
 }
@@ -28,6 +29,7 @@ pub fn system(
     mut hit: EventWriter<api::HitEvent>,
     mut death: EventWriter<api::DeathEvent>,
     mut shoot: EventWriter<api::ShootEvent>,
+    mut destruction: EventWriter<api::DestructionEvent>,
 ) {
     if events.transitions > 0 {
         match events.queue.front() {
@@ -36,6 +38,9 @@ pub fn system(
             }) => {}
             Some(api::Event {
                 event: Some(api::event::Event::Death(_)),
+            }) => {}
+            Some(api::Event {
+                event: Some(api::event::Event::Destruction(_)),
             }) => {}
             _ => return,
         }
@@ -74,6 +79,9 @@ pub fn system(
         }
         api::event::Event::Death(event) => {
             death.send(event);
+        }
+        api::event::Event::Destruction(event) => {
+            destruction.send(event);
         }
         api::event::Event::Shoot(event) => {
             events.transitions += 1;
