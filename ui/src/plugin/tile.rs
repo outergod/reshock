@@ -40,7 +40,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 fn adapt_glyph_dimensions(
     mut event_asset: EventReader<AssetEvent<Font>>,
-    mut assets: ResMut<Assets<Font>>,
+    assets: Res<Assets<Font>>,
     font_resource: Res<ReshockFont>,
     mut dimensions: ResMut<TileDimensions>,
 ) {
@@ -48,7 +48,7 @@ fn adapt_glyph_dimensions(
         match event {
             AssetEvent::Created { handle } | AssetEvent::Modified { handle } => {
                 if *handle == font_resource.handle {
-                    let font = &assets.get_mut(handle).unwrap().font;
+                    let font = &assets.get(handle).unwrap().font;
                     let scaled = ab_glyph::Font::as_scaled(font, font_resource.size);
                     let glyph = ab_glyph::Font::glyph_id(&font, font_resource.bounding_glyph);
 
@@ -65,7 +65,7 @@ fn adapt_glyph_dimensions(
 
 fn render(
     renderables: Query<(&Position, &Renderable)>,
-    mut tiles: Query<(&Position, &mut Text, &mut Transform)>,
+    mut tiles: Query<(&Position, &mut Text, &mut Transform), With<Tile>>,
     font_resource: Res<ReshockFont>,
 ) {
     let view = renderables
@@ -97,7 +97,7 @@ fn render(
 }
 
 fn position(
-    mut tiles: Query<(&mut Transform, &Position), With<Text>>,
+    mut tiles: Query<(&mut Transform, &Position), With<Tile>>,
     dimensions: Res<TileDimensions>,
 ) {
     if let Some(Size { width, height }) = dimensions.0 {

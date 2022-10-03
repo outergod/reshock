@@ -102,3 +102,9 @@ pub struct Projectile {
 
 #[derive(Component, Default, Debug)]
 pub struct Velocity(pub Vec2);
+
+#[derive(Component)]
+pub enum Marker {
+    Selection,
+    Active(IVec2),
+}

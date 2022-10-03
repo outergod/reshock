@@ -46,6 +46,8 @@ fn main() -> Result<()> {
         .add_plugin(ReshockEventsPlugin)
         .add_plugin(DoorPlugin)
         .add_plugin(CameraPlugin)
+        .add_plugin(CursorPlugin)
+        .add_plugin(MarkerPlugin)
         .add_plugin(EguiPlugin)
         .add_plugin(UiPlugin)
         .add_plugin(ClientPlugin)
@@ -66,6 +68,7 @@ fn main() -> Result<()> {
         .add_system(system::death)
         .add_system(system::shoot)
         .add_system(system::projectile)
+        .add_system(system::destroy)
         .add_system(bevy::window::close_on_esc)
         .add_system(component_animator_system::<Renderable>)
         .run();

@@ -28,7 +28,8 @@ impl Tile {
                         font_size: font.size,
                         color: Color::WHITE,
                     },
-                ),
+                )
+                .with_alignment(TextAlignment::CENTER),
                 ..Default::default()
             },
         }
@@ -69,4 +70,12 @@ impl Projectile {
             shape,
         }
     }
+}
+
+#[derive(Bundle)]
+pub struct Marker {
+    pub position: component::Position,
+    pub marker: component::Marker,
+    pub visibility: Visibility,
+    pub transform: Transform,
 }

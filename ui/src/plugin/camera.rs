@@ -35,8 +35,8 @@ fn follow(
     };
 
     for mut transform in camera.iter_mut() {
-        transform.translation.x = (x as f32 + 0.5) * size.width;
-        transform.translation.y = (y as f32 - 0.5) * size.height;
+        transform.translation.x = x as f32 * size.width;
+        transform.translation.y = y as f32 * size.height;
     }
 }
 

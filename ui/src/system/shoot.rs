@@ -29,12 +29,12 @@ pub fn system(
     } in reader.iter()
     {
         let start = match source {
-            Some(pos) => vec2((pos.x as f32 + 0.5) * width, (pos.y as f32 - 0.5) * height),
+            Some(pos) => vec2(pos.x as f32 * width, pos.y as f32 * height),
             None => continue,
         };
 
         let end = match target {
-            Some(pos) => vec2((pos.x as f32 + 0.5) * width, (pos.y as f32 - 0.5) * height),
+            Some(pos) => vec2(pos.x as f32 * width, pos.y as f32 * height),
             None => continue,
         };
 

@@ -83,3 +83,6 @@ impl Log {
         self.0.join("\n")
     }
 }
+
+#[derive(Default)]
+pub struct Cursor(pub Option<IVec2>);
